@@ -21,6 +21,7 @@ hook.Add( "SetGameType", "setthegametype", function(  )
     SetGlobalInt( "RoundWinner", -1 )
 end )
 
+--Round preperation stuff
 roundnumber = 0
 hook.Add( "StartPrep", "prepthenewround", function()
     SetGlobalInt( "RoundTime", gametime ) 
@@ -52,6 +53,7 @@ hook.Add( "StartPrep", "prepthenewround", function()
     end)
 end )
 
+--Game starting, player movement freed
 hook.Add( "StartGame", "roundstart", function()
     print( "Starting game/round..." )
     SetGlobalBool( "GameInProgress", true )
@@ -81,6 +83,7 @@ hook.Add( "Think", "WinnerChecker", function()
     
 end )
 
+--Game finishes, restart round if needed and deliver rewards
 hook.Add( "EndGame", "ongameend", function()
     if !GetGlobalBool( "GameInProgress" ) then return end
     if roundnumber != GetGlobalInt( "MaxRound" ) then

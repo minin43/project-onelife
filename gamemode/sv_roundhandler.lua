@@ -57,9 +57,9 @@ end )
 hook.Add( "StartGame", "roundstart", function()
     print( "Starting game/round..." )
     SetGlobalBool( "GameInProgress", true )
-    --[[timer.Create( "Time Countdown", 1, 0, function()
+    timer.Create( "Time Countdown", 1, 0, function()
         SetGlobalInt( "RoundTime", GetGlobalInt( "RoundTime" ) - 1 )
-    end)]]
+    end)
 
     for k, v in pairs( player.GetAll() ) do
 	    v:UnLock()
@@ -70,11 +70,12 @@ hook.Add( "StartGame", "roundstart", function()
 end )
 
 hook.Add( "Think", "WinnerChecker", function()
-    --[[if GetGlobalInt( "RoundTime" ) == 0 then
+    if GetGlobalInt( "RoundTime" ) == 0 then
         timer.Remove( "Time Countdown" )
         print( "Time expired, ending game!" )
         hook.Call( "EndGame" )
-    end]]
+        SetGlobalInt( "RoundTime", -1 )
+    end
     
     --[[if GetGlobalInt( "RoundWinner" ) == 1 or GetGlobalInt( "RoundWinner" ) == 2 or GetGlobalInt( "RoundWinner" ) == 3 then
         hook.Call( "EndGame" )

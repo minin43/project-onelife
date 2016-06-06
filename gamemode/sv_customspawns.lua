@@ -1,12 +1,10 @@
-if not file.Exists( "tdm/spawns", "DATA" ) then
-	file.CreateDir( "tdm/spawns" )
+if not file.Exists( "onelife/spawns", "DATA" ) then
+	file.CreateDir( "onelife/spawns" )
 end
 
-if not file.Exists( "tdm/spawns/" .. game.GetMap() .. ".txt", "DATA" ) then
-	file.Write( "tdm/spawns/" .. game.GetMap() .. ".txt" )
+if not file.Exists( "onelife/spawns/" .. game.GetMap() .. ".txt", "DATA" ) then
+	file.Write( "onelife/spawns/" .. game.GetMap() .. ".txt" )
 end
-
-CreateConVar( "tdm_showspawns", "1", FCVAR_ARCHIVE, "0 = off, 1 = everyone, 2 = admins only, 3 = superadmins only" )
 
 util.AddNetworkString( "debug_showspawns" )
 
@@ -33,7 +31,7 @@ end
 
 function refreshspawns()
 	local toApply = {}
-	local fi = file.Read( "tdm/spawns/" .. game.GetMap() .. ".txt", "DATA" )
+	local fi = file.Read( "onelife/spawns/" .. game.GetMap() .. ".txt", "DATA" )
 	local exp = string.Explode( "\n", fi )
 	for k, v in next, exp do
 		local toAdd = util.JSONToTable( v )
@@ -41,25 +39,11 @@ function refreshspawns()
 	end
 	curSpawns = toApply
 	local num = GetConVar( "tdm_showspawns" ):GetInt()
-	if num == 1 then
-		net.Start( "debug_showspawns" )
-			net.WriteTable( curSpawns )
-		net.Broadcast()	
-	elseif num == 2 then
-		for k, v in next, player.GetAll() do
-			if ply:IsAdmin() then
-				net.Start( "debug_showspawns" )
-					net.WriteTable( curSpawns )
-				net.Send( ply )
-			end
-		end
-	elseif num == 3 then
-		for k, v in next, player.GetAll() do
-			if ply:IsSuperAdmin() then
-				net.Start( "debug_showspawns" )
-					net.WriteTable( curSpawns )
-				net.Send( ply )
-			end
+	for k, v in next, player.GetAll() do
+		if v:GetNWBool( "placing" ) == true then
+			net.Start( "debug_showspawns" )
+				net.WriteTable( curSpawns )
+			net.Send( ply )
 		end
 	end
 end
@@ -123,7 +107,7 @@ hook.Add( "PlayerButtonDown", "placement", function( ply, key )
 					ply:SetNWVector( "secondpos", pos )
 					ply:SendLua( [[surface.PlaySound( "garrysmod/ui_click.wav" )]] )
 					ply.selectteam = true
-					ply:ChatPrint( "Press 1 for red team spawn, or 2 for blue team spawn" )
+					ply:ChatPrint( "Press 1 for red team spawn, or 2 for blue team spawn, or 3 for black team spawn." )
 				end
 			end
 		elseif key == MOUSE_RIGHT then
@@ -151,6 +135,13 @@ hook.Add( "PlayerButtonDown", "placement", function( ply, key )
 			ply:SendLua( [[surface.PlaySound( "garrysmod/ui_click.wav" )]] )
 			ply.selectteam = nil
 			ply:SetNWInt( "pos_team", 2 )
+		elseif key == KEY_3 then
+			local k = 3
+			confirmpos( ply, ply:GetNWVector( "firstpos" ), ply:GetNWVector( "secondpos" ), 2 )
+			ply.confirming = true
+			ply:SendLua( [[surface.PlaySound( "garrysmod/ui_click.wav" )]] )
+			ply.selectteam = nil
+			ply:SetNWInt( "pos_team", 3 )
 		elseif key == MOUSE_RIGHT then
 			ply:SetNWVector( "secondpos", nl )
 			ply.selectteam = false

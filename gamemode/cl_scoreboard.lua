@@ -1,3 +1,9 @@
+surface.CreateFont( "Exo 2", {
+	font = "Exo 2",
+	size = 24,
+	weight = 400
+} )
+
 local dlist
 local dlist2
 

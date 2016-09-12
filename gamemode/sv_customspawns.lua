@@ -38,7 +38,6 @@ function refreshspawns()
 		table.insert( toApply, toAdd )
 	end
 	curSpawns = toApply
-	local num = GetConVar( "tdm_showspawns" ):GetInt()
 	for k, v in next, player.GetAll() do
 		if v:GetNWBool( "placing" ) == true then
 			net.Start( "debug_showspawns" )
@@ -193,27 +192,6 @@ hook.Add( "PlayerSpawn", "OverrideSpawnLocations", function( ply )
 	end
 end )
 
-concommand.Add( "debug_showspawns", function( ply )
-	local num = GetConVar( "tdm_showspawns" ):GetInt()
-	if num == 1 then
-		net.Start( "debug_showspawns" )
-			net.WriteTable( curSpawns )
-		net.Send( ply )		
-	elseif num == 2 then
-		if ply:IsAdmin() then
-			net.Start( "debug_showspawns" )
-				net.WriteTable( curSpawns )
-			net.Send( ply )
-		end
-	elseif num == 3 then
-		if ply:IsSuperAdmin() then
-			net.Start( "debug_showspawns" )
-				net.WriteTable( curSpawns )
-			net.Send( ply )		
-		end		
-	end
-end )
-
 concommand.Add( "tdm_placespawns", function( ply )
 	if ply:Alive() and IsValid( ply ) then
 		if ply:IsSuperAdmin() then
@@ -223,30 +201,6 @@ concommand.Add( "tdm_placespawns", function( ply )
 end )
 
 hook.Add( "PlayerSpawn", "SendSpawns", function( ply )
-	if ply:GetNWBool( "placing" ) then
-		StopPlacement( ply )
-	end
-	local num = GetConVar( "tdm_showspawns" ):GetInt()
-	if num == 1 then
-		net.Start( "debug_showspawns" )
-			net.WriteTable( curSpawns )
-		net.Send( ply )		
-	elseif num == 2 then
-		if ply:IsAdmin() then
-			net.Start( "debug_showspawns" )
-				net.WriteTable( curSpawns )
-			net.Send( ply )
-		end
-	elseif num == 3 then
-		if ply:IsSuperAdmin() then
-			net.Start( "debug_showspawns" )
-				net.WriteTable( curSpawns )
-			net.Send( ply )		
-		end		
-	end
-end )
-
-hook.Add( "PlayerDeath", "wtf", function( ply )
 	if ply:GetNWBool( "placing" ) then
 		StopPlacement( ply )
 	end

@@ -101,7 +101,7 @@ function GM:PlayerInitialSpawn( ply )
 	end
 
 	if ply:IsBot() then
-		ply:SetTeam( 1 )
+		--ply:SetTeam( 1 )
 		self.BaseClass:PlayerSpawn( ply )
 		return
 	end
@@ -276,9 +276,9 @@ end
 function SetupSpectator( ply )
 	ply:StripWeapons()
 	local teammates
-	if ply:Team() == 1
+	if ply:Team() == 1 then
 		teammates = getRedTeam()
-	elseif ply:Team() == 2
+	elseif ply:Team() == 2 then
 		teammates = getBlueTeam()
 	else
 		teammates = getBlackTeam()
@@ -296,9 +296,9 @@ local function NextSpec( ply )
 		return
 	end
 	local teammates
-	if ply:Team() == 1
+	if ply:Team() == 1 then
 		teammates = getRedTeam()
-	elseif ply:Team() == 2
+	elseif ply:Team() == 2 then
 		teammates = getBlueTeam()
 	else
 		teammates = getBlackTeam()
@@ -324,9 +324,9 @@ local function PrevSpec( ply )
 		return
 	end
 	local teammates
-	if ply:Team() == 1
+	if ply:Team() == 1 then
 		teammates = getRedTeam()
-	elseif ply:Team() == 2
+	elseif ply:Team() == 2 then
 		teammates = getBlueTeam()
 	else
 		teammates = getBlackTeam()

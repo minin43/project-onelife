@@ -53,6 +53,8 @@ CreateClientConVar( "hud_showexp", 0, true, true )
 
 -- http://lua-users.org/wiki/FormattingNumbers
 
+LP = LocalPlayer
+
 local hide = {
 	"CHudHealth",
 	"CHudBattery",
@@ -72,32 +74,41 @@ hook.Add( "HUDShouldDraw", "hidehud", hidehud )
 
 usermessage.Hook( "startmusic", function()
 	if LocalPlayer():Team() == 1 then
-		surface.PlaySound( "mw2music/spawn/redspawn" .. math.random( 1, 3 ) .. ".ogg" )
+		surface.PlaySound( "mw2music/spawn/redspawn" .. math.random( 1, 2 ) .. ".ogg" )
+		print( "Outcome sound: red spawn" )
 	elseif LocalPlayer():Team() == 2 then
-		surface.PlaySound( "mw2music/spawn/bluespawn" .. math.random( 1, 3 ) .. ".ogg" )
+		surface.PlaySound( "mw2music/spawn/bluespawn" .. math.random( 1, 4 ) .. ".ogg" )
+		print( "Outcome sound: blue spawn" )
 	end
 end )
 
 usermessage.Hook( "endmusic", function()
 	if GetGlobalInt( "RoundWinner" ) == 1 then
 		if LocalPlayer():Team() == 1 then
-			surface.PlaySound( "mw2music/victory/redvictory" .. math.random( 1, 3 ) .. ".ogg" )
+			surface.PlaySound( "mw2music/victory/redvictory" .. math.random( 1, 2 ) .. ".ogg" )
+			print( "Outcome sound: red victory" )
 		elseif LocalPlayer():Team() == 2 then
-			surface.PlaySound( "mw2music/victory/bluedefeat" .. math.random( 1, 3 ) .. ".ogg" )
+			surface.PlaySound( "mw2music/defeat/bluedefeat" .. math.random( 1, 4 ) .. ".ogg" )
+			print( "Outcome sound: blue defeat" )
 		end
 	elseif GetGlobalInt( "RoundWinner" ) == 2 then
 		if LocalPlayer():Team() == 1 then
-			surface.PlaySound( "mw2music/victory/reddefeat" .. math.random( 1, 3 ) .. ".ogg" )
+			surface.PlaySound( "mw2music/defeat/reddefeat" .. math.random( 1, 2 ) .. ".ogg" )
+			print( "Outcome sound: red defeat" )
 		elseif LocalPlayer():Team() == 2 then
-			surface.PlaySound( "mw2music/victory/bluevictory" .. math.random( 1, 3 ) .. ".ogg" )
+			surface.PlaySound( "mw2music/victory/bluevictory" .. math.random( 1, 4 ) .. ".ogg" )
+			print( "Outcome sound: blue victory" )
 		end
 	elseif GetGlobalInt( "RoundWinner" ) == 3 then
 		if LocalPlayer():Team() == 1 then
-			surface.PlaySound( "mw2music/victory/reddefeat" .. math.random( 1, 3 ) .. ".ogg" )
+			surface.PlaySound( "mw2music/defeat/reddefeat" .. math.random( 1, 2 ) .. ".ogg" )
+			print( "Outcome sound: red defeat" )
 		elseif LocalPlayer():Team() == 2 then
-			surface.PlaySound( "mw2music/victory/bluedefeat" .. math.random( 1, 3 ) .. ".ogg" )
+			surface.PlaySound( "mw2music/defeat/bluedefeat" .. math.random( 1, 4 ) .. ".ogg" )
+			print( "Outcome sound: blue defeat" )
 		end
 	end
+	print( GetGlobalInt( "RoundWinner" ) )
 end )
 
 --Stolen from Zet0r
@@ -105,7 +116,7 @@ local blood_overlay = Material("hud/damageoverlay.png", "unlitgeneric smooth")
 local bloodpulse = true
 local pulse = 0
 
-hook.Add( "HUDPaint", "hud_main", function(
+hook.Add( "HUDPaint", "hud_main", function()
 
 	local fade = (math.Clamp(LocalPlayer():Health()/LocalPlayer():GetMaxHealth(), 0.2, 0.5)-0.2)/0.3
 	local fade2 = 1 - math.Clamp(LocalPlayer():Health()/LocalPlayer():GetMaxHealth(), 0, 0.5)/0.5

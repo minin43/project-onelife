@@ -1,43 +1,30 @@
-gametime = nil
-gametype = nil
-function SetGameTypeClassic()
-    print( "Setting game type to 'classic'" )
-    gametime = 300
-    gametype = "Classic"
-    SetGlobalInt( "MaxRound", 4 )
-    hook.Call( "StartPrep" )
+
+function StartGame( mode, time )
+    if !mode or !time then
+        print( "Invalid mode type or round time." )
+        return
+    end
+    SetGlobalBool( "GameInProgress", true )
+    StartRound( mode, time, 1 )
 end
 
---[[function GameTypeFFA()
-    gametime = 900
-    gametype = "Free For All"
-    SetGlobalInt( "Round", 1 )
-end]]
-
-hook.Add( "SetGameType", "setthegametype", function(  )
-    --gametype should only ever be full gametype names, such as "Classic"
-    --If concatenation doesn't work, we're gonna have to use if-else statements
-    SetGameTypeClassic()
-    SetGlobalInt( "RoundWinner", -1 )
-end )
+local function StartRound( mode, round )
+    SetGlobalInt( "RoundTime", time )
+    RoundPrep( mode, round )
+end
 
 --Round preperation stuff
-roundnumber = 0
-hook.Add( "StartPrep", "prepthenewround", function()
-    SetGlobalInt( "RoundTime", gametime ) 
-    SetGlobalString( "Gametype", gametype )
-	SetGlobalBool( "RoundFinished", false )
-    SetGlobalBool( "GameInProgress", false )
-    roundnumber = roundnumber + 1
-    print( "Setting up global variables...", GetGlobalInt( "RoundTime"),  GetGlobalString( "Gametype"), GetGlobalBool( "RoundFinished"), GetGlobalBool( "GameInProgress") )
-    print( "We are starting round: ", roundnumber)
-    
+local function RoundPrep( mode, round )
+    SetGlobalInt( "RoundTime", 180 ) 
+    print( "We are starting round: ", round)
     if !allteamsvalid() then print( "Not all teams are valid!" ) return end
     
     game.CleanUpMap()
-    print( "Preperation phase starting, cleaning up map..." )
-    umsg.Start( "startmusic", player.GetAll() )
-	umsg.End()
+    print( "Round preperation starting, cleaning up map..." )
+
+    if round != 1 then
+        ChangeSides()
+    end
 
     for k, v in pairs( player.GetAll() ) do
         v:Spawn()
@@ -49,49 +36,69 @@ hook.Add( "StartPrep", "prepthenewround", function()
     
     timer.Simple( 15, function()
         print( "15 second timer finished, starting round/game.")
-        hook.Call( "StartGame" )
+        RoundBegin( mode, round )
     end)
-end )
+    --hook.Call
+end 
 
 --Game starting, player movement freed
-hook.Add( "StartGame", "roundstart", function()
+local function RoundBegin( mode, round )
     print( "Starting game/round..." )
-    SetGlobalBool( "GameInProgress", true )
+    --Start the round's countdown timer
     timer.Create( "Time Countdown", 1, 0, function()
         SetGlobalInt( "RoundTime", GetGlobalInt( "RoundTime" ) - 1 )
-    end)
+        if GetGlobalInt( "RoundTime" ) == 0 then
+            RoundEnd( mode, round, 3 )
+            SetGlobalInt( "RoundTime", -1 )
+            timer.Remove( "Time Countdown" )
+        end
+    end )
 
     for k, v in pairs( player.GetAll() ) do
 	    v:UnLock()
         v.CanCustomizeLoadout = false
         print( "Unlocking: ", v )
     end
-    
-end )
-
-hook.Add( "Think", "WinnerChecker", function()
-    if GetGlobalInt( "RoundTime" ) == 0 then
-        timer.Remove( "Time Countdown" )
-        print( "Time expired, ending game!" )
-        hook.Call( "EndGame" )
-        SetGlobalInt( "RoundTime", -1 )
-    end
-    
-    --[[if GetGlobalInt( "RoundWinner" ) == 1 or GetGlobalInt( "RoundWinner" ) == 2 or GetGlobalInt( "RoundWinner" ) == 3 then
-        hook.Call( "EndGame" )
-        print( "Somebody's won the game!" )
-    end]]
-    
-end )
+    --hook.Call
+end
 
 --Game finishes, restart round if needed and deliver rewards
-hook.Add( "EndGame", "ongameend", function()
+local RedTeamWins, BlueTeamWins
+local function RoundEnd( mode, round, victor)
     if !GetGlobalBool( "GameInProgress" ) then return end
+    if timer.Exists( "Time Countdown" ) then
+        timer.Remove( "Time Countdown" )
+    end
+
+    if victor == 1 then
+        RedTeamWins = RedTeamWins + 1
+        -
+    elseif victor == 2 then
+        BlueTeamWins = BlueTeamWins + 1
+        -
+    end
+    --hook.Call
+
+    local winner
+    if RedTeamWins == 3 then
+        winner = "Red"
+    elseif BlueTeamWins == 3 then
+        winner = "Blue"
+    else
+        print( "Nobody's won the game yet." )
+        timer.Simple( 15, function()
+            StartRound( mode, round + 1 )
+            --hook.Call( "StartPrep" )
+            return
+        end )
+    end
+    if winner then hook.Call( "GameWinner",  )
+
     if roundnumber != GetGlobalInt( "MaxRound" ) then
         print( "EndGame hook called, commencing new round..." )
         timer.Simple( 15, function()
-            print( "Max round limit not reached, starting new round." ) 
-            hook.Call( "StartPrep" )
+            StartRound( mode, round + 1 )
+            --hook.Call( "StartPrep" )
             return
         end )
         return
@@ -105,10 +112,12 @@ hook.Add( "EndGame", "ongameend", function()
 	SetGlobalBool( "RoundFinished", true )
     gametype = "none"
     return
+    --hook.Call
 end )
 
+--This needs to go on a different file--
 hook.Add( "PostPlayerDeath", "fullteameliminationchecker", function( vic, info, att )
-    if GetGlobalBool( "RoundFinished" ) or !GetGlobalBool( "GameInProgress" ) then return end
+    if !GetGlobalBool( "GameInProgress" ) then return end
     
     print( "Somebody's died!")
     local reddead = true

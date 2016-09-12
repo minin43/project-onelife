@@ -203,7 +203,7 @@ hook.Add( "PlayerSpawn", "SendFlags", function( ply )
 	net.Send( ply )
 end )
 
---[[hook.Add( "tdm_FlagCaptured", "tdm_flagcapped", function( t, flag, plys )
+/*hook.Add( "tdm_FlagCaptured", "tdm_flagcapped", function( t, flag, plys )
 	net.Start( "SendFlags" )
 		net.WriteTable( curmap )
 		net.WriteTable( status )
@@ -313,7 +313,7 @@ end )
 			umsg.End()		
 		end		
 	end
-end )]]
+end )*/
 
 hook.Add( "tdm_FlagNeutral", "tdm_flagneutral", function( t, flag, plys )
 	for k, v in next, plys do

@@ -1,33 +1,36 @@
 
-function StartGame( mode, time )
-    if !mode or !time then
-        print( "Invalid mode type or round time." )
+function StartGame( mode )
+    if !mode then
+        print( "Invalid mode type, preventing game start." )
         return
     end
     SetGlobalInt( "RoundWinner", 0 )
     SetGlobalString( "GameType", mode )
     SetGlobalBool( "GameInProgress", true )
-    StartRound( time, 1 )
+    SetGlobalInt( "Round", 1 )
+    SetGlobalInt( "RedTeamWins", 0 )
+    SetGlobalInt( "BlueTeamWins", 0 )
+    StartRound( 1 )
 end
 
 local function StartRound( round )
-    SetGlobalInt( "RoundTime", time )
+    SetGlobalInt( "RoundTime", 180 )
+    SetGlobalInt( "Round", round )
     RoundPrep( round )
 end
 
 --Round preperation stuff
-local function RoundPrep( round )
-    SetGlobalInt( "RoundTime", 180 ) 
+local function RoundPrep( round ) 
     print( "We are starting round: ", round)
-    if !allteamsvalid() then print( "Not all teams are valid!" ) return end
-    
+    if !allteamsvalid() then print( "Not all teams are valid, preventing round preperation." ) return end
     game.CleanUpMap()
     print( "Round preperation starting, cleaning up map..." )
 
     if round != 1 then
-        ChangeSides()
+        ChangeSides() --To-do function
     end
 
+    print( "All teams valid...")
     for k, v in pairs( player.GetAll() ) do
         v:Spawn()
 	    v:Lock()
@@ -55,7 +58,8 @@ local function RoundBegin( round )
             timer.Remove( "Time Countdown" )
         end
     end )
-
+    --Unlocks all player movements but disallows kit customization
+    print( "Round has started..." )
     for k, v in pairs( player.GetAll() ) do
 	    v:UnLock()
         v.CanCustomizeLoadout = false
@@ -65,113 +69,60 @@ local function RoundBegin( round )
 end
 
 --Game finishes, restart round if needed and deliver rewards
-local RedTeamWins, BlueTeamWins
-local function RoundEnd( round, victor)
+local function RoundEnd( round, victor )
     if timer.Exists( "Time Countdown" ) then
         timer.Remove( "Time Countdown" )
     end
-
+    SetGlobalInt( "RoundWinner", victor )
     if victor == 1 then
-        RedTeamWins = RedTeamWins + 1
-        -
+        SetGlobalInt( "RedTeamWins", GetGlobalInt( "RedTeamWins" ) + 1 )
     elseif victor == 2 then
-        BlueTeamWins = BlueTeamWins + 1
-        -
+        SetGlobalInt( "BlueTeamWins", GetGlobalInt( "BlueTeamWins" ) + 1 )
     end
     --hook.Call
 
-    --Game Victory check
-    local winner
-    if RedTeamWins == 3 then
-        winner = "Red"
-    elseif BlueTeamWins == 3 then
-        winner = "Blue"
-    else
-        print( "Nobody's won the game yet." )
-        timer.Simple( 15, function()
-            StartRound( round + 1 )
-            --hook.Call( "StartPrep" )
-            return
-        end )
-    end
-
-    if winner then 
-        print( "Game has been won, there's nothing left to do..." )
+    if GameWon() then --Might need to add "winner" parameter
+        --To-do include a mapvote
+        print( "Game has been won" )
         SetGlobalString( "Gametype", "none" )
         SetGlobalBool( "GameInProgress", false )
         SetGlobalInt( "RoundTime", 0 ) 
         --hook.Call( "GameWinner",  )
+        return
     else
+        print( "Nobody's won the game yet." )
         timer.Simple( 15, function()
             StartRound( round + 1 )
         end )
     end
-
-    --[[print( roundnumber, GetGlobalInt( "MaxRound" ), roundnumber != GetGlobalInt( "MaxRound" ) )
-    print( "Max round limit reached, there's nothing left to do..." )
-    SetGlobalBool( "GameInProgress", false )
-    SetGlobalInt( "RoundTime", 0 ) 
-    SetGlobalString( "Gametype", "none" )
-	SetGlobalBool( "RoundFinished", true )
-    gametype = "none"
-    return
-    --hook.Call]]
 end )
 
---This needs to go on a different file--
-hook.Add( "PostPlayerDeath", "fullteameliminationchecker", function( vic, info, att )
-    if !GetGlobalBool( "GameInProgress" ) then return end
-    
-    print( "Somebody's died!")
-    local reddead = true
-    local bluedead = true
-    for k, v in pairs( team.GetAllTeams() ) do
-        if team.GetName( k ) == "Black" then print ( "No need to check black team." )
-        elseif team.GetName( k ) == "Red" then
-            for k, v in pairs( team.GetPlayers( 1 ) ) do
-                if v:Alive() then reddead = false print( "Someone on red team is still alive..." ) end
-            end
-        elseif team.GetName( k ) == "Blue" then
-            for k, v in pairs( team.GetPlayers( 2 ) ) do
-                if v:Alive() then bluedead = false print( "Someone on blue team is still alive..." ) end
-            end
-        end
+local function GameWon()
+    if GetGlobalInt( "RedTeamWins" ) == 3 or GetGlobalInt( "BlueTeamWins" ) == 3 then
+        return true
     end
-    
-    if reddead and bluedead then
-        SetGlobalInt( "RoundWinner", 3 )
-        print( "Everyone is dead! Round draw!" )
-        RoundEnd( a, 3)
-    elseif reddead then
-        SetGlobalInt( "RoundWinner", 2 )
-        print( "Red team eliminated, Blue team wins!" )
-        RoundEnd( a, 2)
-    elseif bluedead then
-        SetGlobalInt( "RoundWinner", 1 )
-        print( "Blue team eliminated, Red team wins!" )
-        RoundEnd( a, 1)
-    end
-end )
+    return false
+end
 
-function allteamsvalid()
+local function allteamsvalid()
     print( "AllTeamsValid Initializing...")
     local redvalid = false
     local bluevalid = false
     for k, v in pairs( team.GetAllTeams() ) do
         --print( k, v, team.GetName( k ), "v value: ", team.GetName( v ) )
         if team.GetName( k ) == "Black" then print( "This team is the FFA team" )
-        elseif team.GetName( k ) == "Red" then
+        if team.GetName( k ) == "Red" then
             print( "Red Team teamchecker commencing..." )
             if table.Count( team.GetPlayers( 1 ) ) > 0 then
                 redvalid = true
             end
-            print( "Red team's validity is: ", table.Count( team.GetPlayers( 1 ) ) > 0 )
+            print( "Red team's validity is: ", redvalid )
         elseif team.GetName( k ) == "Blue" then
             print( "Blue Team teamchecker commencing..." )
             if table.Count( team.GetPlayers( 2 ) ) > 0 then
                 bluevalid = true
             end
-            print( "Blue team's validity is: ", table.Count( team.GetPlayers( 2 ) ) > 0 )
+            print( "Blue team's validity is: ", bluevalid )
         end
     end
     
@@ -180,43 +131,4 @@ function allteamsvalid()
         return true
     end    
     return false
-end
-
-function GM:PlayerDeathThink()
-    return false
-end
-
-function GM:PlayerDisconnected( ply )
-    if GetGlobalBool( "RoundFinished" ) or !GetGlobalBool( "GameInProgress" ) then return end
-    
-    print( "Somebody's disconnected")
-    local reddead = true
-    local bluedead = true
-    for k, v in pairs( team.GetAllTeams() ) do
-        if team.GetName( k ) == "Black" then print ( "No need to check black team." )
-        elseif team.GetName( k ) == "Red" then
-            for k, v in pairs( team.GetPlayers( 1 ) ) do
-                if v:Alive() then reddead = false print( "Someone on red team is still alive..." ) end
-            end
-        elseif team.GetName( k ) == "Blue" then
-            for k, v in pairs( team.GetPlayers( 2 ) ) do
-                if v:Alive() then bluedead = false print( "Someone on blue team is still alive..." ) end
-            end
-        end
-    end
-    
-    if reddead and bluedead then
-        SetGlobalInt( "RoundWinner", 3 )
-        print( "Everyone is dead! Round draw!" )
-        hook.Call( "EndGame" )
-    elseif reddead then
-        SetGlobalInt( "RoundWinner", 2 )
-        print( "Red team eliminated, Blue team wins!" )
-        hook.Call( "EndGame" )
-    elseif bluedead then
-        SetGlobalInt( "RoundWinner", 1 )
-        print( "Blue team eliminated, Red team wins!" )
-        hook.Call( "EndGame" )
-    end
-        
 end

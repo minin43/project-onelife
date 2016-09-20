@@ -1,4 +1,3 @@
-
 function StartGame( mode )
     if !mode then
         print( "Invalid mode type, preventing game start." )
@@ -13,21 +12,21 @@ function StartGame( mode )
     StartRound( 1 )
 end
 
-local function StartRound( round )
+function StartRound( round )
     SetGlobalInt( "RoundTime", 180 )
     SetGlobalInt( "Round", round )
     RoundPrep( round )
 end
 
 --Round preperation stuff
-local function RoundPrep( round ) 
+function RoundPrep( round ) 
     print( "We are starting round: ", round)
     if !allteamsvalid() then print( "Not all teams are valid, preventing round preperation." ) return end
     game.CleanUpMap()
     print( "Round preperation starting, cleaning up map..." )
 
     if round != 1 then
-        ChangeSides() --To-do function
+        --ChangeSides() --To-do function
     end
 
     print( "All teams valid...")
@@ -47,7 +46,7 @@ local function RoundPrep( round )
 end 
 
 --Game starting, player movement freed
-local function RoundBegin( round )
+function RoundBegin( round )
     print( "Starting game/round..." )
     --Start the round's countdown timer
     timer.Create( "Time Countdown", 1, 0, function()
@@ -69,7 +68,7 @@ local function RoundBegin( round )
 end
 
 --Game finishes, restart round if needed and deliver rewards
-local function RoundEnd( round, victor )
+function RoundEnd( round, victor )
     if timer.Exists( "Time Countdown" ) then
         timer.Remove( "Time Countdown" )
     end
@@ -95,23 +94,23 @@ local function RoundEnd( round, victor )
             StartRound( round + 1 )
         end )
     end
-end )
+end 
 
-local function GameWon()
+function GameWon()
     if GetGlobalInt( "RedTeamWins" ) == 3 or GetGlobalInt( "BlueTeamWins" ) == 3 then
         return true
     end
     return false
 end
 
-local function allteamsvalid()
+function allteamsvalid()
     print( "AllTeamsValid Initializing...")
     local redvalid = false
     local bluevalid = false
     for k, v in pairs( team.GetAllTeams() ) do
         --print( k, v, team.GetName( k ), "v value: ", team.GetName( v ) )
         if team.GetName( k ) == "Black" then print( "This team is the FFA team" )
-        if team.GetName( k ) == "Red" then
+        elseif team.GetName( k ) == "Red" then
             print( "Red Team teamchecker commencing..." )
             if table.Count( team.GetPlayers( 1 ) ) > 0 then
                 redvalid = true

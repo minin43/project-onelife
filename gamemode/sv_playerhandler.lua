@@ -2,7 +2,7 @@ hook.Add( "PostPlayerDeath", "fullteameliminationchecker", function( vic, info, 
     DeadTeamCheck()
 end )
 
-local function DeadTeamCheck()
+function DeadTeamCheck()
     if !GetGlobalBool( "GameInProgress" ) then return end
     
     print( "Somebody's died/disconnected!")

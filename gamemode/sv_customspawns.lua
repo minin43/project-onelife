@@ -30,10 +30,12 @@ function StartPlacement( ply )
 end
 
 function refreshspawns()
+	print( "RefreshSpawns function called..." )
 	local toApply = {}
 	local fi = file.Read( "onelife/spawns/" .. game.GetMap() .. ".txt", "DATA" )
 	local exp = string.Explode( "\n", fi )
 	for k, v in next, exp do
+		print( v )
 		local toAdd = util.JSONToTable( v )
 		table.insert( toApply, toAdd )
 	end

@@ -32,7 +32,7 @@ function RoundPrep( round )
     print( "All teams valid...")
     for k, v in pairs( player.GetAll() ) do
         v:Spawn()
-	    v:Lock()
+	    v:Freeze( true )
         v.CanCustomizeLoadout = true
         v:ConCommand( "tdm_spawnmenu" )
         print( "Spawning and locking: ", v )
@@ -60,7 +60,7 @@ function RoundBegin( round )
     --Unlocks all player movements but disallows kit customization
     print( "Round has started..." )
     for k, v in pairs( player.GetAll() ) do
-	    v:UnLock()
+	    v:Freeze( false )
         v.CanCustomizeLoadout = false
         print( "Unlocking: ", v )
     end

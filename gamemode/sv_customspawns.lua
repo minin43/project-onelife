@@ -30,21 +30,21 @@ function StartPlacement( ply )
 end
 
 function refreshspawns()
-	print( "RefreshSpawns function called..." )
 	local toApply = {}
 	local fi = file.Read( "onelife/spawns/" .. game.GetMap() .. ".txt", "DATA" )
 	local exp = string.Explode( "\n", fi )
 	for k, v in next, exp do
-		print( v )
 		local toAdd = util.JSONToTable( v )
 		table.insert( toApply, toAdd )
 	end
 	curSpawns = toApply
+	--The curSpawns table holds all of the spawn point information, with the team being it's first part and the vectors being it's second and onward
+	--This table is not yet team-specific and holds ALL team's spawn information
 	for k, v in next, player.GetAll() do
 		if v:GetNWBool( "placing" ) == true then
 			net.Start( "debug_showspawns" )
 				net.WriteTable( curSpawns )
-			net.Send( ply )
+			net.Send( v )
 		end
 	end
 end
@@ -72,7 +72,7 @@ function confirmpos( ply, point1, point2, t )
 	hook.Add( "PlayerButtonDown", "confirm", function( ply, key )
 		if ply.confirming and ply:GetNWBool( "placing" ) then
 			if key == KEY_ENTER then
-				file.Append( "tdm/spawns/" .. game.GetMap() .. ".txt", util.TableToJSON( { t, point1, point2 } ) .. "\n" )
+				file.Append( "onelife/spawns/" .. game.GetMap() .. ".txt", util.TableToJSON( { t, point1, point2 } ) .. "\n" )
 				ply:ChatPrint( "Points saved!" )
 				refreshspawns()
 				ply:SetNWVector( "firstpos", nl )
@@ -153,27 +153,36 @@ hook.Add( "PlayerButtonDown", "placement", function( ply, key )
 end )
 
 hook.Add( "PlayerSpawn", "OverrideSpawnLocations", function( ply )	
-	local availablespawns = false	
+	local availablespawns = false
+	--If curSpawns, the table holding all spawn locations, has a table of vectors with the table's first piece of information matching
+	--A team's own number, make availablespawns true
 	for k, v in next, curSpawns do
 		if v[ 1 ] == ply:Team() then
 			availablespawns = true
 			break
 		end
-	end		
-	if availablespawns == true then		
-		local tabspawns = {}			
+	end	
+	--If availablespawns is true, we know the player's team has spawns, so go ahead and take all of that team's spawn area information
+	--and give it to the tabspawns table. The format between the two tables remains the same
+	if availablespawns == true then	
+		local tabspawns = {}
 		for k, v in next, curSpawns do
 			if v[ 1 ] == ply:Team() then
 				table.insert( tabspawns, v )
 			end
-		end			
+		end	
+		--Should tabspawns have more than 1 table in it (because there are multiple spawn positions), go ahead and choose one at random.
+		--The new singular table is called tospawn
 		local tospawn = table.Random( tabspawns )
+		--Bounds 1 and 2 must be tospawn 2 and 3 because tospawn 1 is the team's number (which is 1, 2, or 3)
+		--These bounds are the 2 vectors in the tospawn table
 		local bound1 = tospawn[ 2 ]
 		local bound2 = tospawn[ 3 ]
 		local locationx = math.random( bound1.x, bound2.x )
 		local locationy = math.random( bound1.y, bound2.y )
-		local z = bound1.z + 5
-		local vec = Vector( locationx, locationy, z )		
+		local z = bound1.z + 5 
+		local vec = Vector( locationx, locationy, z )
+		--Above, "vec", is the initial guess of "where should I spawn the player," and since the spawning is random, this guess may have to be overwritten.
 		while true do
 			local en = ents.FindInSphere( vec, 40 )
 			local safe = true

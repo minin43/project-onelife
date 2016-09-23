@@ -1,8 +1,17 @@
 
 --OLD LAYOUT: { <weapon name>, <class>, <unlock level>, <world model>, <cost>, { <damage>, <accuracy>, <rate of fire> } }  
---NEW LAYOUT: { <weapon name>, <class>, <world model>, team#, { roles by level } }
+--NEW LAYOUT: { <weapon name>, <class>, <world model>, { roles by level } }
 
 primaries = {
+	["blue"] = {
+
+	}
+	["red"] = {
+
+	}
+	["shared"] = {
+
+	}
 	--[[{ "AK-74", 		"cw_ak74", 		0, 	"models/weapons/w_rif_ak47.mdl", 		0, 	{ 0, 0, 0} },
 	{ "AR-15", 		"cw_ar15", 		0, 	"models/weapons/w_rif_m4a1.mdl", 		0, 	{ 0, 0, 0} },
 	{ "G3A3", 		"cw_g3a3", 		0, 	"models/weapons/w_snip_g3sg1.mdl", 		0, 	{ 0, 0, 0} },
@@ -27,8 +36,25 @@ secondaries = {
 	{ "P99",			"cw_p99",		0,	"models/weapons/w_pist_p228.mdl",		0,   { 0, 0, 0 } }]]
 }
 
+--// Layout: "Equipment name", "equipment class", "equipment worldmodel", ""
 equipment = {
-	{ "F1 Frag", 	"", "", 1, { 2, 5, 7, 8 } },
+	["1"] = {
+		{ "M67 Frag", 	"", "", { 2, 5, 7, 8 } },
+		{ "C4", 		"", "", { 7 } },
+		{ "AT-4", 		"", "", { 5 } }
+	}
+	["2"] = {
+		{ "F1 Frag", 	"", "", { 2, 5, 7, 8 } },
+		{ "IED", 		"", "", { 7 } },
+		{ "RPG-7", 		"", "", { 5 } }
+	}
+	["3"] = {
+		{ "M18 Smoke", 	"", "", { 1, 2, 3, 4, 7, 8 } },
+		{ "M84 Flash", 	"", "", { 1, 2, 3, 7, 8 } },
+		{ "GP35", 		"", "", { 7 } },
+		{ "P2A1", 		"", "", { 1, 2, 3, 4, 5, 6, 7, 8 } } --This is the flare gun, for night maps, I guess...
+	}
+	--[[{ "F1 Frag", 	"", "", 1, { 2, 5, 7, 8 } },
 	{ "M67 Frag", 	"", "", 2, { 2, 5, 7, 8 } },
 	{ "M18 Smoke", 	"", "", 3, { 1, 2, 3, 4, 7, 8 } },
 	{ "M84 Flash", 	"", "", 3, { 1, 2, 3, 7, 8 } },
@@ -37,7 +63,7 @@ equipment = {
 	{ "AT-4", 		"", "", 2, { 5 } },
 	{ "RPG-7", 		"", "", 1, { 5 } },
 	{ "GP35", 		"", "", 3, { 7 } },
-	{ "P2A1", 		"", "", 3, { 1, 2, 3, 4, 5, 6, 7, 8 } } --This is the flare gun, for night maps, I guess...
+	{ "P2A1", 		"", "", 3, { 1, 2, 3, 4, 5, 6, 7, 8 } } --This is the flare gun, for night maps, I guess...]]
 }
 
 --// { "Blue Team Name", "Red Team Name", levelrequired, "Role Description" }

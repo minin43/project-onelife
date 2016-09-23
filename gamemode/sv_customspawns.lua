@@ -9,7 +9,8 @@ end
 util.AddNetworkString( "debug_showspawns" )
 
 local curSpawns = {}
-local nl = Vector( 0, 0, 0 )	
+local nl = Vector( 0, 0, 0 )
+local na = Angle( 0, 0, 0 )
 
 function StartPlacement( ply )
 	for k, v in next, player.GetAll() do
@@ -38,13 +39,15 @@ function refreshspawns()
 		table.insert( toApply, toAdd )
 	end
 	curSpawns = toApply
-	--The curSpawns table holds all of the spawn point information, with the team being it's first part and the vectors being it's second and onward
-	--This table is not yet team-specific and holds ALL team's spawn information
+	--The curSpawns table holds all of the spawn point information, with the team being it's first part and the vectors being it's second and third, 
+	--and the spawn's front direction it's fourth. This table is not yet team-specific and holds ALL team's spawn information.
 	for k, v in next, player.GetAll() do
-		if v:GetNWBool( "placing" ) == true then
-			net.Start( "debug_showspawns" )
-				net.WriteTable( curSpawns )
-			net.Send( v )
+		if v:IsSuperAdmin() then
+			if v:GetNWBool( "placing" ) == true then
+				net.Start( "debug_showspawns" )
+					net.WriteTable( curSpawns )
+				net.Send( v )
+			end
 		end
 	end
 end
@@ -62,29 +65,33 @@ function StopPlacement( ply )
 	ply:SetNWBool( "placing", false )
 	ply:SetNWVector( "firstpos", nl )
 	ply:SetNWVector( "secondpos", nl )
+	ply:SetNWVector( "forward", na )
 	ply:SetNWInt( "pos_team", 0 )
 	ply.selectteam = nil
 	ply.confirming = false
 end
 
-function confirmpos( ply, point1, point2, t )
+function confirmpos( ply, point1, point2, t, direction )
 	ply:ChatPrint( "Press ENTER to confirm these spawn positions, press BACKSPACE to cancel." )
 	hook.Add( "PlayerButtonDown", "confirm", function( ply, key )
 		if ply.confirming and ply:GetNWBool( "placing" ) then
 			if key == KEY_ENTER then
-				file.Append( "onelife/spawns/" .. game.GetMap() .. ".txt", util.TableToJSON( { t, point1, point2 } ) .. "\n" )
-				ply:ChatPrint( "Points saved!" )
+				local fixdir = AngFix( direction )
+				file.Append( "onelife/spawns/" .. game.GetMap() .. ".txt", util.TableToJSON( { t, point1, point2, fixdir } ) .. "\n" )
+				ply:ChatPrint( "Spawn saved!" )
 				refreshspawns()
 				ply:SetNWVector( "firstpos", nl )
 				ply:SetNWVector( "secondpos", nl )
+				ply:SetNWVector( "forward", na )
 				ply:SetNWInt( "pos_team", 0 )
 				ply.selectteam = nil
 				ply.confirming = false
 				ply:SendLua( [[surface.PlaySound( "garrysmod/ui_click.wav" )]] )
 			elseif key == KEY_BACKSPACE then
-				ply:ChatPrint( "Canceled point creation. Saved points cleared." )
+				ply:ChatPrint( "Canceled spawn creation. Saved points cleared." )
 				ply:SetNWVector( "firstpos", nl )
 				ply:SetNWVector( "secondpos", nl )
+				ply:SetNWVector( "forward", na )
 				ply:SetNWInt( "pos_team", 0 )
 				ply.selectteam = nil
 				ply.confirming = false
@@ -94,10 +101,29 @@ function confirmpos( ply, point1, point2, t )
 	end )
 end
 
+function AngFix( ang )
+	if !isangle( ang ) then return Angle( 0, 0, 0 ) end
+	local imp = ang.y
+	if imp < 0 then imp = imp + 360 end
+	if imp < 45 and imp >= 315 then
+		return Angle( 0, 0, 0 )
+	elseif imp >= 45 and imp < 135 then
+		return Angle( 0, 90, 0 )
+	elseif imp >= 135 and imp < 225 then
+		return Angle( 0, 180, 0 )
+	elseif imp >= 225 and imp < 315 then
+		return Angle( 0, 270, 0 )
+	else
+		return Angle( 0, 0, 0 )
+	end
+end
+
 hook.Add( "PlayerButtonDown", "placement", function( ply, key )
 	if ( not ply.selectteam ) and ply:GetNWBool( "placing" ) then
 		if key == MOUSE_LEFT then
 			local pos = ply:GetEyeTrace().HitPos
+			local dir = ply:GetAngles()
+			print( ply, "'s current angle: ", dir )
 			if ply:GetNWVector( "firstpos" ) == nl and ply:GetNWVector( "secondpos" ) == nl then
 				if pos then
 					ply:SetNWVector( "firstpos", pos )
@@ -107,13 +133,24 @@ hook.Add( "PlayerButtonDown", "placement", function( ply, key )
 				if pos then
 					ply:SetNWVector( "secondpos", pos )
 					ply:SendLua( [[surface.PlaySound( "garrysmod/ui_click.wav" )]] )
+					ply:ChatPrint( "Left click in any direction to choose the spawn's front direction." )
+				end
+			elseif ply:GetNWVector( "firstpos" ) ~= nl and ply:GetNWVector( "secondpos" ) ~= nl then
+				if dir then
+					ply:ChatPrint( "Set direction angle: ", dir )
+					ply:SetNWVector( "forward", dir )
+					ply:SendLua( [[surface.PlaySound( "garrysmod/ui_click.wav" )]] )
 					ply.selectteam = true
-					ply:ChatPrint( "Press 1 for red team spawn, or 2 for blue team spawn, or 3 for black team spawn." )
+					ply:ChatPrint( "Press 1 for red team spawn, 2 for blue team spawn, or 3 for black team spawn." )
 				end
 			end
 		elseif key == MOUSE_RIGHT then
 			if ply:GetNWVector( "firstpos" ) ~= nl and ply:GetNWVector( "secondpos" ) == nl then
 				ply:SetNWVector( "firstpos", nl )
+				ply:ChatPrint( "Undone location" )
+				ply:SendLua( [[surface.PlaySound( "garrysmod/ui_click.wav" )]] )
+			elseif ply:GetNWVector( "firstpos" ) ~= nl and ply:GetNWVector( "secondpos" ) ~= nl then
+				ply:SetNWVector( "secondpos", nl )
 				ply:ChatPrint( "Undone location" )
 				ply:SendLua( [[surface.PlaySound( "garrysmod/ui_click.wav" )]] )
 			end
@@ -124,29 +161,29 @@ hook.Add( "PlayerButtonDown", "placement", function( ply, key )
 	elseif ply.selectteam and ply:GetNWBool( "placing" ) then
 		if key == KEY_1 then
 			local k = 1
-			confirmpos( ply, ply:GetNWVector( "firstpos" ), ply:GetNWVector( "secondpos" ), 1 )
+			confirmpos( ply, ply:GetNWVector( "firstpos" ), ply:GetNWVector( "secondpos" ), 1, ply:GetNWVector( "forward" ) )
 			ply.confirming = true
 			ply:SendLua( [[surface.PlaySound( "garrysmod/ui_click.wav" )]] )
 			ply.selectteam = nil
 			ply:SetNWInt( "pos_team", 1 )
 		elseif key == KEY_2 then
 			local k = 2
-			confirmpos( ply, ply:GetNWVector( "firstpos" ), ply:GetNWVector( "secondpos" ), 2 )
+			confirmpos( ply, ply:GetNWVector( "firstpos" ), ply:GetNWVector( "secondpos" ), 2, ply:GetNWVector( "forward" ) )
 			ply.confirming = true
 			ply:SendLua( [[surface.PlaySound( "garrysmod/ui_click.wav" )]] )
 			ply.selectteam = nil
 			ply:SetNWInt( "pos_team", 2 )
 		elseif key == KEY_3 then
 			local k = 3
-			confirmpos( ply, ply:GetNWVector( "firstpos" ), ply:GetNWVector( "secondpos" ), 2 )
+			confirmpos( ply, ply:GetNWVector( "firstpos" ), ply:GetNWVector( "secondpos" ), 3, ply:GetNWVector( "forward" ) )
 			ply.confirming = true
 			ply:SendLua( [[surface.PlaySound( "garrysmod/ui_click.wav" )]] )
 			ply.selectteam = nil
 			ply:SetNWInt( "pos_team", 3 )
 		elseif key == MOUSE_RIGHT then
-			ply:SetNWVector( "secondpos", nl )
+			ply:SetNWVector( "forward", na )
 			ply.selectteam = false
-			ply:ChatPrint( "Undone location" )
+			ply:ChatPrint( "Undone front direction" )
 			ply:SendLua( [[surface.PlaySound( "garrysmod/ui_click.wav" )]] )
 		end
 	end
@@ -182,6 +219,7 @@ hook.Add( "PlayerSpawn", "OverrideSpawnLocations", function( ply )
 		local locationy = math.random( bound1.y, bound2.y )
 		local z = bound1.z + 5 
 		local vec = Vector( locationx, locationy, z )
+		local ang = tospawn[ 4 ]
 		--Above, "vec", is the initial guess of "where should I spawn the player," and since the spawning is random, this guess may have to be overwritten.
 		while true do
 			local en = ents.FindInSphere( vec, 40 )
@@ -197,6 +235,7 @@ hook.Add( "PlayerSpawn", "OverrideSpawnLocations", function( ply )
 			end
 			if safe then
 				ply:SetPos( vec )
+				ply:SetEyeAngles( ang )
 				break
 			end
 		end			

@@ -54,14 +54,6 @@ secondaries = {
 		--Intentionally left blank
 	}
 }
-	--[[{ "M1911",			"cw_m1911",		0,	"models/weapons/cw_pist_m1911.mdl",		0,   { 0, 0, 0 } },
-	{ "Deagle",			"cw_deagle",	0,	"models/weapons/w_pist_deagle.mdl",		0,   { 0, 0, 0 } },
-	{ "MR96",			"cw_mr96",		0,	"models/weapons/w_357.mdl",				0,   { 0, 0, 0 } },
-	{ "Five Seven",		"cw_fiveseven",	0,	"models/weapons/w_pist_fiveseven.mdl",	0,   { 0, 0, 0 } },
-	{ "MAC-11",			"cw_mac11",		0,	"models/weapons/w_cst_mac11.mdl",		0,   { 0, 0, 0 } },
-	{ "Makarov",		"cw_makarov",	0,	"models/cw2/pistols/w_makarov.mdl",		0,   { 0, 0, 0 } },
-	{ "P99",			"cw_p99",		0,	"models/weapons/w_pist_p228.mdl",		0,   { 0, 0, 0 } }]]
-}
 
 --// Layout: "Equipment name", "equipment class", "equipment worldmodel", ""
 equipment = {
@@ -171,6 +163,13 @@ end )
 net.Receive( "RequestRoles", function( len, ply )
 	net.Start( "RequestRolesCallback" )
 		net.WriteTable( roles )
+	net.Send( ply )
+end )
+
+--Sends a player's rank (obviously) for use with the Roles tables
+net.Receive( "GetRank", function( len, ply )
+	net.Start( "GetRankCallback" )
+		net.WriteString( tostring( lvl.GetLevel( ply ) ) )
 	net.Send( ply )
 end )
 

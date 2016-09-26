@@ -99,7 +99,10 @@ wep_att[ "cw_kk_ins2_revolver" ] = {
 
 net.Receive( "RequestAttachments"), function( len, ply )
     local wep = net.ReadString()
+    local i = id( ply:SteamID() )
+	local fil = util.JSONToTable( file.Read( "onelife/users/" .. i .. ".txt", "DATA" ) )
     net.Start( "RequestAttachmentsCallback" )
-        net.WriteTable( wep_att[wep] )
+        net.WriteTable( fil[ 2 ].wep ) --available attachments
+        net.WriteTable( wep_att[wep] ) --all attachments & their price
     net.Send( ply )
 end )

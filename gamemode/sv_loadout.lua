@@ -1,4 +1,4 @@
-util.AddNetworkString( "RequestWeapons" )
+--[[util.AddNetworkString( "RequestWeapons" )
 util.AddNetworkString( "RequestWeaponsCallback" )
 util.AddNetworkString( "RequestWeaponsList" )
 util.AddNetworkString( "RequestWeaponsListCallback" )
@@ -347,4 +347,4 @@ hook.Add( "PlayerDeath", "clearthings", function( ply )
 	ply.curprimary = nil
 	ply.cursecondary = nil
 	ply.curextra = nil
-end )
+end )]]

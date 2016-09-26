@@ -1,3 +1,5 @@
+--//TO BE PUT IN LOADOUT MENU - NO MORE OF THIS HUD BULLSHIT//--
+--[[
 currentlvl = -1
 currentexp = -1
 nextlvlexp = -1
@@ -10,7 +12,7 @@ net.Receive( "SendUpdate", function()
 	currentexp = exp
 	nextlvlexp = nextlvl
 end )	
---[[
+
 local x, y, w, h = 35, ScrH() - 120, 200, 20
 
 hook.Add( "HUDPaint", "lvl.DrawHud", function()
@@ -53,9 +55,9 @@ hook.Add( "HUDPaint", "lvl.DrawHud", function()
 	end
 
 end )
-]]
+
 timer.Create( "Refresh", 5, 0, function()
 	if currentlvl == -1 and currentexp == -1 and nextlvlexp == -1 then
 		RunConsoleCommand( "lvl_refresh" )
 	end
-end )
+end )]]

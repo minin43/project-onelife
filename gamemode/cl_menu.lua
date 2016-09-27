@@ -59,7 +59,7 @@ function Menu()
 	main:Center()
     main.Paint = function()
 		Derma_DrawBackgroundBlur( main, CurTime() )
-		surface.SetDrawColor( 0, 0, 0, 240 )
+		surface.SetDrawColor( 0, 0, 0, 245 )
         surface.DrawRect( 0, 0, main:GetWide(), main:GetTall() )
     end
 
@@ -67,7 +67,55 @@ function Menu()
 	tabs:SetPos( 0, 0 )
 	tabs:SetSize( main:GetWide(), 30 )
 
-	local rbutton1 = vgui.Create( "DButton", tabs )
+	net.Start( "RequestRoles" )
+	net.SendToServer()
+	net.Receive( "RequestRolesCallback", function()
+		roles = net.ReadTable()
+	end )
+
+	net.Start( "RequestLevel" )
+	net.SendToServer()
+	net.Receive( "RequestLevelCallback", function()
+		lvl = net.ReadInt()
+	end )
+	for k, v in pairs( roles ) do
+		local teamnumber = LocalPlayer():Team()
+		rbutton..k = vgui.Create( "DButton", tabs )
+		rbutton..k:SetSize( tabs:GetWide() / ( roles# + 1 ), tabs:GetTall() )
+		rbutton..k:SetPos( k * ( tabs:GetWide() / ( roles# + 1 ) ) - ( tabs:GetWide() / ( roles# + 1 ) ), 0 )
+		rbutton..k.Paint = function()
+			if lvl => k then
+				draw.SimpleText( roles[ k ].teamnumber, "insert_font_here", primariesbutton:GetWide() / 2, primariesbutton:GetTall() / 2, FontColor, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER )
+				return true --is this needed?
+			else
+				draw.SimpleText( "Locked", "insert_font_here", primariesbutton:GetWide() / 2, primariesbutton:GetTall() / 2, FontColor, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER )
+		end
+		rbutton..k.DoClick = function()
+			LocalPlayer():EmitSound( "buttons/button22.wav" ) --shouldn't this be surface.PlaySound?
+			hint:SetVisible( false )
+			if lvl => k then
+				tabs:SetActiveTab( role..k )
+			end
+		end
+
+		role..k = vgui.Create( "DPanel", main )
+		role..k:SetSize( main:GetWide(), main:GetTall() - tabs:GetTall() )
+		role..k:SetPos( 0, tabs:GetTall() )
+		role..k.Paint = function()
+			
+		end )
+		tabs:AddSheet( "Level"..k, role..k )
+	end
+
+	local spawn = vgui.Create( "DButton", tabs )
+	spawn:SetSize( tabs:GetWide() / ( roles# + 1 ), tabs:GetTall() )
+	spawn:SetPos( tabs:GetWide() - spawn:GetWide()) )
+	spawn:SetText( "Redeploy" )
+	spawn.DoClick = function()
+		main:Close()
+	end
+
+	--[[local rbutton1 = vgui.Create( "DButton", tabs )
 	rbutton1:SetSize( tabs:GetWide() / 9, tabs:GetTall() )
 	rbutton1:SetPos( 0, 0 )
 	rbutton1.Paint = function()
@@ -81,6 +129,7 @@ function Menu()
 		hint:SetVisible( false )
 	end
 	local rbutton2 = vgui.Create( "DButton", tabs )
+
 	local rbutton3 = vgui.Create( "DButton", tabs )
 	local rbutton4 = vgui.Create( "DButton", tabs )
 	local rbutton5 = vgui.Create( "DButton", tabs )
@@ -102,9 +151,7 @@ function Menu()
 	pages:AddSheet( "Level5", role5 )
 	pages:AddSheet( "Level6", role6 )
 	pages:AddSheet( "Level7", role7 )
-	pages:AddSheet( "Level8", role8 )
-
-	local
+	pages:AddSheet( "Level8", role8 )]]
 
 	--[[ --This is option 1 with 1 column and 3 jutting rows, kinda like "|=" but with 1 more row
 	--Role and player information column

@@ -83,14 +83,14 @@ equipment = {
 --// { "Blue Team Name", "Red Team Name", levelrequired, "Role Description" }
 --// Refer to this for future descriptions: http://insurgency.wikia.com/wiki/Insurgency
 roles = {
-	{ "Rifleman", 				"Militant", 	1, "Standard fighter, gets access to most weapon types but no frag grenade." },
-	{ "Reconnaissance", 		"Scout", 		2, "Lightly armored but fast-moving fighter, gets access to all short-range weaponry and all grenades." },
-	{ "Support", 				"Gunner", 		3, "Supportive fighter, gets access to LMGs and some long-distance DMRs, but no frag grenades." },
-	{ "Designated Marksman", 	"Sharpshooter", 4, "Lightly armored supportive fighter, gets access to all DMRs but no flash/frag grenades." },
-	{ "Demolitions", 			"Striker", 		5, "Heavily armored fighter, gets access to all launchers but no smoke/flash grenade." },
-	{ "Sniper", 				"Sniper", 		6, "Lightly armored supportive fighter, gets access to all sniper rifles but no grenades." },
-	{ "Breacher", 				"Sapper", 		7, "Medium armored supportive fighter, gets access to all throwable and remotely detonated explosives." },
-	{ "Specialist", 			"Expert", 		8, "Medium armored fighter, gets access to extra, unique weapons for proving themselves in battle." }
+	{ "Rifleman", 				"Militant", 	"Rifleman", 	"Standard fighter, gets access to most weapon types but no frag grenade." },
+	{ "Reconnaissance", 		"Scout", 		"Recon", 		"Lightly armored but fast-moving fighter, gets access to all short-range weaponry and all grenades." },
+	{ "Support", 				"Gunner", 		"Support", 		"Supportive fighter, gets access to LMGs and some long-distance DMRs, but no frag grenades." },
+	{ "Designated Marksman", 	"Sharpshooter", "Marksman", 	"Lightly armored supportive fighter, gets access to all DMRs but no flash/frag grenades." },
+	{ "Demolitions", 			"Striker", 		"Demolitions", 	"Heavily armored fighter, gets access to all launchers but no smoke/flash grenade." },
+	{ "Sniper", 				"Sniper", 		"Sniper", 		"Lightly armored supportive fighter, gets access to all sniper rifles but no grenades." },
+	{ "Breacher", 				"Sapper", 		"Breacher", 	"Medium armored supportive fighter, gets access to all throwable and remotely detonated explosives." },
+	{ "Specialist", 			"Expert", 		"Specialist", 	"Medium armored fighter, gets access to extra, unique weapons for proving themselves in battle." }
 }
 
 local models = { }

@@ -83,6 +83,13 @@ function lvl.CheckLvlUp( ply )
 		end
 	end
 end
+
+net.Receive( "RequestLevel", function( len, ply )
+	net.Start( "RequestLevelCallback" )
+		net.WriteInt( ply:GetLevel() )
+	net.Send( ply )
+end )
+
 	
 hook.Add( "PlayerInitialSpawn", "lvl.SendInitialLevel", function( ply )
 	timer.Simple( 5, function()

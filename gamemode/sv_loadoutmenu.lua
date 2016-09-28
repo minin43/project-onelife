@@ -7,6 +7,7 @@ util.AddNetworkString( "RequestRolesCallback" )
 util.AddNetworkString( "GetRank" )
 util.AddNetworkString( "GetRankCallback" )
 
+
 --OLD LAYOUT: { <weapon name>, <class>, <unlock level>, <world model>, <cost>, { <damage>, <accuracy>, <rate of fire> } }  
 --NEW LAYOUT: { <weapon name>, <class>, { roles by level } }
 --{ ["name"] = "", 			["class"] = "", 		["roles"] = { 0 } }
@@ -145,7 +146,7 @@ local function TeamThree()
 		end
 	end
 end
-hook.Add( "to-do hook", "TeamThree", TeamThree() )
+--hook.Add( "to-do hook", "TeamThree", TeamThree() )
 
 --Sends a table of all the weapon models for instant precaching on the client
 net.Receive( "RequestWeaponModels", function( len, ply )
@@ -168,13 +169,9 @@ end )
 
 --Sends a table of all roles (we can't seperate this base on team because of the table's structure)
 net.Receive( "RequestRoles", function( len, ply )
-	print( "RequestRoles called")
-	local well = net.Start( "RequestRolesCallback" )
-		print( "Stating RequestRolesCallback")
-		PrintTable( roles )
+	net.Start( "RequestRolesCallback" )
 		net.WriteTable( roles )
 	net.Send( ply )
-	print( "Did it call?", well )
 end )
 
 --Sends a player's rank (obviously) for use with the Roles tables
@@ -254,7 +251,6 @@ function CheckWeapons( ply )
 end
 
 hook.Add( "PlayerButtonDown", "DropWeapons", function( ply, bind ) 
-	print("test")
 	if bind == KEY_Q then
 		if not ply.CanCustomizeLoadout then
 			if ply and IsValid( ply ) and ply:IsPlayer() and ply:Alive() then

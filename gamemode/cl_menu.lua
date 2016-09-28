@@ -68,18 +68,21 @@ function Menu()
 	tabs:SetSize( main:GetWide(), 30 )
 
 	--//Can be found in sv_loadoutmenu.lua
+	local roles = { }
 	net.Start( "RequestRoles" )
 	net.SendToServer()
 	net.Receive( "RequestRolesCallback", function()
-		roles = net.ReadTable()
+		r = net.ReadTable()
+		roles = r
 	end )
-	print( roles )
 
 	--//Can be found in sv_lvlhandler.lua
+	local lvl
 	net.Start( "RequestLevel" )
 	net.SendToServer()
 	net.Receive( "RequestLevelCallback", function()
-		lvl = net.ReadInt( 8 )
+		l = net.ReadInt( 8 ) or 1
+		lvl = l
 	end )
 
 	for k, v in pairs( roles ) do

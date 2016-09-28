@@ -1,4 +1,6 @@
 util.AddNetworkString( "SendUpdate" )
+util.AddNetworkString( "RequestLevel" )
+util.AddNetworkString( "RequestLevelCallback" )
 
 lvl = {}
 
@@ -85,8 +87,9 @@ function lvl.CheckLvlUp( ply )
 end
 
 net.Receive( "RequestLevel", function( len, ply )
+	local level = lvl.GetLevel( ply ) or 1
 	net.Start( "RequestLevelCallback" )
-		net.WriteInt( ply:GetLevel() )
+		net.WriteInt( level, 8 )
 	net.Send( ply )
 end )
 

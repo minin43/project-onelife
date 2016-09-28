@@ -1,10 +1,18 @@
+util.AddNetworkString( "RequestWeaponModels" )
+util.AddNetworkString( "RequestWeaponModelsCallback" )
+util.AddNetworkString( "RequestWeapons" )
+util.AddNetworkString( "RequestWeaponsCallback" )
+util.AddNetworkString( "RequestRoles" )
+util.AddNetworkString( "RequestRolesCallback" )
+util.AddNetworkString( "GetRank" )
+util.AddNetworkString( "GetRankCallback" )
 
 --OLD LAYOUT: { <weapon name>, <class>, <unlock level>, <world model>, <cost>, { <damage>, <accuracy>, <rate of fire> } }  
 --NEW LAYOUT: { <weapon name>, <class>, { roles by level } }
 --{ ["name"] = "", 			["class"] = "", 		["roles"] = { 0 } }
 
 primaries = {
-	["1"] = {
+	[1] = {
 		{ ["name"] = "AK-74", 			["class"] = "cw_kk_ins2_ak74", 		["roles"] = { 5, 8 } },
 		{ ["name"] = "AKM", 			["class"] = "cw_kk_ins2_akm", 		["roles"] = { 1, 2, 3, 4, 5, 6, 7, 8 } },
 		{ ["name"] = "AKS-74u", 		["class"] = "cw_kk_ins2_aks74u", 	["roles"] = { 2, 8 } },
@@ -17,8 +25,8 @@ primaries = {
 		{ ["name"] = "SKS", 			["class"] = "cw_kk_ins2_sks", 		["roles"] = { 4, 6 } },
 		{ ["name"] = "Sterling", 		["class"] = "cw_kk_ins2_sterling", 	["roles"] = { 2, 7 } },
 		{ ["name"] = "TOZ", 			["class"] = "cw_kk_ins2_toz", 		["roles"] = { 2, 5, 8 } }
-	}
-	["2"] = {
+	},
+	[2] = {
 		{ ["name"] = "AC-556", 		["class"] = "cw_kk_ins2_mini14", 			["roles"] = { 5, 7 } },
 		{ ["name"] = "Galil", 		["class"] = "cw_kk_ins2_galil", 			["roles"] = { 1, 5 } },
 		{ ["name"] = "Galil ACE", 	["class"] = "cw_kk_ins2_cstm_galil_ace", 	["roles"] = { 8 } },
@@ -32,32 +40,32 @@ primaries = {
 		{ ["name"] = "M4A1", 		["class"] = "cw_kk_ins2_m4a1", 				["roles"] = { 5, 7 } },
 		{ ["name"] = "M590", 		["class"] = "cw_kk_ins2_m590", 				["roles"] = { 2, 8 } },
 		{ ["name"] = "MK18", 		["class"] = "cw_kk_ins2_mk18", 				["roles"] = { 8 } }
-	}
-	["3"] = {
+	},
+	[3] = {
 		--Intentionally left blank
 	}
 }
 
 
 secondaries = {
-	["1"] = {
+	[1] = {
 		{ ["name"] = "M1911", 		["class"] = "cw_kk_ins2_m1911", 	["roles"] = { 1, 2, 3, 4, 5, 6, 7, 8 } },
 		{ ["name"] = "Makarov", 	["class"] = "cw_kk_ins2_makarov", 	["roles"] = { 1, 2, 3, 4, 5, 6, 7, 8 } },
 		{ ["name"] = "Model 10", 	["class"] = "cw_kk_ins2_revolver", 	["roles"] = { 1, 2, 3, 4, 5, 6, 7, 8 } }
-	}
-	["2"] = {
+	},
+	[2] = {
 		{ ["name"] = "Beretta M9", 	["class"] = "cw_kk_ins2_m9", 		["roles"] = { 1, 2, 3, 4, 5, 6, 7, 8 } },
 		{ ["name"] = "M45", 		["class"] = "cw_kk_ins2_m45", 		["roles"] = { 1, 2, 3, 4, 5, 6, 7, 8 } },
 		{ ["name"] = "Model 10", 	["class"] = "cw_kk_ins2_revolver", 	["roles"] = { 1, 2, 3, 4, 5, 6, 7, 8 } }
-	}
-	["3"] = {
+	},
+	[3] = {
 		--Intentionally left blank
 	}
 }
 
 --// Layout: "Equipment name", "equipment class", "equipment worldmodel", ""
 equipment = {
-	["1"] = {
+	[1] = {
 		{ ["name"] = "F1 Frag", 	["class"] = "cw_kk_ins2_nade_f1", 	["roles"] = { 2, 5, 7, 8 } },
 		{ ["name"] = "IED", 		["class"] = "cw_kk_ins2_nade_ied", 	["roles"] = { 7 } },
 		{ ["name"] = "RPG-7", 		["class"] = "cw_kk_ins2_rpg", 		["roles"] = { 5 } },
@@ -65,8 +73,8 @@ equipment = {
 		{ ["name"] = "M84 Flash", 	["class"] = "cw_kk_ins2_nade_m84", 	["roles"] = { 1, 2, 3, 7, 8 } },
 		{ ["name"] = "GP35", 		["class"] = "cw_kk_ins2_gp25", 		["roles"] = { 7 } },
 		{ ["name"] = "P2A1", 		["class"] = "cw_kk_ins2_p2a1", 		["roles"] = { 1, 2, 3, 4, 5, 6, 7, 8 } } --This is the flare gun, for night maps, I guess
-	}
-	["2"] = {
+	},
+	[2] = {
 		{ ["name"] = "M67 Frag", 	["class"] = "cw_kk_ins2_nade_m67", 	["roles"] = { 2, 5, 7, 8 } },
 		{ ["name"] = "C4", 			["class"] = "cw_kk_ins2_nade_c4", 	["roles"] = { 7 } },
 		{ ["name"] = "AT-4", 		["class"] = "cw_kk_ins2_at4", 		["roles"] = { 5 } },
@@ -74,8 +82,8 @@ equipment = {
 		{ ["name"] = "M84 Flash", 	["class"] = "cw_kk_ins2_nade_m84", 	["roles"] = { 1, 2, 3, 7, 8 } },
 		{ ["name"] = "GP35", 		["class"] = "cw_kk_ins2_gp25", 		["roles"] = { 7 } },
 		{ ["name"] = "P2A1", 		["class"] = "cw_kk_ins2_p2a1", 		["roles"] = { 1, 2, 3, 4, 5, 6, 7, 8 } } --This is the flare gun, for night maps, I guess
-	}
-	["3"] = {
+	},
+	[3] = {
 		--Intentionally left blank
 	}
 }
@@ -131,7 +139,7 @@ local function TeamThree()
 	end
 	for k, v in pairs( equipment ) do
 		for k2, v2 in pairs( v ) do
-			if !table.HasValue( equipment[3], v2 )
+			if !table.HasValue( equipment[3], v2 ) then
 				table.insert( equipment[3], v2 )
 			end
 		end
@@ -156,14 +164,17 @@ net.Receive( "RequestWeapons", function( len, ply )
 		net.WriteTable( secondaries[team] )
 		net.WriteTable( equipment[team] )
 	net.Send( ply )
-	end
 end )
 
 --Sends a table of all roles (we can't seperate this base on team because of the table's structure)
 net.Receive( "RequestRoles", function( len, ply )
-	net.Start( "RequestRolesCallback" )
+	print( "RequestRoles called")
+	local well = net.Start( "RequestRolesCallback" )
+		print( "Stating RequestRolesCallback")
+		PrintTable( roles )
 		net.WriteTable( roles )
 	net.Send( ply )
+	print( "Did it call?", well )
 end )
 
 --Sends a player's rank (obviously) for use with the Roles tables
@@ -211,39 +222,39 @@ function isEquipment( class )
 end
 
 function CheckWeapons( ply )
-		if v and v ~= NULL and IsValid( v ) and v:Alive() then
-			local tab = v:GetWeapons()
-			if tab then
-				local foundp = false
-				local founds = false
-				local founde = false
-				for k2, v2 in next, tab do
-					if isPrimary( v2:GetClass() ) then
-						v.curprimary = v2:GetClass()
-						foundp = true
-					elseif isSecondary( v2:GetClass() ) then
-						v.cursecondary = v2:GetClass() 
-						founds = true
-					elseif isEquipment( v2:GetClass() ) then
-						v.curequipment = v2:GetClass()
-						founde = true
-					end
+	if v and v ~= NULL and IsValid( v ) and v:Alive() then
+		local tab = v:GetWeapons()
+		if tab then
+			local foundp = false
+			local founds = false
+			local founde = false
+			for k2, v2 in next, tab do
+				if isPrimary( v2:GetClass() ) then
+					v.curprimary = v2:GetClass()
+					foundp = true
+				elseif isSecondary( v2:GetClass() ) then
+					v.cursecondary = v2:GetClass() 
+					founds = true
+				elseif isEquipment( v2:GetClass() ) then
+					v.curequipment = v2:GetClass()
+					founde = true
 				end
-				if foundp == false then
-					v.curprimary = nil
-				end
-				if founds == false then
-					v.cursecondary = nil
-				end
-				if founde == false then
-					v.curequipment = nil
-				end
+			end
+			if foundp == false then
+				v.curprimary = nil
+			end
+			if founds == false then
+				v.cursecondary = nil
+			end
+			if founde == false then
+				v.curequipment = nil
 			end
 		end
 	end
 end
 
 hook.Add( "PlayerButtonDown", "DropWeapons", function( ply, bind ) 
+	print("test")
 	if bind == KEY_Q then
 		if not ply.CanCustomizeLoadout then
 			if ply and IsValid( ply ) and ply:IsPlayer() and ply:Alive() then
@@ -253,8 +264,8 @@ hook.Add( "PlayerButtonDown", "DropWeapons", function( ply, bind )
 	end
 end )
 
-hook.Add( "AllowPlayerPickup" "CheckPickups", function( ply, ent )
-	if !ent:IsWeapon then return end
+hook.Add( "AllowPlayerPickup", "CheckPickups", function( ply, ent )
+	if !ent:IsWeapon() then return false end
 	CheckWeapons( ply )
 	if isPrimary( wep:GetClass() ) then
 		if ply.curprimary == nil then
@@ -298,3 +309,5 @@ hook.Add( "PlayerDeath", "clearthings", function( ply )
 	ply.cursecondary = nil
 	ply.curequipment = nil
 end )
+
+return true

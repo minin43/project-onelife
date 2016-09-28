@@ -67,52 +67,59 @@ function Menu()
 	tabs:SetPos( 0, 0 )
 	tabs:SetSize( main:GetWide(), 30 )
 
+	--//Can be found in sv_loadoutmenu.lua
 	net.Start( "RequestRoles" )
 	net.SendToServer()
 	net.Receive( "RequestRolesCallback", function()
 		roles = net.ReadTable()
 	end )
+	print( roles )
 
+	--//Can be found in sv_lvlhandler.lua
 	net.Start( "RequestLevel" )
 	net.SendToServer()
 	net.Receive( "RequestLevelCallback", function()
-		lvl = net.ReadInt()
+		lvl = net.ReadInt( 8 )
 	end )
+
 	for k, v in pairs( roles ) do
 		local teamnumber = LocalPlayer():Team()
-		rbutton..k = vgui.Create( "DButton", tabs )
-		rbutton..k:SetSize( tabs:GetWide() / ( roles# + 1 ), tabs:GetTall() )
-		rbutton..k:SetPos( k * ( tabs:GetWide() / ( roles# + 1 ) ) - ( tabs:GetWide() / ( roles# + 1 ) ), 0 )
-		rbutton..k.Paint = function()
-			if lvl => k then
+		
+		local rbutton = vgui.Create( "DButton", tabs )
+		rbutton:SetSize( tabs:GetWide() / ( #roles + 1 ), tabs:GetTall() )
+		rbutton:SetPos( k * ( tabs:GetWide() / ( #roles + 1 ) ) - ( tabs:GetWide() / ( #roles + 1 ) ), 0 )
+		rbutton.Paint = function()
+			if lvl >= k then
 				draw.SimpleText( roles[ k ].teamnumber, "insert_font_here", primariesbutton:GetWide() / 2, primariesbutton:GetTall() / 2, FontColor, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER )
 				return true --is this needed?
 			else
 				draw.SimpleText( "Locked", "insert_font_here", primariesbutton:GetWide() / 2, primariesbutton:GetTall() / 2, FontColor, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER )
 		end
-		rbutton..k.DoClick = function()
+		rbutton.DoClick = function()
 			LocalPlayer():EmitSound( "buttons/button22.wav" ) --shouldn't this be surface.PlaySound?
 			hint:SetVisible( false )
-			if lvl => k then
-				tabs:SetActiveTab( role..k )
+			if lvl >= k then
+				tabs:SetActiveTab( role )
 			end
 		end
 
-		role..k = vgui.Create( "DPanel", main )
-		role..k:SetSize( main:GetWide(), main:GetTall() - tabs:GetTall() )
-		role..k:SetPos( 0, tabs:GetTall() )
-		role..k.Paint = function()
+		role = vgui.Create( "DPanel", main )
+		role:SetSize( main:GetWide(), main:GetTall() - tabs:GetTall() )
+		role:SetPos( 0, tabs:GetTall() )
+		role.Paint = function()
 			
-		end )
-		tabs:AddSheet( "Level"..k, role..k )
+		end
+		tabs:AddSheet( "Level", role )
 	end
 
 	local spawn = vgui.Create( "DButton", tabs )
-	spawn:SetSize( tabs:GetWide() / ( roles# + 1 ), tabs:GetTall() )
-	spawn:SetPos( tabs:GetWide() - spawn:GetWide()) )
+	spawn:SetSize( tabs:GetWide() / ( #roles + 1 ), tabs:GetTall() )
+	spawn:SetPos( tabs:GetWide() - spawn:GetWide() )
 	spawn:SetText( "Redeploy" )
 	spawn.DoClick = function()
 		main:Close()
+	end
+
 	end
 
 	--[[local rbutton1 = vgui.Create( "DButton", tabs )

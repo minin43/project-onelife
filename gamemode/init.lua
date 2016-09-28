@@ -15,7 +15,7 @@ include( "player.lua" )
 include( "sv_attachmenthandler.lua")
 include( "sv_bombs.lua" )
 include( "sv_lvlhandler.lua" )
-include( "sv_loadoutmenu.lua" )
+local loadoutmenu = include( "sv_loadoutmenu.lua" )
 include( "sv_stattrak.lua" )
 include( "sv_moneyhandler.lua" )
 include( "sv_feed.lua" )
@@ -24,6 +24,8 @@ include( "sv_customspawns.lua" )
 include( "sv_leaderboards.lua" )
 include( "sv_roundhandler.lua" )
 include( "sv_playerhandler.lua" )
+
+print( loadoutmenu )
 
 for k, v in pairs( file.Find( "onelife/gamemode/perks/*.lua", "LUA" ) ) do
 	include( "/perks/" .. v )

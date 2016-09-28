@@ -97,7 +97,10 @@ wep_att[ "cw_kk_ins2_revolver" ] = {
     { "", 10 },
 }
 
-net.Receive( "RequestAttachments"), function( len, ply )
+util.AddNetworkString( "RequestAttachments" )
+util.AddNetworkString( "RequestAttachmentsCallback" )
+
+net.Receive( "RequestAttachments", function( len, ply )
     local wep = net.ReadString()
     local i = id( ply:SteamID() )
 	local fil = util.JSONToTable( file.Read( "onelife/users/" .. i .. ".txt", "DATA" ) )

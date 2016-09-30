@@ -34,7 +34,7 @@ function RoundPrep( round )
         v:Spawn()
 	    v:Freeze( true )
         v.CanCustomizeLoadout = true
-        v:ConCommand( "tdm_spawnmenu" )
+        v:ConCommand( "pol_menu" )
         print( "Spawning and locking: ", v )
     end
     

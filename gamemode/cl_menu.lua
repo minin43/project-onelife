@@ -10,8 +10,13 @@ https://wiki.garrysmod.com/page/surface/CreateFont
 local bought = Material( "tdm/ic_done_white_24dp.png", "noclamp smooth" )
 https://wiki.garrysmod.com/page/Global/Material
 
-
 ]]
+
+surface.CreateFont( "Exo 2 Tab", {
+	font = "Exo 2",
+	size = 20,
+	weight = 500
+} )
 
 -- http://lua-users.org/wiki/FormattingNumbers
 local function comma_value( amount )
@@ -25,10 +30,70 @@ local function comma_value( amount )
 	return formatted
 end
 
-function Menu()
-    local CurrentLevel = 0
-	local currentTeam = LocalPlayer():Team()
-	local TeamColor, FontColor
+local roles, models, primaries, secondaries, equipment = { }, = { }, = { }, = { }, = { }, = { }, = { }
+local lvl, money
+function GetData()
+	--//Can be found in sv_loadoutmenu.lua
+	net.Start( "RequestWeaponModels" )
+	net.SendToServer()
+	net.Receive( "RequestWeaponModelsCallback", function()
+		local m = net.ReadTable()
+		for k, v in pairs( m ) do
+			util.PrecacheModel( v )
+		end
+	end )
+
+	net.Start( "RequestWeapons" )
+	net.SendToServer()
+	net.Receive( "RequestWeaponsCallback", function()
+		local p = net.ReadTable()
+		local s = net.ReadTable()
+		local e = net.ReadTable()
+		primaries = p
+		secondaries = s
+		equipment = e
+	end )
+
+	net.Start( "RequestRoles" )
+	net.SendToServer()
+	net.Receive( "RequestRolesCallback", function()
+		local r = net.ReadTable()
+		roles = r
+	end )
+
+	--//Can be found in sv_lvlhandler.lua
+	net.Start( "RequestLevel" )
+	net.SendToServer()
+	net.Receive( "RequestLevelCallback", function()
+		local l = net.ReadInt( 8 ) or 1
+		lvl = l
+	end )
+
+	--//Can be found in sv_moneyhandler.lua
+	net.Start( "RequestMoney" )
+	net.SendToServer()
+	net.Receive( "RequestMoneyCallback", function()
+	local num = tonumber( net.ReadString() )
+	money = num
+	end )
+end
+
+function GetAttachData( wep )
+	--//Can be found in sv_attachmenthandler.lua
+	net.Start( "RequestAttachments" )
+		net.WriteString( wep )
+	net.SendToServer()
+	net.Receive( "RequestAttachmentsCallback", function()
+		local av = net.ReadTable() --this table is all of the player's bought attachments,  { ["wep_class"] = { ["attachment"] = "attachmenttype" }
+		local at = net.ReadTable() --the key is the attachment name, v is a table of the attachment's type and attachment's price
+	end )
+end
+
+local CurrentLevel = 0
+local currentTeam = LocalPlayer():Team()
+local TeamColor, FontColor
+function LoadoutMenu()
+	GetData()
 
     if LocalPlayer().CanCustomizeLoadout == false then
         return
@@ -36,18 +101,13 @@ function Menu()
 
 	if currentTeam == 0 then --???
 		TeamColor = Color( 255, 255, 255 )
-		FontColor = Color( 255, 255, 255 )
 	elseif currentTeam == 1 then --red
 		TeamColor = Color( 100, 15, 15 )
-		FontColor = Color( 255, 255, 255 )
 	elseif currentTeam == 2 then --blue
-		TeamColor = Color( 15, 15, 160 )
-		FontColor = Color( 255, 255, 255 )
+		TeamColor = Color( 33, 150, 243, 100 )
     elseif currentTeam == 3 then --black/FFA
         TeamColor = Color( 15, 160, 15 )
-        FontColor = Color( 0, 0, 0 )
 	end
-
 
     main = vgui.Create( "DFrame" )
 	main:SetSize( ScrW() - 70, ScrH() - 70 )
@@ -59,60 +119,51 @@ function Menu()
 	main:Center()
     main.Paint = function()
 		Derma_DrawBackgroundBlur( main, CurTime() )
-		surface.SetDrawColor( 0, 0, 0, 245 )
+		surface.SetDrawColor( 0, 0, 0, 250 )
         surface.DrawRect( 0, 0, main:GetWide(), main:GetTall() )
     end
 
 	local tabs = vgui.Create( "DPanel", main )
 	tabs:SetPos( 0, 0 )
 	tabs:SetSize( main:GetWide(), 30 )
+	tabs.Paint = function()
+        surface.SetDrawColor( TeamColor )
+        surface.DrawRect( 0, 0, tabs:GetWide(), tabs:GetTall() )
+    end
 
-	--//Can be found in sv_loadoutmenu.lua
-	local roles = { }
-	net.Start( "RequestRoles" )
-	net.SendToServer()
-	net.Receive( "RequestRolesCallback", function()
-		r = net.ReadTable()
-		roles = r
-	end )
-
-	--//Can be found in sv_lvlhandler.lua
-	local lvl
-	net.Start( "RequestLevel" )
-	net.SendToServer()
-	net.Receive( "RequestLevelCallback", function()
-		l = net.ReadInt( 8 ) or 1
-		lvl = l
-	end )
-
+	local button = { }
+	local role = { }
 	for k, v in pairs( roles ) do
 		local teamnumber = LocalPlayer():Team()
-		
-		local rbutton = vgui.Create( "DButton", tabs )
-		rbutton:SetSize( tabs:GetWide() / ( #roles + 1 ), tabs:GetTall() )
-		rbutton:SetPos( k * ( tabs:GetWide() / ( #roles + 1 ) ) - ( tabs:GetWide() / ( #roles + 1 ) ), 0 )
-		rbutton.Paint = function()
+	
+		button[ v[ teamnumber ] ] = vgui.Create( "DButton", tabs )
+		button[ v[ teamnumber ] ]:SetSize( tabs:GetWide() / ( #roles + 1 ), tabs:GetTall() )
+		button[ v[ teamnumber ] ]:SetPos( k * ( tabs:GetWide() / ( #roles + 1 ) ) - ( tabs:GetWide() / ( #roles + 1 ) ), 0 )
+		button[ v[ teamnumber ] ]:SetText( "" )
+		button[ v[ teamnumber ] ].Paint = function()
 			if lvl >= k then
-				draw.SimpleText( roles[ k ].teamnumber, "insert_font_here", primariesbutton:GetWide() / 2, primariesbutton:GetTall() / 2, FontColor, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER )
-				return true --is this needed?
+				draw.SimpleText( v[ teamnumber ], "Exo 2 Tab", button[ v[ teamnumber ] ]:GetWide() / 2, button[ v[ teamnumber ] ]:GetTall() / 2, FontColor, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER )
 			else
-				draw.SimpleText( "Locked", "insert_font_here", primariesbutton:GetWide() / 2, primariesbutton:GetTall() / 2, FontColor, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER )
+				draw.SimpleText( "Locked", "Exo 2 Tab", button[ v[ teamnumber ] ]:GetWide() / 2, button[ v[ teamnumber ] ]:GetTall() / 2, FontColor, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER )
+			end
 		end
-		rbutton.DoClick = function()
-			LocalPlayer():EmitSound( "buttons/button22.wav" ) --shouldn't this be surface.PlaySound?
-			hint:SetVisible( false )
+		button[ v[ teamnumber ] ].DoClick = function()
+			print( "button[ v[ teamnumber ] ].DoClick called" )
 			if lvl >= k then
 				tabs:SetActiveTab( role )
+				LocalPlayer():EmitSound( "buttons/button22.wav" ) --shouldn't this be surface.PlaySound?
+				print( "Setting active tab # " )
 			end
 		end
 
-		role = vgui.Create( "DPanel", main )
-		role:SetSize( main:GetWide(), main:GetTall() - tabs:GetTall() )
-		role:SetPos( 0, tabs:GetTall() )
-		role.Paint = function()
-			
+		role[ v[ teamnumber ] ] = vgui.Create( "DPanel", main )
+		role[ v[ teamnumber ] ]:SetSize( main:GetWide(), main:GetTall() - tabs:GetTall() )
+		role[ v[ teamnumber ] ]:SetPos( 0, tabs:GetTall() )
+		role[ v[ teamnumber ] ].Paint = function()
+
 		end
-		tabs:AddSheet( "Level", role )
+				
+		tabs:AddSheet( "Level", role[ v[ teamnumber ] ] )
 	end
 
 	local spawn = vgui.Create( "DButton", tabs )
@@ -122,6 +173,7 @@ function Menu()
 	spawn.DoClick = function()
 		main:Close()
 	end
+	
 
 	end
 

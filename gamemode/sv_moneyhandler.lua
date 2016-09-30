@@ -65,16 +65,25 @@ net.Receive( "RequestMoney", function( len, ply )
 end )
 
 net.Receive( "BuyAttachment", function( len, ply )
-	local parent = net.ReadString() --Make sure parent gets added to the client file
-	local attach = net.ReadString()
+	local parentwep = net.ReadString() --Make sure parent gets added to the client file
+	local attachment = net.ReadString()
+	local attachmenttype = net.ReadString()
 	local price = tonumber( net.ReadString() )
+	local file = util.JSONToTable( file.Read( "onelife/users/" .. id( ply:SteamID() ) .. ".txt", "DATA" ) )
+	local parentweptable = file[ parentwep ]
+	--file = { ["wep_class"] = { ["attachment"] = "attachmenttype" }
+		
+
+	table.insert( parentweptable, attachment, attachmenttype )
+	table.Empty( file[ parentwep ] )
+	table.insert( file[ parentwep ], parentweptable )
+
+	local newfile = util.TableToJSON( file ) --{ file[ 1 ], currentattachments } )
+	file.Write( "onelife/users/" .. id( ply:SteamID() ) .. ".txt", newfile ) --Do we have to send the client any additional info?
+
 	price = -price
 	AddMoney( ply, price )
-	local tab = util.JSONToTable( file.Read( "onelife/users/" .. id( ply:SteamID() ) .. ".txt", "DATA" ) )
-	local attachtab = tab[ 2 ]
-	table.insert( attachtab[ parent ], attach )
-	local new = util.TableToJSON( { tab[ 1 ], attachtab } )
-	file.Write( "onelife/users/" .. id( ply:SteamID() ) .. ".txt", new ) --Do we have to send the client any additional info?
+
 	timer.Simple( 0.1, function()
 		local cur = GetMoney( ply )
 		net.Start( "BuyAttachmentCallback" )

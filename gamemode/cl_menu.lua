@@ -131,8 +131,7 @@ function LoadoutMenu()
         surface.DrawRect( 0, 0, tabs:GetWide(), tabs:GetTall() )
     end
 
-	local button = { }
-	local role = { }
+	local button, role, roledescription = { }, = { }, = { }
 	for k, v in pairs( roles ) do
 		local teamnumber = LocalPlayer():Team()
 	
@@ -150,20 +149,21 @@ function LoadoutMenu()
 		button[ v[ teamnumber ] ].DoClick = function()
 			print( "button[ v[ teamnumber ] ].DoClick called" )
 			if lvl >= k then
-				tabs:SetActiveTab( role )
+				tabs:SetActiveTab( page )
 				LocalPlayer():EmitSound( "buttons/button22.wav" ) --shouldn't this be surface.PlaySound?
 				print( "Setting active tab # " )
 			end
 		end
 
-		role[ v[ teamnumber ] ] = vgui.Create( "DPanel", main )
-		role[ v[ teamnumber ] ]:SetSize( main:GetWide(), main:GetTall() - tabs:GetTall() )
-		role[ v[ teamnumber ] ]:SetPos( 0, tabs:GetTall() )
-		role[ v[ teamnumber ] ].Paint = function()
+		page[ v[ teamnumber ] ] = vgui.Create( "DPanel", main )
+		page[ v[ teamnumber ] ]:SetSize( main:GetWide(), main:GetTall() - tabs:GetTall() )
+		page[ v[ teamnumber ] ]:SetPos( 0, tabs:GetTall() )
 
-		end
+		roledescription[ v[ teamnumber ] ] = vgui.Create( "DPanel", page )
+		roledescription[ v[ teamnumber ] ]:SetSize( page[ v[ teamnumber ] ]:GetWide() / 3, page[ v[ teamnumber ] ]:GetTall() / 3 )
+		roledescription[ v[ teamnumber ] ]:SetPos( v[ teamnumber ] ]:GetWide() - ( v[ teamnumber ] ]:GetWide() / 3 ), page[ v[ teamnumber ] ]:GetTall() - ( page[ v[ teamnumber ] ]:GetTall() / 3) )
 				
-		tabs:AddSheet( "Level", role[ v[ teamnumber ] ] )
+		tabs:AddSheet( "Level", page[ v[ teamnumber ] ] )
 	end
 
 	local spawn = vgui.Create( "DButton", tabs )

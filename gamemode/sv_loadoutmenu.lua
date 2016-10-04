@@ -106,20 +106,22 @@ local models = { }
 local function GetModels()
 	for k, v in pairs( primaries ) do
 		for k2, v2 in pairs( v ) do
-			local model = weapons.Get( v2["class"] )
-			table.insert( models, model["WorldModel"] )
+			local model = weapons.GetStored( v2["class"] )
+			print( k2, v2["class"] )
+			--PrintTable( weapons.Get( v2["class"] ) )
+			--table.insert( models, model["WorldModel"] )
 		end
 	end
 	for k, v in pairs( secondaries ) do
 		for k2, v2 in pairs( v ) do
-			local model = weapons.Get( v2["class"] )
-			table.insert( models, model["WorldModel"] )
+			local model = weapons.GetStored( v2["class"] )
+			--table.insert( models, model["WorldModel"] )
 		end
 	end
 	for k, v in pairs( equipment ) do
 		for k2, v2 in pairs( v ) do
-			local model = weapons.Get( v2["class"] )
-			table.insert( models, model["WorldModel"] )
+			local model = weapons.GetStored( v2["class"] )
+			--table.insert( models, model["WorldModel"] )
 		end
 	end
 end

@@ -30,10 +30,8 @@ local function comma_value( amount )
 	return formatted
 end
 
-local roles, models, primaries, secondaries, equipment = { }, = { }, = { }, = { }, = { }, = { }, = { }
-local lvl, money
-function GetData()
-	--//Can be found in sv_loadoutmenu.lua
+--//The net message can be found in sv_loadoutmenu.lua
+function PrecacheModels()
 	net.Start( "RequestWeaponModels" )
 	net.SendToServer()
 	net.Receive( "RequestWeaponModelsCallback", function()
@@ -42,7 +40,11 @@ function GetData()
 			util.PrecacheModel( v )
 		end
 	end )
+end
 
+--//The net message can be found in sv_loadoutmenu.lua
+local primaries, secondaries, equipment
+function GetWeapons()
 	net.Start( "RequestWeapons" )
 	net.SendToServer()
 	net.Receive( "RequestWeaponsCallback", function()
@@ -52,53 +54,94 @@ function GetData()
 		primaries = p
 		secondaries = s
 		equipment = e
+		AttemptMenu()
 	end )
+	return p2, s2, e2
+end
 
+--//The net message can be found in sv_loadoutmenu.lua
+local roles
+function GetRoles()
+	print( "GetRoles function called" )
 	net.Start( "RequestRoles" )
 	net.SendToServer()
 	net.Receive( "RequestRolesCallback", function()
+		print( "GetRoles net message callback received" )
 		local r = net.ReadTable()
 		roles = r
+		AttemptMenu()
 	end )
+	print("returning roles")
+	return roles
+end
 
-	--//Can be found in sv_lvlhandler.lua
+--//The net message can be found in sv_lvlhandler.lua
+local lvl
+function GetLevel()
 	net.Start( "RequestLevel" )
 	net.SendToServer()
 	net.Receive( "RequestLevelCallback", function()
 		local l = net.ReadInt( 8 ) or 1
 		lvl = l
+		print( "RequestLevel", lvl, l )
+		AttemptMenu()
 	end )
+	return lvl
+end
 
-	--//Can be found in sv_moneyhandler.lua
+--//The net message can be found in sv_moneyhandler.lua
+local money
+function GetMoney()
 	net.Start( "RequestMoney" )
 	net.SendToServer()
 	net.Receive( "RequestMoneyCallback", function()
-	local num = tonumber( net.ReadString() )
-	money = num
+		local num = tonumber( net.ReadString() )
+		money = num
+		print( "RequestMoneyCallback", money, num )
+		AttemptMenu()
 	end )
+	return money
 end
 
+--//The net message can be found in sv_attachmenthandler.lua
+local boughtattachments, allattachments
 function GetAttachData( wep )
-	--//Can be found in sv_attachmenthandler.lua
 	net.Start( "RequestAttachments" )
 		net.WriteString( wep )
 	net.SendToServer()
 	net.Receive( "RequestAttachmentsCallback", function()
 		local av = net.ReadTable() --this table is all of the player's bought attachments,  { ["wep_class"] = { ["attachment"] = "attachmenttype" }
 		local at = net.ReadTable() --the key is the attachment name, v is a table of the attachment's type and attachment's price
+		boughtattachments = av
+		allattachments = at
 	end )
+	return boughtattachments, allattachments
 end
 
-local CurrentLevel = 0
-local currentTeam = LocalPlayer():Team()
-local TeamColor, FontColor
 function LoadoutMenu()
-	GetData()
-
-    if LocalPlayer().CanCustomizeLoadout == false then
+	print( "LoadoutMenu called" )
+	if LocalPlayer().CanCustomizeLoadout == false then
         return
     end
 
+	primaries, secondaries, equipment = GetWeapons()
+	print( primaries, secondaries, equipment, GetWeapons() )
+	role = GetRoles()
+	print( role )
+	lvl = GetLevel()
+	print( lvl )
+	money = GetMoney()
+	print( money )
+end
+
+function AttemptMenu()
+	print( "menu attempted")
+	if !primaries or !money then print( primaries, money ) return end
+
+	PrecacheModels()
+
+	local currentTeam = LocalPlayer():Team()
+	local TeamColor
 	if currentTeam == 0 then --???
 		TeamColor = Color( 255, 255, 255 )
 	elseif currentTeam == 1 then --red
@@ -131,7 +174,11 @@ function LoadoutMenu()
         surface.DrawRect( 0, 0, tabs:GetWide(), tabs:GetTall() )
     end
 
-	local button, role, roledescription = { }, = { }, = { }
+	--local lvl = GetLevel()
+	--local role = GetRoles()
+	local roledescription = { }
+	local button = { }
+	local page = { }
 	for k, v in pairs( roles ) do
 		local teamnumber = LocalPlayer():Team()
 	
@@ -159,22 +206,23 @@ function LoadoutMenu()
 		page[ v[ teamnumber ] ]:SetSize( main:GetWide(), main:GetTall() - tabs:GetTall() )
 		page[ v[ teamnumber ] ]:SetPos( 0, tabs:GetTall() )
 
-		roledescription[ v[ teamnumber ] ] = vgui.Create( "DPanel", page )
+		--[[roledescription[ v[ teamnumber ] ] = vgui.Create( "DPanel", page )
 		roledescription[ v[ teamnumber ] ]:SetSize( page[ v[ teamnumber ] ]:GetWide() / 3, page[ v[ teamnumber ] ]:GetTall() / 3 )
-		roledescription[ v[ teamnumber ] ]:SetPos( v[ teamnumber ] ]:GetWide() - ( v[ teamnumber ] ]:GetWide() / 3 ), page[ v[ teamnumber ] ]:GetTall() - ( page[ v[ teamnumber ] ]:GetTall() / 3) )
+		roledescription[ v[ teamnumber ] ]:SetPos( 	v[ teamnumber ]:GetWide() - ( v[ teamnumber ]:GetWide() / 3 ) ), 
+													page[ v[ teamnumber ] ]:GetTall() - ( page[ v[ teamnumber ] ]:GetTall() / 3) )
+		roledescription[ v[ teamnumber ] ].Paint = function()
+			draw.SimpleText( roles[ 4 ], "Exo 2 Tab", button[ v[ teamnumber ] ]:GetWide() / 2, button[ v[ teamnumber ] ]:GetTall() / 2, FontColor, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER )
+		end]]
 				
-		tabs:AddSheet( "Level", page[ v[ teamnumber ] ] )
+		--tabs:AddSheet( "Level" .. k, page[ v[ teamnumber ] ] )
 	end
 
 	local spawn = vgui.Create( "DButton", tabs )
 	spawn:SetSize( tabs:GetWide() / ( #roles + 1 ), tabs:GetTall() )
-	spawn:SetPos( tabs:GetWide() - spawn:GetWide() )
+	spawn:SetPos( tabs:GetWide() - spawn:GetWide(), 0 )
 	spawn:SetText( "Redeploy" )
 	spawn.DoClick = function()
 		main:Close()
-	end
-	
-
 	end
 
 	--[[local rbutton1 = vgui.Create( "DButton", tabs )
@@ -261,4 +309,4 @@ function LoadoutMenu()
     end]]
 end
 
-concommand.Add( "pol_menu", Menu )
+concommand.Add( "pol_menu", LoadoutMenu )

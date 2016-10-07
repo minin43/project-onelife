@@ -9,7 +9,7 @@ util.AddNetworkString( "GetRankCallback" )
 
 
 --OLD LAYOUT: { <weapon name>, <class>, <unlock level>, <world model>, <cost>, { <damage>, <accuracy>, <rate of fire> } }  
---NEW LAYOUT: { <weapon name>, <class>, { roles by level } }
+--NEW LAYOUT: { ["name"] = "weapon name", ["class"] = "class name", ["roles"] = { roles by level } }
 --{ ["name"] = "", 			["class"] = "", 		["roles"] = { 0 } }
 
 primaries = {
@@ -107,21 +107,19 @@ local function GetModels()
 	for k, v in pairs( primaries ) do
 		for k2, v2 in pairs( v ) do
 			local model = weapons.GetStored( v2["class"] )
-			print( k2, v2["class"] )
-			--PrintTable( weapons.Get( v2["class"] ) )
-			--table.insert( models, model["WorldModel"] )
+			table.insert( models, model["WorldModel"] )
 		end
 	end
 	for k, v in pairs( secondaries ) do
 		for k2, v2 in pairs( v ) do
 			local model = weapons.GetStored( v2["class"] )
-			--table.insert( models, model["WorldModel"] )
+			table.insert( models, model["WorldModel"] )
 		end
 	end
 	for k, v in pairs( equipment ) do
 		for k2, v2 in pairs( v ) do
 			local model = weapons.GetStored( v2["class"] )
-			--table.insert( models, model["WorldModel"] )
+			table.insert( models, model["WorldModel"] )
 		end
 	end
 end

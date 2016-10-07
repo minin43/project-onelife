@@ -225,7 +225,7 @@ function DrawSheet( num )
 			end
 			for k2, v2 in pairs( primaries ) do
 				if button[ v2[ "name" ] ] then
-					--button[ v2[ "name" ] ]:SetText( "" )
+					button[ v2[ "name" ] ]:Remove()
 					button[ v2[ "name" ] ] = nil
 				end
 			end
@@ -271,6 +271,7 @@ function DrawSheet( num )
 					selectedprimary = v2["class"]
 				end
 			end
+			table.Empty( availableprimaries )
 
 			local primarymodelpanel = vgui.Create( "DPanel", page[ v[ teamnumber ] ] )
 			primarymodelpanel:SetPos( page[ v[ teamnumber ] ]:GetWide() / 3, 0 )

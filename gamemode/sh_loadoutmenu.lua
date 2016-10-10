@@ -1,12 +1,3 @@
-util.AddNetworkString( "RequestWeaponModels" )
-util.AddNetworkString( "RequestWeaponModelsCallback" )
-util.AddNetworkString( "RequestWeapons" )
-util.AddNetworkString( "RequestWeaponsCallback" )
-util.AddNetworkString( "RequestRoles" )
-util.AddNetworkString( "RequestRolesCallback" )
-util.AddNetworkString( "GetRank" )
-util.AddNetworkString( "GetRankCallback" )
-
 
 --OLD LAYOUT: { <weapon name>, <class>, <unlock level>, <world model>, <cost>, { <damage>, <accuracy>, <rate of fire> } }  
 --NEW LAYOUT: { ["name"] = "weapon name", ["class"] = "class name", ["roles"] = { roles by level } }
@@ -102,6 +93,8 @@ roles = {
 	{ "Expert", 		"Specialist", 			"Specialist", 	"Medium armored fighter, gets access to extra, unique weapons for proving themselves in battle." }
 }
 
+if CLIENT then
+
 local models = { }
 local function GetModels()
 	for k, v in pairs( primaries ) do
@@ -124,7 +117,9 @@ local function GetModels()
 	end
 end
 
-local function TeamThree()
+end
+
+function TeamThree()
 	table.Empty( primaries[3] )
 	table.Empty( secondaries[3] )
 	table.Empty( equipment[3] )
@@ -148,42 +143,9 @@ local function TeamThree()
 end
 --hook.Add( "to-do hook", "TeamThree", TeamThree() )
 
---Sends a table of all the weapon models for instant precaching on the client
-net.Receive( "RequestWeaponModels", function( len, ply )
-	GetModels()
-	net.Start( "RequestWeaponModelsCallback" )
-		net.WriteTable( models )
-	net.Send( ply )
-	table.Empty( models )
-end )
-
---Sends a table of the player's team's weapons ONLY
-net.Receive( "RequestWeapons", function( len, ply )
-	local team = ply:Team()
-	net.Start( "RequestWeaponsCallback" )
-		net.WriteTable( primaries[team] )
-		net.WriteTable( secondaries[team] )
-		net.WriteTable( equipment[team] )
-	net.Send( ply )
-end )
-
---Sends a table of all roles (we can't seperate this base on team because of the table's structure)
-net.Receive( "RequestRoles", function( len, ply )
-	net.Start( "RequestRolesCallback" )
-		net.WriteTable( roles )
-	net.Send( ply )
-end )
-
---Sends a player's rank (obviously) for use with the Roles tables
-net.Receive( "GetRank", function( len, ply )
-	net.Start( "GetRankCallback" )
-		net.WriteString( tostring( lvl.GetLevel( ply ) ) )
-	net.Send( ply )
-end )
-
-
---//Up next is a bunch of weapon detection for allowing/disallowing certain item pickups//--
-
+--//Up next is a bunch of weapon detection for allowing/disallowing certain item pickups
+--//Should I edit CW2.0's pickup function as as to disallow multiple weapon pickups?
+if SERVER then 
 
 function isPrimary( class )
 	for k, v in pairs( primaries ) do
@@ -307,3 +269,5 @@ hook.Add( "PlayerDeath", "clearthings", function( ply )
 end )
 
 return true
+
+end

@@ -9,17 +9,4 @@ include( "cl_feed.lua" )
 include( "cl_customspawns.lua" )
 include( "cl_leaderboards.lua" )
 include( "sh_attachmenthandler.lua" )
-
-net.Receive( "SetMagician", function()
-	local bool = net.ReadBool()
-	local wep = net.ReadEntity()
-	local num = net.ReadInt( 32 )
-	local tbl = {}
-	
-	if bool and tbl[num] == nil then
-		wep["ReloadSpeed"] = ( wep["ReloadSpeed"] * 1.5 )
-		tbl[num] = wep
-	elseif !bool and tbl[num] == wep then
-		savedwep["ReloadSpeed"] = ( savedwep["ReloadSpeed"] / 1.5 )
-	end
-end)
+include( "sh_loadoutmenu.lua" )

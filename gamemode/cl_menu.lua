@@ -121,7 +121,6 @@ function GetAttachData( wep )
 end
 
 function LoadoutMenu()
-	--print( "LoadoutMenu called" )
 	if LocalPlayer().CanCustomizeLoadout == false then
         return
     end
@@ -132,6 +131,8 @@ function LoadoutMenu()
 	money = GetMoney()
 end
 
+--This code is in a seperate function to server as a buffer for receiving net messages. 
+--Might be able to circumvent by making the sv_loadoutmenu a shared file and only keeping lvl and money
 function AttemptMenu()
 	if !primaries or !roles or !lvl or !money then return end
 	if main then return	end
@@ -213,6 +214,8 @@ function AttemptMenu()
 
 end
 
+--This code is in a seperate function to keep things looking cleaner 
+--and not having all of the sheets being created inside an OnClick function
 local currentsheet = nil
 function DrawSheet( num )
 
@@ -387,7 +390,7 @@ function DrawSheet( num )
 			customizeprimary.DoClick = function()
 				if !selectedprimary then return end
 				LocalPlayer():EmitSound( "buttons/button22.wav" ) --shouldn't this be surface.PlaySound?
-				--Insert Weapon-Customization-Menu here
+				CustomizeWeapon( selectedprimary )
 			end
 
 			--[[List of things I can add in: SpeedDeceleration (or weight), clip size, firedelay, recoil, hipspread, aimspread, velocity sensitivity, maxspread, spread per shot, 
@@ -470,7 +473,7 @@ function DrawSheet( num )
 			customizesecondary.DoClick = function()
 				if !selectedsecondary then return end
 				LocalPlayer():EmitSound( "buttons/button22.wav" ) --shouldn't this be surface.PlaySound?
-				--Insert Weapon-Customization-Menu here
+				CustomizeWeapon( selectedsecondary )
 			end
 			customizesecondary.Think = function()
 				if !selectedsecondary then
@@ -528,6 +531,42 @@ function DrawSheet( num )
 				draw.SimpleText( v[ 4 ], "Exo 2 Regular", 0, 0, Color( 50, 50, 50 ) ) --I need to look at all the different ways I can draw text, this way is shitty
 			end
 		end
+	end
+end
+
+--This is the menu that opens when you press the "customize weapon" button
+function CustomizeWeapon( wep )
+	main:SetDisabled( true )
+	for k, v in pairs( main:GetChildren() ) do
+		v:SetDisabled( true )
+	end
+
+	customizemain = vgui.Create( "DFrame" )
+	customizemain:SetSize( ScrW() / 21, ScrH() / 9 ) --Consider adjusting
+	customizemain:SetTitle( "" )
+	customizemain:SetVisible( true )
+	customizemain:SetDraggable( false )
+	customizemain:ShowCloseButton( false )
+	customizemain:MakePopup()
+	customizemain:Center()
+	customizemain.Paint = function()
+		surface.SetDrawColor( Color( 0, 0, 0, 250 ) )
+		surface.DrawRect( 0, 0, customizemain:GetWide(), customizemain:GetTall() )
+	end
+
+	--[[
+	-Create columns of attachment types with the final one being the selected attachments, 
+	and attachment information along the bottom?
+	-Left hand side is a giant picture of the weapon with blank attachment icons at the bottom, one for each available type,
+	right hand side is attachment information and clicking on a blank icon brings up a list of all the attachments above the icon
+	-Rip off Insurgency's customization, with all the lists on one, non-rotating, giant weapon model? This might be perfect for
+	dynamic worldmodel changing
+	]]
+
+	--Close function:
+	main:SetDisabled( false )
+	for k, v in pairs( main:GetChildren() ) do
+		v:SetDisabled( false )
 	end
 end
 

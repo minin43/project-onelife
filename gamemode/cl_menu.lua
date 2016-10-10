@@ -12,9 +12,15 @@ https://wiki.garrysmod.com/page/Global/Material
 
 ]]
 
-surface.CreateFont( "Exo 2 Tab", {
+surface.CreateFont( "Exo 2 Regular", {
 	font = "Exo 2",
 	size = 20,
+	weight = 500
+} )
+
+surface.CreateFont( "Exo 2 Large", {
+	font = "Exo 2",
+	size = 30,
 	weight = 500
 } )
 
@@ -121,21 +127,14 @@ function LoadoutMenu()
     end
 
 	primaries, secondaries, equipment = GetWeapons()
-	--print( primaries, secondaries, equipment, GetWeapons() )
 	roles = GetRoles()
-	--print( role )
 	lvl = GetLevel()
-	--print( lvl )
 	money = GetMoney()
-	--print( money )
 end
 
 function AttemptMenu()
-	--print( "menu attempted")
-	if !primaries or !roles or !lvl or !money then --[[print( "Menu creation failed" )]] return end
+	if !primaries or !roles or !lvl or !money then return end
 	if main then return	end
-
-	--PrecacheModels()
 
 	local currentTeam = LocalPlayer():Team()
 	local TeamColor
@@ -148,6 +147,8 @@ function AttemptMenu()
     elseif currentTeam == 3 then --black/FFA
         TeamColor = Color( 15, 160, 15 )
 	end
+
+	PrecacheModels()
 
     main = vgui.Create( "DFrame" )
 	main:SetSize( ScrW() - 70, ScrH() - 70 )
@@ -180,14 +181,14 @@ function AttemptMenu()
 		button:SetText( "" )
 		button.Paint = function()
 			if lvl >= k then
-				draw.SimpleText( v[ teamnumber ], "Exo 2 Tab", button:GetWide() / 2, button:GetTall() / 2, FontColor, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER )
+				draw.SimpleText( v[ teamnumber ], "Exo 2 Regular", button:GetWide() / 2, button:GetTall() / 2, FontColor, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER )
 			else
-				draw.SimpleText( "Locked", "Exo 2 Tab", button:GetWide() / 2, button:GetTall() / 2, FontColor, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER )
+				draw.SimpleText( "Locked", "Exo 2 Regular", button:GetWide() / 2, button:GetTall() / 2, FontColor, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER )
 			end
 		end
 		button.DoClick = function()
 			--print( "button.DoClick called" )
-			if lvl >= k then
+			if lvl >= k and currentsheet != k then
 				DrawSheet( k )
 				LocalPlayer():EmitSound( "buttons/button22.wav" ) --shouldn't this be surface.PlaySound?
 				--print( "Setting active tab # ", k )
@@ -212,27 +213,40 @@ function AttemptMenu()
 
 end
 
+local currentsheet = nil
 function DrawSheet( num )
-	--print( "DrawSheet function called for tab: ", num )
+
+	if currentsheet and currentsheet:IsValid() then
+		--print( currentsheet )
+		currentsheet:Close()
+		currentsheet = nil
+	end
+
+	local currentTeam = LocalPlayer():Team()
+	local TeamColor
+	if currentTeam == 0 then --???
+		TeamColor = Color( 255, 255, 255 )
+	elseif currentTeam == 1 then --red
+		TeamColor = Color( 100, 15, 15 )
+	elseif currentTeam == 2 then --blue
+		TeamColor = Color( 33, 150, 243, 100 )
+    elseif currentTeam == 3 then --black/FFA
+        TeamColor = Color( 15, 160, 15 )
+	end
+
 	local teamnumber = LocalPlayer():Team()
+	local availableprimaries = { }
+	local availablesecondaries = { }
+	local availableequipment = { }
+	local attachmentlists = { }
+	local selectedprimary, selectedsecondary, selectedequipment
 	page = { }
 	button = { }
 	for k, v in pairs( roles ) do
-		if num != k then
-			if page[ v[ teamnumber ] ] then
-				page[ v[ teamnumber ] ]:Close()
-				page[ v[ teamnumber ] ] = nil
-			end
-			for k2, v2 in pairs( primaries ) do
-				if button[ v2[ "name" ] ] then
-					button[ v2[ "name" ] ]:Remove()
-					button[ v2[ "name" ] ] = nil
-				end
-			end
-		else
-			--print( "Role ", k, " was selected..." )
+		if num == k then
 			--//Here is where most of the screen drawing will be done
 			page[ v[ teamnumber ] ] = vgui.Create( "DFrame", main )
+			currentsheet = page[ v[ teamnumber ] ]
 			page[ v[ teamnumber ] ]:SetSize( main:GetWide(), main:GetTall() - 30 ) --30 because that's how tall tabs is
 			page[ v[ teamnumber ] ]:SetPos( 0, 30 )
 			page[ v[ teamnumber ] ]:SetTitle( "" )
@@ -244,69 +258,274 @@ function DrawSheet( num )
         		surface.DrawRect( 0, 0, main:GetWide(), main:GetTall() - 30 )
     		end
 
-			--//Primaries row//--
-			local primariesscrollpanel = vgui.Create( "DScrollPanel", page[ v[ teamnumber ] ] )
-			primariesscrollpanel:SetSize( page[ v[ teamnumber ] ]:GetWide() / 6 , page[ v[ teamnumber ] ]:GetTall() / 3 )
-			primariesscrollpanel:SetPos( 0, 0 )
 
-			local availableprimaries = { }
+			--//Primaries row//--
+
+
+			--//This is the initial panel
+			local primariesscrollpanel = vgui.Create( "DScrollPanel", page[ v[ teamnumber ] ] )
+			primariesscrollpanel:SetSize( page[ v[ teamnumber ] ]:GetWide() / 3 , page[ v[ teamnumber ] ]:GetTall() / 3 )
+			primariesscrollpanel:SetPos( 0, 0 )
+			primariesscrollpanel.Paint = function()
+				draw.SimpleText( "Primaries", "Exo 2 Large", primariesscrollpanel:GetWide() / 2, 35 / 2, Color( 150, 150, 150 ), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER )
+				surface.SetDrawColor( TeamColor )
+        		surface.DrawOutlinedRect( 0, 0, primariesscrollpanel:GetWide(), 35 )
+			end
+
+			table.Empty( availableprimaries )
 			for k2, v2 in pairs( primaries ) do
 				if table.HasValue( v2[ "roles" ], k ) then
-					table.insert( availableprimaries, k2, v2 )
+					table.insert( availableprimaries, v2 )
 				end
 			end
 
+			--//This is all the buttons that get created
 			for k2, v2 in pairs( availableprimaries ) do
 				button[ v2[ "name" ] ] = vgui.Create( "DButton", primariesscrollpanel )
-				button[ v2[ "name" ] ]:SetPos( 0, 35 * ( k2 - 1 ) )
-				button[ v2[ "name" ] ]:SetSize( primariesscrollpanel:GetWide(), 35 )
+				button[ v2[ "name" ] ]:SetPos( 0, 35 * ( k2 - 1 ) + 35 )
+				button[ v2[ "name" ] ]:SetSize( primariesscrollpanel:GetWide(), 45 )
 				button[ v2[ "name" ] ]:SetText( "" )
 				button[ v2[ "name" ] ].Paint = function()
 					if !primariesscrollpanel then return end
-					draw.SimpleText( v2["name"], "Exo 2 Tab", primariesscrollpanel:GetWide() / 2, 35 / 2, Color( 100, 100, 100 ), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER )
+					draw.SimpleText( v2["name"], "Exo 2 Regular", primariesscrollpanel:GetWide() / 2, 35 / 2, Color( 100, 100, 100 ), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER )
+				end
+				button[ v2[ "name" ] ].Think = function()
+					if selectedprimary == v2[ "class" ] then --It works, I just have to get the outlining done right. Or maybe a highlight?
+						surface.SetDrawColor( TeamColor )
+        				surface.DrawOutlinedRect( 0, 35 * ( k2 - 1 ), primariesscrollpanel:GetWide(), 35 )
+					end
 				end
 				button[ v2[ "name" ] ].DoClick = function()
-					print( "button.DoClick called for primary weapons list for ", v2[ "name" ] )
 					LocalPlayer():EmitSound( "buttons/button22.wav" ) --shouldn't this be surface.PlaySound?
 					selectedprimary = v2["class"]
+					--[[net.Start( "RequestAttachments" )
+						net.WriteString( selectedprimary )
+					net.SendToServer()
+					if attachmentlists then
+						print( "attachmentlists is valid, emptying table..." ) --this isn't working as intended
+						for k3, v3 in pairs( attachmentlists ) do
+							v3:CloseMenu()
+						end
+						table.Empty( attachmentlists )
+					end]]
 				end
 			end
-			table.Empty( availableprimaries )
 
+			--[[net.Receive( "RequestAttachmentsCallback", function()
+				local ba = net.ReadTable()
+				boughtattachments = ba
+				local alllength = table.Count( wep_att[ selectedprimary ] )
+				local counter = 0
+				local attachmentnames = {
+					[ "kk_ins2_kobra" ] = "Kobra",
+					[ "kk_ins2_eotech" ] = "Eotech",
+					[ "kk_ins2_aimpoint" ] = "Aimpoint",
+					[ "kk_ins2_elcan" ] = "Elcan",
+					[ "" ] = "",
+					[ "" ] = "",
+					[ "" ] = "",
+					[ "" ] = "",
+					[ "" ] = "",
+					[ "" ] = "",
+					[ "" ] = "",
+					[ "" ] = "",
+					[ "" ] = "",
+					[ "" ] = "",
+					[ "" ] = "",
+					[ "" ] = "",
+					[ "" ] = "",
+					[ "" ] = "",
+					[ "" ] = "",
+					[ "" ] = ""
+				}
+				--table.Empty( attachmentlists )
+
+				for k2, v2 in pairs( wep_att[ selectedprimary ] ) do
+					if !attachmentlists[ v2[ 1 ] ] then
+						counter = counter + 1
+						attachmentlists[ v2[ 1 ] ] = vgui.Create( "DComboBox", page[ v[ teamnumber ] ] )
+						attachmentlists[ v2[ 1 ] ]:SetSize( page[ v[ teamnumber ] ]:GetWide() / 6 , page[ v[ teamnumber ] ]:GetTall() / ( 3 * alllength ) )
+						attachmentlists[ v2[ 1 ] ]:SetPos( primariesscrollpanel:GetWide(), ( attachmentlists[ v2[ 1 ] ]:GetTall() * counter ) + 2 )
+						attachmentlists[ v2[ 1 ] ]:Clear()
+						attachmentlists[ v2[ 1 ] ]:SetValue( v2[ 1 ] )
+						attachmentlists[ v2[ 1 ] ]:AddChoice( k2 )
+					else
+						attachmentlists[ v2[ 1 ] ]:AddChoice( k2 )
+					end
+				end
+			end )]]
+
+			--//This is the 3d model backdrop to be used by the 3d model for referencing
 			local primarymodelpanel = vgui.Create( "DPanel", page[ v[ teamnumber ] ] )
 			primarymodelpanel:SetPos( page[ v[ teamnumber ] ]:GetWide() / 3, 0 )
 			primarymodelpanel:SetSize( page[ v[ teamnumber ] ]:GetWide() / 3 , page[ v[ teamnumber ] ]:GetTall() / 3 )
 			primarymodelpanel.Paint = function()
 				if !page[ v[ teamnumber ] ] then return end
-				surface.SetDrawColor( 255, 0, 0 )
-        		surface.DrawRect( 0, 0, primarymodelpanel:GetWide(), primarymodelpanel:GetTall() )
+				surface.SetDrawColor( TeamColor )
+        		surface.DrawOutlinedRect( 0, 0, primarymodelpanel:GetWide(), primarymodelpanel:GetTall() )
 			end
 
 			local primarymodel = vgui.Create( "DModelPanel", primarymodelpanel )
-			--primarymodel:SetModel( "insert model directory here" )
+			primarymodel:SetSize( primarymodelpanel:GetWide(), primarymodelpanel:GetTall() )
+			primarymodel:SetCamPos( Vector( -55, 0, 0 ) )
+			primarymodel:SetLookAt( Vector( 5, 0, 2 ) )
+			primarymodel:SetAmbientLight( Color( 200, 200, 200 ) )
+			primarymodel.Think = function()
+				if selectedprimary then
+					primarymodel:SetModel( weapons.Get( selectedprimary ).WorldModel )
+				end
+			end
+
+			local customizeprimary = vgui.Create( "DButton", primarymodelpanel )
+			customizeprimary:SetSize( primarymodelpanel:GetWide(), primarymodelpanel:GetTall() / 8 )
+			customizeprimary:SetPos( 0, primarymodelpanel:GetTall() - customizeprimary:GetTall() )
+			customizeprimary:SetText( "Customize Weapon" )
+			--[[customizeprimary.Paint = function()
+				if !secondariesscrollpanel then return end
+					draw.SimpleText( "Customize Weapon", "Exo 2 Regular", customizeprimary:GetWide() / 2, 35 / 2, Color( 100, 100, 100 ), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER )
+				end]]
+			customizeprimary.DoClick = function()
+				if !selectedprimary then return end
+				LocalPlayer():EmitSound( "buttons/button22.wav" ) --shouldn't this be surface.PlaySound?
+				--Insert Weapon-Customization-Menu here
+			end
+
+			--[[List of things I can add in: SpeedDeceleration (or weight), clip size, firedelay, recoil, hipspread, aimspread, velocity sensitivity, maxspread, spread per shot, 
+			shots (for shotgun - maybe just incorporate into damage?), damage, clumpspread for shotguns, shotgun-specific reload speed on a per shell basis ]]
+			local primaryinfopanel = vgui.Create( "DPanel", page[ v[ teamnumber ] ] )
+			primaryinfopanel:SetPos( page[ v[ teamnumber ] ]:GetWide() * ( 2 / 3 ), 0 )
+			primaryinfopanel:SetSize( page[ v[ teamnumber ] ]:GetWide() / 3 , page[ v[ teamnumber ] ]:GetTall() / 3 )
+			primaryinfopanel.Paint = function()
+
+			end
+			primaryinfopanel.Think = function()
+
+			end
+
 
 			--//Secondaries row//--
+
+
+			local secondariesscrollpanel = vgui.Create( "DScrollPanel", page[ v[ teamnumber ] ] )
+			secondariesscrollpanel:SetSize( page[ v[ teamnumber ] ]:GetWide() / 3 , page[ v[ teamnumber ] ]:GetTall() / 3 )
+			secondariesscrollpanel:SetPos( 0, page[ v[ teamnumber ] ]:GetTall() / 3 )
+			secondariesscrollpanel.Paint = function()
+				draw.SimpleText( "Secondaries", "Exo 2 Large", secondariesscrollpanel:GetWide() / 2, 35 / 2, Color( 150, 150, 150 ), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER )
+				surface.SetDrawColor( TeamColor )
+        		surface.DrawOutlinedRect( 0, 0, secondariesscrollpanel:GetWide(), 35 )
+			end
+
+			table.Empty( availablesecondaries )
+			for k2, v2 in pairs( secondaries ) do
+				if table.HasValue( v2[ "roles" ], k ) then
+					table.insert( availablesecondaries, v2 )
+				end
+			end
+
+			for k2, v2 in pairs( availablesecondaries ) do
+				button[ v2[ "name" ] ] = vgui.Create( "DButton", secondariesscrollpanel )
+				button[ v2[ "name" ] ]:SetPos( 0, 35 * ( k2 - 1 ) + 35 )
+				button[ v2[ "name" ] ]:SetSize( secondariesscrollpanel:GetWide(), 35 )
+				button[ v2[ "name" ] ]:SetText( "" )
+				button[ v2[ "name" ] ].Paint = function()
+					if !secondariesscrollpanel then return end
+					draw.SimpleText( v2["name"], "Exo 2 Regular", secondariesscrollpanel:GetWide() / 2, 35 / 2, Color( 100, 100, 100 ), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER )
+				end
+				button[ v2[ "name" ] ].DoClick = function()
+					LocalPlayer():EmitSound( "buttons/button22.wav" ) --shouldn't this be surface.PlaySound?
+					selectedsecondary = v2["class"]
+				end
+			end
+
 			local secondarymodelpanel = vgui.Create( "DPanel", page[ v[ teamnumber ] ] )
 			secondarymodelpanel:SetPos( page[ v[ teamnumber ] ]:GetWide() / 3, page[ v[ teamnumber ] ]:GetTall() / 3 )
 			secondarymodelpanel:SetSize( page[ v[ teamnumber ] ]:GetWide() / 3 , page[ v[ teamnumber ] ]:GetTall() / 3 )
 			secondarymodelpanel.Paint = function()
 				if !page[ v[ teamnumber ] ] then return end
-				surface.SetDrawColor( 255, 255, 0 )
-        		surface.DrawRect( 0, 0, secondarymodelpanel:GetWide(), secondarymodelpanel:GetTall() )
+				--surface.SetDrawColor( 0, 0, 0 )
+        		--surface.DrawRect( 0, 0, primarymodelpanel:GetWide(), primarymodelpanel:GetTall() )
+				surface.SetDrawColor( TeamColor )
+        		surface.DrawOutlinedRect( 0, 0, secondarymodelpanel:GetWide(), secondarymodelpanel:GetTall() )
 			end
 
-			local secondaryymodel = vgui.Create( "DModelPanel", secondarymodelpanel )
-			--secondaryymodel:SetModel( "insert model directory here" )
+			local secondarymodel = vgui.Create( "DModelPanel", secondarymodelpanel )
+			secondarymodel:SetSize( secondarymodelpanel:GetWide(), secondarymodelpanel:GetTall() )
+			secondarymodel:SetCamPos( Vector( -55, 0, 0 ) )
+			secondarymodel:SetLookAt( Vector( 5, 0, 2 ) )
+			secondarymodel:SetAmbientLight( Color( 200, 200, 200 ) )
+			secondarymodel.Think = function()
+				if selectedsecondary then
+					secondarymodel:SetModel( weapons.Get( selectedsecondary ).WorldModel )
+				end
+			end
+
+			local customizesecondary = vgui.Create( "DButton", secondarymodelpanel )
+			customizesecondary:SetSize( secondarymodelpanel:GetWide(), secondarymodelpanel:GetTall() / 8 )
+			customizesecondary:SetPos( 0, secondarymodelpanel:GetTall() - customizesecondary:GetTall() )
+			customizesecondary:SetText( "Customize Weapon" )
+			--[[customizesecondary.Paint = function()
+				if !secondariesscrollpanel then return end
+					draw.SimpleText( "Customize Weapon", "Exo 2 Regular", customizesecondary:GetWide() / 2, 35 / 2, Color( 100, 100, 100 ), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER )
+				end]]
+			customizesecondary.DoClick = function()
+				if !selectedsecondary then return end
+				LocalPlayer():EmitSound( "buttons/button22.wav" ) --shouldn't this be surface.PlaySound?
+				--Insert Weapon-Customization-Menu here
+			end
+			customizesecondary.Think = function()
+				if !selectedsecondary then
+					surface.SetDrawColor( Color( 200, 200, 200 ) )
+        			surface.DrawRect( 0, secondarymodelpanel:GetTall() - customizesecondary:GetTall(), secondarymodelpanel:GetWide(), customizesecondary:GetTall() )
+				end
+			end
+
+
+			--//Equipment row
+
+
+			local equipmentscrollpanel = vgui.Create( "DScrollPanel", page[ v[ teamnumber ] ] )
+			equipmentscrollpanel:SetSize( page[ v[ teamnumber ] ]:GetWide() / 3 , page[ v[ teamnumber ] ]:GetTall() / 3 )
+			equipmentscrollpanel:SetPos( 0, page[ v[ teamnumber ] ]:GetTall() * ( 2 / 3 ) )
+			equipmentscrollpanel.Paint = function()
+				draw.SimpleText( "Equipment", "Exo 2 Large", equipmentscrollpanel:GetWide() / 2, 35 / 2, Color( 150, 150, 150 ), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER )
+				surface.SetDrawColor( TeamColor )
+        		surface.DrawOutlinedRect( 0, 0, equipmentscrollpanel:GetWide(), 35 )
+			end
+
+			table.Empty( availableequipment )
+			for k2, v2 in pairs( equipment ) do
+				if table.HasValue( v2[ "roles" ], k ) then
+					table.insert( availableequipment, v2 )
+				end
+			end
+
+			for k2, v2 in pairs( availableequipment ) do
+				button[ v2[ "name" ] ] = vgui.Create( "DButton", equipmentscrollpanel )
+				button[ v2[ "name" ] ]:SetPos( 0, 35 * ( k2 - 1 ) + 35 )
+				button[ v2[ "name" ] ]:SetSize( equipmentscrollpanel:GetWide(), 35 )
+				button[ v2[ "name" ] ]:SetText( "" )
+				button[ v2[ "name" ] ].Paint = function()
+					if !equipmentscrollpanel then return end
+					draw.SimpleText( v2["name"], "Exo 2 Regular", equipmentscrollpanel:GetWide() / 2, 35 / 2, Color( 100, 100, 100 ), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER )
+				end
+				button[ v2[ "name" ] ].DoClick = function()
+					LocalPlayer():EmitSound( "buttons/button22.wav" ) --shouldn't this be surface.PlaySound?
+					selectedequipment = v2["class"]
+				end
+			end
+
+
+			--//The information section, for shit like money and stuff
+
 
 			local information = vgui.Create( "DPanel", page[ v[ teamnumber ] ] )
-			information:SetSize( page[ v[ teamnumber ] ]:GetWide() / 3, page[ v[ teamnumber ] ]:GetTall() / 3 )
-			information:SetPos( page[ v[ teamnumber ] ]:GetWide() - ( page[ v[ teamnumber ] ]:GetWide() / 3 ), page[ v[ teamnumber ] ]:GetTall() - ( page[ v[ teamnumber ] ]:GetTall() / 3) )
+			information:SetSize( page[ v[ teamnumber ] ]:GetWide() * ( 2 / 3 ), page[ v[ teamnumber ] ]:GetTall() / 3 )
+			information:SetPos( page[ v[ teamnumber ] ]:GetWide() / 3, page[ v[ teamnumber ] ]:GetTall() - ( page[ v[ teamnumber ] ]:GetTall() / 3) )
 			information.Paint = function()
 				if !page[ v[ teamnumber ] ] then return end
 				surface.SetDrawColor( 255, 255, 255 )
         		surface.DrawRect( 0, 0, information:GetWide(), information:GetTall() )
-				draw.SimpleText( v[ 4 ], "Exo 2 Tab", 0, 0, Color( 50, 50, 50 ) ) --I need to look at all the different ways I can draw text, this way is shitty
-				--print( v[ 4 ] )
+				draw.SimpleText( v[ 4 ], "Exo 2 Regular", 0, 0, Color( 50, 50, 50 ) ) --I need to look at all the different ways I can draw text, this way is shitty
 			end
 		end
 	end

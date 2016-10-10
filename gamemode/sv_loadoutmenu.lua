@@ -76,13 +76,13 @@ equipment = {
 		{ ["name"] = "P2A1", 		["class"] = "cw_kk_ins2_p2a1", 		["roles"] = { 1, 2, 3, 4, 5, 6, 7, 8 } } --This is the flare gun, for night maps, I guess
 	},
 	[2] = {
-		{ ["name"] = "M67 Frag", 	["class"] = "cw_kk_ins2_nade_m67", 	["roles"] = { 2, 5, 7, 8 } },
-		{ ["name"] = "C4", 			["class"] = "cw_kk_ins2_nade_c4", 	["roles"] = { 7 } },
-		{ ["name"] = "AT-4", 		["class"] = "cw_kk_ins2_at4", 		["roles"] = { 5 } },
-		{ ["name"] = "M18 Smoke", 	["class"] = "cw_kk_ins2_nade_m18", 	["roles"] = { 1, 2, 3, 4, 7, 8 } },
-		{ ["name"] = "M84 Flash", 	["class"] = "cw_kk_ins2_nade_m84", 	["roles"] = { 1, 2, 3, 7, 8 } },
-		{ ["name"] = "GP35", 		["class"] = "cw_kk_ins2_gp25", 		["roles"] = { 7 } },
-		{ ["name"] = "P2A1", 		["class"] = "cw_kk_ins2_p2a1", 		["roles"] = { 1, 2, 3, 4, 5, 6, 7, 8 } } --This is the flare gun, for night maps, I guess
+		{ ["name"] = "M67 Frag", 		["class"] = "cw_kk_ins2_nade_m67", 	["roles"] = { 2, 5, 7, 8 } },
+		{ ["name"] = "C4", 				["class"] = "cw_kk_ins2_nade_c4", 	["roles"] = { 7 } },
+		{ ["name"] = "AT-4", 			["class"] = "cw_kk_ins2_at4", 		["roles"] = { 5 } },
+		{ ["name"] = "M18 Smoke", 		["class"] = "cw_kk_ins2_nade_m18", 	["roles"] = { 1, 2, 3, 4, 7, 8 } },
+		{ ["name"] = "M84 Flash", 		["class"] = "cw_kk_ins2_nade_m84", 	["roles"] = { 1, 2, 3, 7, 8 } },
+		{ ["name"] = "GP35", 			["class"] = "cw_kk_ins2_gp25", 		["roles"] = { 7 } },
+		{ ["name"] = "P2A1 Flare Gun", 	["class"] = "cw_kk_ins2_p2a1", 		["roles"] = { 1, 2, 3, 4, 5, 6, 7, 8 } } --This is the flare gun, for night maps, I guess
 	},
 	[3] = {
 		--Intentionally left blank

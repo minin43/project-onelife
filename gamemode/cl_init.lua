@@ -8,6 +8,7 @@ include( "cl_flags.lua" )
 include( "cl_feed.lua" )
 include( "cl_customspawns.lua" )
 include( "cl_leaderboards.lua" )
+include( "sh_attachmenthandler.lua" )
 
 net.Receive( "SetMagician", function()
 	local bool = net.ReadBool()

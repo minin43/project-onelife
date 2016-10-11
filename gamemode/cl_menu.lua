@@ -554,9 +554,48 @@ function CustomizeWeapon( wep )
 		surface.DrawRect( 0, 0, customizemain:GetWide(), customizemain:GetTall() )
 	end
 
+	allatachmenttypes = { }
+	typekeys = { "Sight" = 1, "Barrel" = 2, "Under" = 3, "Lasers" = 4, "Magazine" = 5, "Flavor" = 6, "Ammo" = 7 }
+	--table.SortByMember( wep_att[ wep ], wep_att[ wep ].4
+	for k, v in pairs( wep_att[ wep ] ) do
+		if !table.HasValue( allatachmenttypes, v[ 1 ] ) then
+			table.insert( allatachmenttypes, typekeys.v[ 1 ], v[ 1 ] )
+		end
+	end
+	table.ClearKeys( allatachmenttypes )
+	print( "Printing all attachment types table:" )
+	PrintTable( allatachmenttypes )
+
+	local tabs = vgui.Create( "DPanel", customizemain )
+	tabs:SetPos( 0, 0 )
+	tabs:SetSize( main:GetWide() - 100, 30 )
+	tabs.Paint = function()
+        surface.SetDrawColor( TeamColor )
+        surface.DrawRect( 0, 0, tabs:GetWide(), tabs:GetTall() )
+    end
+
+	--//Oh shit I'm doing this wrong
+	for k, v in pairs( allatachmenttypes ) do
+		local button = vgui.Create( "Dbutton", tabs )
+		button:SetSize( tabs:GetWide() / ( #allatachmenttypes ), tabs:GetTall() )
+		button:SetPos( k * ( tabs:GetWide() / ( #allatachmenttypes ) ) - ( tabs:GetWide() / ( #allatachmenttypes ) ), 0 )
+		button:SetText( "" )
+		button.Paint = function()
+			draw.SimpleText( v, "Exo 2 Regular", button:GetWide() / 2, button:GetTall() / 2, FontColor, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER )
+		end
+		button.DoClick = function()
+			--print( "button.DoClick called" )
+			if lvl >= k and currentsheet != k then
+				DrawSheet( k )
+				LocalPlayer():EmitSound( "buttons/button22.wav" ) --shouldn't this be surface.PlaySound?
+				--print( "Setting active tab # ", k )
+			end
+		end
+	end
+
+
 	--[[
-	-Create columns of attachment types with the final one being the selected attachments, 
-	and attachment information along the bottom?
+	-Do like TDM and have columns of attachments (instead of weapons) with the right hand side showing the model and a short description
 	-Left hand side is a giant picture of the weapon with blank attachment icons at the bottom, one for each available type,
 	right hand side is attachment information and clicking on a blank icon brings up a list of all the attachments above the icon
 	-Rip off Insurgency's customization, with all the lists on one, non-rotating, giant weapon model? This might be perfect for

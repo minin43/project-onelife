@@ -233,9 +233,9 @@ end
 --and not having all of the sheets being created inside an OnClick function
 local currentsheet = nil
 function DrawSheet( num )
-	selectedprimary = ""
-	selectedsecondary = ""
-	selectedequipment = ""
+	selectedprimary = nil
+	selectedsecondary = nil
+	selectedequipment = nil
 
 	if currentsheet and currentsheet:IsValid() then
 		--print( currentsheet )
@@ -331,50 +331,6 @@ function DrawSheet( num )
 				end
 			end
 
-			--[[net.Receive( "RequestAttachmentsCallback", function()
-				local ba = net.ReadTable()
-				boughtattachments = ba
-				local alllength = table.Count( wep_att[ selectedprimary ] )
-				local counter = 0
-				local attachmentnames = {
-					[ "kk_ins2_kobra" ] = "Kobra",
-					[ "kk_ins2_eotech" ] = "Eotech",
-					[ "kk_ins2_aimpoint" ] = "Aimpoint",
-					[ "kk_ins2_elcan" ] = "Elcan",
-					[ "" ] = "",
-					[ "" ] = "",
-					[ "" ] = "",
-					[ "" ] = "",
-					[ "" ] = "",
-					[ "" ] = "",
-					[ "" ] = "",
-					[ "" ] = "",
-					[ "" ] = "",
-					[ "" ] = "",
-					[ "" ] = "",
-					[ "" ] = "",
-					[ "" ] = "",
-					[ "" ] = "",
-					[ "" ] = "",
-					[ "" ] = ""
-				}
-				--table.Empty( attachmentlists )
-
-				for k2, v2 in pairs( wep_att[ selectedprimary ] ) do
-					if !attachmentlists[ v2[ 1 ] ] then
-						counter = counter + 1
-						attachmentlists[ v2[ 1 ] ] = vgui.Create( "DComboBox", page[ v[ teamnumber ] ] )
-						attachmentlists[ v2[ 1 ] ]:SetSize( page[ v[ teamnumber ] ]:GetWide() / 6 , page[ v[ teamnumber ] ]:GetTall() / ( 3 * alllength ) )
-						attachmentlists[ v2[ 1 ] ]:SetPos( primariesscrollpanel:GetWide(), ( attachmentlists[ v2[ 1 ] ]:GetTall() * counter ) + 2 )
-						attachmentlists[ v2[ 1 ] ]:Clear()
-						attachmentlists[ v2[ 1 ] ]:SetValue( v2[ 1 ] )
-						attachmentlists[ v2[ 1 ] ]:AddChoice( k2 )
-					else
-						attachmentlists[ v2[ 1 ] ]:AddChoice( k2 )
-					end
-				end
-			end )]]
-
 			--//This is the 3d model backdrop to be used by the 3d model for referencing
 			local primarymodelpanel = vgui.Create( "DPanel", page[ v[ teamnumber ] ] )
 			primarymodelpanel:SetPos( page[ v[ teamnumber ] ]:GetWide() / 3, 0 )
@@ -401,8 +357,8 @@ function DrawSheet( num )
 			customizeprimary:SetPos( 0, 0 )
 			customizeprimary:SetText( "" )
 			customizeprimary.Paint = function()
-				if !secondariesscrollpanel then return end
-					draw.SimpleText( "Click to customize weapon", "Exo 2 Small", customizeprimary:GetWide() / 2, customizesecondary:GetTall() - 30, Color( 100, 100, 100 ), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER )
+				if !primariesscrollpanel then return end
+					draw.SimpleText( "Click to customize weapon", "Exo 2 Regular", customizeprimary:GetWide() / 2, customizeprimary:GetTall() - 30, Color( 100, 100, 100 ), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER )
 				end
 			customizeprimary.DoClick = function()
 				if !selectedprimary then return end
@@ -410,37 +366,40 @@ function DrawSheet( num )
 				CustomizeWeapon( selectedprimary )
 			end
 
-			--[[List of things I can add in: SpeedDeceleration (or weight), clip size, firedelay, recoil, hipspread, aimspread, velocity sensitivity, maxspread, spread per shot, 
-			shots (for shotgun - maybe just incorporate into damage?), damage, clumpspread for shotguns, shotgun-specific reload speed on a per shell basis ]]
+			--//If the panel name is anything to go by, the weapon info on the right hand side of the screen
 			local primaryinfopanel = vgui.Create( "DPanel", page[ v[ teamnumber ] ] )
-			primaryinfopanel:SetPos( page[ v[ teamnumber ] ]:GetWide() * ( 2 / 3 ), 0 )
-			primaryinfopanel:SetSize( page[ v[ teamnumber ] ]:GetWide() / 3 , page[ v[ teamnumber ] ]:GetTall() / 3 )
+			primaryinfopanel:SetPos( page[ v[ teamnumber ] ]:GetWide() * ( 2 / 3 ) - 1, page[ v[ teamnumber ] ] )
+			primaryinfopanel:SetSize( page[ v[ teamnumber ] ]:GetWide() / 3 + 1, page[ v[ teamnumber ] ]:GetTall() / 3 )
 			primaryinfopanel.Paint = function()
-
-			end
-			primaryinfopanel.Think = function()
 				if !selectedprimary then return end
+				surface.SetDrawColor( TeamColor )
+        		surface.DrawOutlinedRect( 0, 0, primaryinfopanel:GetWide(), primaryinfopanel:GetTall() )
+				local offset = 50 --offset in the y
 				local wep = weapons.Get( selectedprimary )
+				--//Title
+				surface.SetFont( "Exo 2 Large" )
+				local info = "Weapon Information"
+				local infowidth, infoheight = surface.GetTextSize( info )
+				draw.SimpleText( info, "Exo 2 Large", primaryinfopanel:GetWide() / 2 - ( infowidth / 2 ), 10, Color( 255, 240, 240 ) )
 				--//Column 1
 				local shotgun
-				if selectedprimary == "" or selectedprimary == "" then --insert any and all shotgun classnames here
+				if selectedprimary == "cw_kk_ins2_toz" or selectedprimary == "cw_kk_ins2_m590" then --insert any and all shotgun classnames here
 					shotgun = 25
-					draw.DrawText( "Pellets: " .. wep.Shots, "Exo 2 Regular", 2, 27, Color( 255, 255, 255 ) )
-					draw.DrawText( "Spread: " .. wep.ClumpSpread, "Exo 2 Regular", 2, 102, Color( 255, 255, 255 ) )
+					draw.SimpleText( "Pellets: " .. wep.Shots, "Exo 2 Regular", 4, 27 + offset, Color( 255, 255, 255 ) )
+					draw.SimpleText( "Spread: " .. wep.ClumpSpread, "Exo 2 Regular", 4, 102 + offset, Color( 255, 255, 255 ) )
 				else
 					shotgun = 0
-					draw.DrawText( "Accuracy: " .. wep.AimSpread, "Exo 2 Regular", 2, 102, Color( 255, 255, 255 ) ) --This is for aimed only, hipfire will always be unknown
+					draw.SimpleText( "Accuracy: " .. wep.AimSpread, "Exo 2 Regular", 4, 77 + offset, Color( 255, 255, 255 ) ) --This is for aimed only, hipfire will always be unknown
 				end
-				draw.DrawText( "Damage: " .. wep.Damage, "Exo 2 Regular", 2, 2, Color( 255, 255, 255 ) )
-				draw.DrawText( "Fire rate: " .. wep.FireDelay, "Exo 2 Regular", 2, 27 + shotgun, Color( 255, 255, 255 ) )
-				draw.DrawText( "Recoil: " .. wep.Recoil, "Exo 2 Regular", 2, 52 + shotgun, Color( 255, 255, 255 ) )
+				draw.SimpleText( "Damage: " .. wep.Damage, "Exo 2 Regular", 4, 2 + offset, Color( 255, 255, 255 ) )
+				draw.SimpleText( "Fire rate: " .. wep.FireDelay, "Exo 2 Regular", 4, 27 + offset + shotgun, Color( 255, 255, 255 ) )
+				draw.SimpleText( "Recoil: " .. wep.Recoil, "Exo 2 Regular", 4, 52 + offset + shotgun, Color( 255, 255, 255 ) )
 				--//Column 2
-				draw.DrawText( "Weight: " .. wep.SpeedDec, "Exo 2 Regular", primaryinfopanel / 2 + 2, 2, Color( 255, 255, 255 ) )
-				draw.DrawText( "Clip Size: " .. wep.ClipSize, "Exo 2 Regular", primaryinfopanel / 2 + 2, 27, Color( 255, 255, 255 ) )
-				draw.DrawText( "Reload Length: " .. ( wep.ReloadSpeed * wep.ReloadTime ), "Exo 2 Regular", primaryinfopanel / 2 + 2, 52, Color( 255, 255, 255 ) )
-				draw.DrawText( "Spread Per Shot: " .. wep.SpreadPerShot, "Exo 2 Regular", primaryinfopanel / 2 + 2, 77, Color( 255, 255, 255 ) )
-				draw.DrawText( "Maximum Spread: " .. wep.MaxSpreadInc, "Exo 2 Regular", primaryinfopanel / 2 + 2, 102, Color( 255, 255, 255 ) )
-
+				draw.SimpleText( "Weight: " .. wep.SpeedDec, "Exo 2 Regular", primaryinfopanel:GetWide() / 2 + 4, 2 + offset, Color( 255, 255, 255 ) )
+				draw.SimpleText( "Clip Size: " .. wep.Primary.ClipSize, "Exo 2 Regular", primaryinfopanel:GetWide() / 2 + 4, 27 + offset, Color( 255, 255, 255 ) )
+				draw.SimpleText( "Reload Length: " --[[.. wep.ReloadTimes[ base_reload[ 2 ] ]], "Exo 2 Regular", primaryinfopanel:GetWide() / 2 + 4, 52 + offset, Color( 255, 255, 255 ) )
+				draw.SimpleText( "Spread Per Shot: " .. wep.SpreadPerShot, "Exo 2 Regular", primaryinfopanel:GetWide() / 2 + 4, 77 + offset, Color( 255, 255, 255 ) )
+				draw.SimpleText( "Maximum Spread: " .. wep.MaxSpreadInc, "Exo 2 Regular", primaryinfopanel:GetWide() / 2 + 4, 102 + offset, Color( 255, 255, 255 ) )
 			end
 			--[[Add breathing to all of the guns?
 			--// Aim breathing related \\--
@@ -532,27 +491,32 @@ SWEP.MinimumBreathPercentage - integer/float, we can only hold our breath if our
 				end
 			end
 
+			--//If the panel name is anything to go by, the weapon info on the right hand side of the screen
 			local secondaryinfopanel = vgui.Create( "DPanel", page[ v[ teamnumber ] ] )
-			secondaryinfopanel:SetPos( page[ v[ teamnumber ] ]:GetWide() * ( 2 / 3 ), 0 )
-			secondaryinfopanel:SetSize( page[ v[ teamnumber ] ]:GetWide() / 3 , page[ v[ teamnumber ] ]:GetTall() / 3 )
+			secondaryinfopanel:SetPos( page[ v[ teamnumber ] ]:GetWide() * ( 2 / 3 ) - 1, page[ v[ teamnumber ] ]:GetTall() / 3 )
+			secondaryinfopanel:SetSize( page[ v[ teamnumber ] ]:GetWide() / 3 + 1, page[ v[ teamnumber ] ]:GetTall() / 3 )
 			secondaryinfopanel.Paint = function()
-
-			end
-			secondaryinfopanel.Think = function()
 				if !selectedsecondary then return end
+				surface.SetDrawColor( TeamColor )
+        		surface.DrawOutlinedRect( 0, 0, secondaryinfopanel:GetWide(), secondaryinfopanel:GetTall() )
 				local wep = weapons.Get( selectedsecondary )
+				local offset = 50 --offset in the y
+				--//Title
+				surface.SetFont( "Exo 2 Large" )
+				local info = "Weapon Information"
+				local infowidth, infoheight = surface.GetTextSize( info )
+				draw.SimpleText( info, "Exo 2 Large", secondaryinfopanel:GetWide() / 2 - ( infowidth / 2 ), 10, Color( 255, 240, 240 ) )
 				--//Column 1
-				draw.DrawText( "Damage: " .. wep.Damage, "Exo 2 Regular", 2, 2, Color( 255, 255, 255 ) )
-				draw.DrawText( "Fire rate: " .. wep.FireDelay, "Exo 2 Regular", 2, 27, Color( 255, 255, 255 ) )
-				draw.DrawText( "Recoil: " .. wep.Recoil, "Exo 2 Regular", 2, 52, Color( 255, 255, 255 ) )
-				draw.DrawText( "Accuracy: " .. wep.AimSpread, "Exo 2 Regular", 2, 77, Color( 255, 255, 255 ) ) --This is for aimed only, hipfire will always be unknown
+				draw.SimpleText( "Damage: " .. wep.Damage, "Exo 2 Regular", 4, 2 + offset, Color( 255, 255, 255 ) )
+				draw.SimpleText( "Fire rate: " .. wep.FireDelay, "Exo 2 Regular", 4, 27 + offset, Color( 255, 255, 255 ) )
+				draw.SimpleText( "Recoil: " .. wep.Recoil, "Exo 2 Regular", 4, 52 + offset, Color( 255, 255, 255 ) )
+				draw.SimpleText( "Accuracy: " .. wep.AimSpread, "Exo 2 Regular", 4, 77 + offset, Color( 255, 255, 255 ) ) --This is for aimed only, hipfire will always be unknown
 				--//Column 2
-				draw.DrawText( "Weight: " .. wep.SpeedDec, "Exo 2 Regular", secondaryinfopanel / 2 + 2, 2, Color( 255, 255, 255 ) )
-				draw.DrawText( "Clip Size: " .. wep.ClipSize, "Exo 2 Regular", secondaryinfopanel / 2 + 2, 27, Color( 255, 255, 255 ) )
-				draw.DrawText( "Reload Length: " .. ( wep.ReloadSpeed * wep.ReloadTime ), "Exo 2 Regular", secondaryinfopanel / 2 + 2, 52, Color( 255, 255, 255 ) )
-				draw.DrawText( "Spread Per Shot: " .. wep.SpreadPerShot, "Exo 2 Regular", secondaryinfopanel / 2 + 2, 77, Color( 255, 255, 255 ) )
-				draw.DrawText( "Maximum Spread: " .. wep.MaxSpreadInc, "Exo 2 Regular", secondaryinfopanel / 2 + 2, 102, Color( 255, 255, 255 ) )
-
+				draw.SimpleText( "Weight: " .. wep.SpeedDec, "Exo 2 Regular", secondaryinfopanel:GetWide() / 2 + 4, 2 + offset, Color( 255, 255, 255 ) )
+				draw.SimpleText( "Clip Size: " .. wep.Primary.ClipSize, "Exo 2 Regular", secondaryinfopanel:GetWide() / 2 + 4, 27 + offset, Color( 255, 255, 255 ) )
+				draw.SimpleText( "Reload Length: " --[[.. ( wep.ReloadSpeed * wep.ReloadTime )]], "Exo 2 Regular", secondaryinfopanel:GetWide() / 2 + 4, 52 + offset, Color( 255, 255, 255 ) )
+				draw.SimpleText( "Spread Per Shot: " .. wep.SpreadPerShot, "Exo 2 Regular", secondaryinfopanel:GetWide() / 2 + 4, 77 + offset, Color( 255, 255, 255 ) )
+				draw.SimpleText( "Maximum Spread: " .. wep.MaxSpreadInc, "Exo 2 Regular", secondaryinfopanel:GetWide() / 2 + 2, 102 + offset, Color( 255, 255, 255 ) )
 			end
 
 
@@ -630,25 +594,24 @@ function CustomizeWeapon( wep )
 	end
 
 	local modelpanel = vgui.Create( "DPanel", customizemain )
-		modelpanel:SetPos( customizemain:GetWide() / 3, customizemain:GetTall() / 3 )
-		modelpanel:SetSize( customizemain:GetWide() / 3 , customizemain:GetTall() / 3 )
-		modelpanel.Paint = function()
-			if !customizemain then return end
-			--surface.SetDrawColor( 0, 0, 0 )
-       		--surface.DrawRect( 0, 0, primarymodelpanel:GetWide(), primarymodelpanel:GetTall() )
-			surface.SetDrawColor( TeamColor )
-       		surface.DrawOutlinedRect( 0, 0, modelpanel:GetWide(), modelpanel:GetTall() )
-		end
+	modelpanel:SetPos( customizemain:GetWide() / 3, customizemain:GetTall() / 3 )
+	modelpanel:SetSize( customizemain:GetWide() / 3 , customizemain:GetTall() / 3 )
+	modelpanel.Paint = function()
+		if !customizemain then return end
+		--surface.SetDrawColor( 0, 0, 0 )
+    	--surface.DrawRect( 0, 0, primarymodelpanel:GetWide(), primarymodelpanel:GetTall() )
+		surface.SetDrawColor( TeamColor )
+    	surface.DrawOutlinedRect( 0, 0, modelpanel:GetWide(), modelpanel:GetTall() )
+	end
 
-		local secondarymodel = vgui.Create( "DModelPanel", modelpanel )
-		secondarymodel:SetSize( modelpanel:GetWide(), modelpanel:GetTall() )
-		secondarymodel:SetCamPos( Vector( -55, 0, 0 ) )
-		secondarymodel:SetLookAt( Vector( 5, 0, 2 ) )
-		secondarymodel:SetAmbientLight( Color( 200, 200, 200 ) )
-		secondarymodel.Think = function()
-			if selectedsecondary then
-				secondarymodel:SetModel( weapons.Get( selectedsecondary ).WorldModel )
-			end
+	local secondarymodel = vgui.Create( "DModelPanel", modelpanel )
+	secondarymodel:SetSize( modelpanel:GetWide(), modelpanel:GetTall() )
+	secondarymodel:SetCamPos( Vector( -55, 0, 0 ) )
+	secondarymodel:SetLookAt( Vector( 5, 0, 2 ) )
+	secondarymodel:SetAmbientLight( Color( 200, 200, 200 ) )
+	secondarymodel.Think = function()
+		if selectedsecondary then
+			secondarymodel:SetModel( weapons.Get( selectedsecondary ).WorldModel )
 		end
 	end
 

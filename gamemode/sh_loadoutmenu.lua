@@ -145,17 +145,17 @@ end
 --hook.Add( "to-do hook", "TeamThree", TeamThree() )
 
 --//Should I edit CW2.0's pickup function as as to disallow multiple weapon pickups, or rewrite it here?
-if SERVER then 
-	local ply.oldprim, ply.oldsec, ply.oldeq, ply.oldpatt, ply.oldsatt 
+if SERVER then  
 	
 	--//This gives the player their weapons/attachments when the hit "Redeploy" in the menu
 	util.AddNetworkString( "SetLoadout" )
 	net.Receive( "SetLoadout", function( len, ply )
 		--if !ply:IsAlive() then return end
+		--ply.oldprim, ply.oldsec, ply.oldeq, ply.oldpatt, ply.oldsatt
 
+		local loadout = net.ReadTable()
 		ply:StripWeapons()
 		teamnumber = ply:Team()
-		local loadout = net.ReadTable()
 
 		if loadout then
 			if loadout[ "primary" ] then

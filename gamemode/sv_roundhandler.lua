@@ -16,10 +16,10 @@ modes = {
         [ "RoundTime" ] = 240,
     },
     [ "dicks" ] = {
-        []
+        --[]
     },
     [ "tits" ] = {
-        []
+        --[]
     }
 }
 
@@ -87,7 +87,7 @@ function RoundBegin( round )
     print( "Round has started..." )
     for k, v in pairs( player.GetAll() ) do
 	    v:Freeze( false )
-        v.CanCustomizeLoadout = false
+        --v.CanCustomizeLoadout = false
         print( "Unlocking: ", v )
     end
     --hook.Call

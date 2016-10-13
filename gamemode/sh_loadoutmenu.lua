@@ -58,13 +58,13 @@ secondaries = {
 --// Layout: "Equipment name", "equipment class", "equipment worldmodel", ""
 equipment = {
 	[1] = {
-		{ ["name"] = "F1 Frag", 	["class"] = "cw_kk_ins2_nade_f1", 	["roles"] = { 2, 5, 7, 8 } },
-		{ ["name"] = "IED", 		["class"] = "cw_kk_ins2_nade_ied", 	["roles"] = { 7 } },
-		{ ["name"] = "RPG-7", 		["class"] = "cw_kk_ins2_rpg", 		["roles"] = { 5 } },
-		{ ["name"] = "M18 Smoke", 	["class"] = "cw_kk_ins2_nade_m18", 	["roles"] = { 1, 2, 3, 4, 7, 8 } },
-		{ ["name"] = "M84 Flash", 	["class"] = "cw_kk_ins2_nade_m84", 	["roles"] = { 1, 2, 3, 7, 8 } },
-		{ ["name"] = "GP35", 		["class"] = "cw_kk_ins2_gp25", 		["roles"] = { 7 } },
-		{ ["name"] = "P2A1", 		["class"] = "cw_kk_ins2_p2a1", 		["roles"] = { 1, 2, 3, 4, 5, 6, 7, 8 } } --This is the flare gun, for night maps, I guess
+		{ ["name"] = "F1 Frag", 		["class"] = "cw_kk_ins2_nade_f1", 	["roles"] = { 2, 5, 7, 8 } },
+		{ ["name"] = "IED", 			["class"] = "cw_kk_ins2_nade_ied", 	["roles"] = { 7 } },
+		{ ["name"] = "RPG-7", 			["class"] = "cw_kk_ins2_rpg", 		["roles"] = { 5 } },
+		{ ["name"] = "M18 Smoke", 		["class"] = "cw_kk_ins2_nade_m18", 	["roles"] = { 1, 2, 3, 4, 7, 8 } },
+		{ ["name"] = "M84 Flash", 		["class"] = "cw_kk_ins2_nade_m84", 	["roles"] = { 1, 2, 3, 7, 8 } },
+		{ ["name"] = "GP35", 			["class"] = "cw_kk_ins2_gp25", 		["roles"] = { 7 } },
+		{ ["name"] = "P2A1 Flare Gun", 	["class"] = "cw_kk_ins2_p2a1", 		["roles"] = { 1, 2, 3, 4, 5, 6, 7, 8 } } --This is the flare gun, for night maps, I guess
 	},
 	[2] = {
 		{ ["name"] = "M67 Frag", 		["class"] = "cw_kk_ins2_nade_m67", 	["roles"] = { 2, 5, 7, 8 } },
@@ -96,7 +96,7 @@ roles = {
 if CLIENT then
 
 local models = { }
-local function GetModels()
+function GetModels()
 	for k, v in pairs( primaries ) do
 		for k2, v2 in pairs( v ) do
 			local model = weapons.GetStored( v2["class"] )
@@ -115,6 +115,7 @@ local function GetModels()
 			table.insert( models, model["WorldModel"] )
 		end
 	end
+	return models
 end
 
 end
@@ -143,11 +144,116 @@ function TeamThree()
 end
 --hook.Add( "to-do hook", "TeamThree", TeamThree() )
 
---//Up next is a bunch of weapon detection for allowing/disallowing certain item pickups
---//Should I edit CW2.0's pickup function as as to disallow multiple weapon pickups?
+--//Should I edit CW2.0's pickup function as as to disallow multiple weapon pickups, or rewrite it here?
 if SERVER then 
+	local ply.oldprim, ply.oldsec, ply.oldeq, ply.oldpatt, ply.oldsatt 
+	
+	--//This gives the player their weapons/attachments when the hit "Redeploy" in the menu
+	util.AddNetworkString( "SetLoadout" )
+	net.Receive( "SetLoadout", function( len, ply )
+		--if !ply:IsAlive() then return end
 
-function isPrimary( class )
+		ply:StripWeapons()
+		teamnumber = ply:Team()
+		local loadout = net.ReadTable()
+
+		if loadout then
+			if loadout[ "primary" ] then
+				ply:Give( loadout[ "primary" ] )
+				ply.oldprim = loadout[ "primary" ]
+			end
+			if loadout[ "secondary" ] then
+				ply:Give( loadout[ "secondary" ] )
+				ply.oldsec = loadout[ "secondary" ]
+			end
+			if loadout[ "equipment" ] then
+				ply:Give( loadout[ "equipment" ] )
+				ply.oldeq = loadout[ "equipment" ]
+			end
+			if loadout[ "role" ] then
+				--insert code here
+			end
+			if loadout[ "pattachments" ] then
+				--insert code here
+			end
+			if loadout[ "sattachments" ] then
+				--insert code here
+			end
+		end
+
+		if teamnumber == 1 then
+			ply:Give( "cw_kk_ins2_mel_gurkha" )
+		elseif teamnumber == 2 then
+			ply:Give( "cw_kk_ins2_mel_bayonet" )
+		else
+			randomtable = { "cw_kk_ins2_mel_gurkha", "cw_kk_ins2_mel_bayonet" }
+			ply:Give( table.Random( randomtable ) )
+		end
+		
+		local ammoneeded = {
+			[ "cw_kk_ins2_nade_m18" ] = 2,
+			[ "cw_kk_ins2_nade_m67" ] = 2,
+			[ "cw_kk_ins2_nade_f1" ] = 2,
+			[ "cw_kk_ins2_rpg" ] = 1,
+			[ "cw_kk_ins2_nade_m84" ] = 2,
+			[ "cw_kk_ins2_gp25" ] = 3,
+			[ "cw_kk_ins2_p2a1" ] = 2,
+			[ "cw_kk_ins2_nade_c4" ] = 1,
+			[ "cw_kk_ins2_at4" ] = 1,
+			[ "cw_kk_ins2_nade_ied" ] = 1
+		}
+		local previouslyremoved = { }
+		timer.Simple( 0.1, function()
+			if ply:IsPlayer() then
+				for k, v in pairs( ply:GetWeapons() ) do
+					local x = v:GetPrimaryAmmoType()
+					local y = v:Clip1()
+					if !previouslyremoved[ x ] then
+						ply:RemoveAmmo( ply:GetAmmoCount( x ), x )
+						table.insert( previouslyremoved, x )
+					end
+					if ammoneeded[v] then
+						ply:GiveAmmo( ammoneeded[v], x, true )
+					else
+						ply:GiveAmmo( ( y * 5 ), x, true )
+					end
+				end	
+				ply:RemoveAmmo( ply:GetAmmoCount( "40MM" ), "40MM" )
+				ply:GiveAmmo( 2, "40MM", true )
+			end
+		end )
+	end )
+
+	function GiveOldLoadout( ply )
+		ply:StripWeapons()
+		if ply.oldprim then
+			ply:Give( ply.oldprim )
+		end
+		if ply.oldsec then
+			ply:Give( ply.oldsec )
+		end
+		if ply.oldeq then
+			ply:Give( ply.oldeq )
+		end
+		--[[if ply.oldpatt then
+			ply:Give( ply.oldpatt ) or something
+		end]]
+		--[[if ply.oldsatt then
+			ply:Give( ply.oldsatt ) or something
+		end]]
+
+		if teamnumber == 1 then
+			ply:Give( "cw_kk_ins2_mel_gurkha" )
+		elseif teamnumber == 2 then
+			ply:Give( "cw_kk_ins2_mel_bayonet" )
+		else
+			randomtable = { "cw_kk_ins2_mel_gurkha", "cw_kk_ins2_mel_bayonet" }
+			ply:Give( table.Random( randomtable ) )
+		end
+	end
+
+
+--[[function isPrimary( class )
 	for k, v in pairs( primaries ) do
 		for k2, v2 in pairs( v ) do
 			if class == v2.class then
@@ -210,7 +316,7 @@ function CheckWeapons( ply )
 			end
 		end
 	end
-end
+end]]
 
 hook.Add( "PlayerButtonDown", "DropWeapons", function( ply, bind ) 
 	if bind == KEY_Q then
@@ -223,39 +329,7 @@ hook.Add( "PlayerButtonDown", "DropWeapons", function( ply, bind )
 end )
 
 hook.Add( "AllowPlayerPickup", "CheckPickups", function( ply, ent )
-	if !ent:IsWeapon() then return false end
-	CheckWeapons( ply )
-	if isPrimary( wep:GetClass() ) then
-		if ply.curprimary == nil then
-			if ent.rspawn then
-				return false
-			else
-				return true
-			end
-		else
-			return false
-		end
-	elseif isSecondary( ent:GetClass() ) then
-		if ply.cursecondary == nil then
-			if ent.rspawn then
-				return false
-			else		
-				return true
-			end
-		else
-			return false
-		end
-	elseif isEquipment( ent:GetClass() ) then
-		if ply.curequipment == nil then
-			if ent.rspawn then
-				return false
-			else		
-				return true
-			end
-		else
-			return false
-		end
-	end
+	return false 
 end )
 
 hook.Add( "PlayerDeath", "clearthings", function( ply )

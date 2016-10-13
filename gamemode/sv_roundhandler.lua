@@ -1,5 +1,30 @@
+modes = {
+    [ "lts" ] = { --Last Team Standing, your basic one-life team-deathmatch
+        [ "Rounds" ] = 3,
+        [ "RoundTime" ] = 180,
+    },
+    [ "cache" ] = { --Destroy Red's weapon cache, attack/defense based mode
+        [ "Rounds" ] = 5,
+        [ "RoundTime" ] = 240,
+    },
+    [ "oma" ] = { --One Man Army, Last Team Standing but every man for themself
+        [ "Rounds" ] = 3,
+        [ "RoundTime" ] = 180,
+    },
+    [ "hot" ] = { --HotPoint, whoever captures the single point uncontested wins
+        [ "Rounds" ] = 5,
+        [ "RoundTime" ] = 240,
+    },
+    [ "dicks" ] = {
+        []
+    },
+    [ "tits" ] = {
+        []
+    }
+}
+
 function StartGame( mode )
-    if !mode then
+    if !modes[ mode ] then
         print( "Invalid mode type, preventing game start." )
         return
     end
@@ -33,13 +58,14 @@ function RoundPrep( round )
     for k, v in pairs( player.GetAll() ) do
         v:Spawn()
 	    v:Freeze( true )
-        v.CanCustomizeLoadout = true
-        v:ConCommand( "pol_menu" )
+        GiveOldLoadout( v )
+        --v.CanCustomizeLoadout = true This doesn't auto-work across server/client, we'll have to send out a message, hook, or set a global variable saying to close and disallow customization
+        --v:ConCommand( "pol_menu" ) don't force this, only force the previous loadout
         print( "Spawning and locking: ", v )
     end
     
-    timer.Simple( 15, function()
-        print( "15 second timer finished, starting round/game.")
+    timer.Simple( 30, function()
+        print( "30 second timer finished, starting round/game.")
         RoundBegin( round )
     end)
     --hook.Call

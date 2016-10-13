@@ -10,7 +10,7 @@ AddCSLuaFile( "cl_feed.lua" )
 AddCSLuaFile( "cl_customspawns.lua" )
 AddCSLuaFile( "cl_leaderboards.lua" )
 AddCSLuaFile( "sh_attachmenthandler.lua" )
-AddCSLuaFile( "sv_loadoutmenu.lua" )
+AddCSLuaFile( "sh_loadoutmenu.lua" )
 
 include( "shared.lua" )
 include( "player.lua" )
@@ -58,7 +58,6 @@ function unid( steamid )
 end
 
 function GM:Initialize()
-	game.ConsoleCommand( "cw_keep_attachments_post_death 0\n" )
 	
 	-- remove hl2:dm weapons / ammo
 	timer.Simple( 0, function()
@@ -149,73 +148,8 @@ end
 	end
 end]]
 
-local col = {}
-col[0] = Vector( 0, 0, 0 )
-col[1] = Vector( 1.0, .2, .2 )
-col[2] = Vector( .2, .2, 1.0 )
-
 load = load or {} -- load[
 preload = preload or {} -- preload[
-
-net.Receive( "tdm_loadout", function( len, pl )
-	local p = net.ReadString() // primary
-	local s = net.ReadString() // secondary
-	local e = net.ReadString() // extra
-	local perks = net.ReadString()
-	if( pl:IsValid() ) then
-		preload[ pl ] = {
-			primary = p,
-			secondary = s,
-			extra = e,
-			perk = perks
-		}
-		if not load[ pl ] or not pl:Alive() then
-			load[ pl ] = {
-				primary = p,
-				secondary = s,
-				extra = e,
-				perk = perks
-			}
-		end
-	end
-end )
-
-hook.Add( "PlayerDeath", "FixLoadoutExploit", function( ply, inf, att )
-	local pl = preload[ ply ]
-	if ( pl ) then
-		load[ ply ] = {
-			primary = pl.primary,
-			secondary = pl.secondary,
-			extra = pl.extra,
-			perk = pl.perk
-		}
-	end
-end )
-
-function giveLoadout( ply )
-	ply:StripWeapons()
-	local l = load[ply]
-	if( l ) then
-		ply:Give( l.primary )
-		ply:Give( l.secondary )
-		
-		if l.extra then
-			if l.extra == "grenades" then
-				ply:RemoveAmmo( 2, "Frag Grenades" )
-				ply:GiveAmmo( 2, "Frag Grenades", true )
-			elseif l.extra == "attachment" then
-				CustomizableWeaponry.giveAttachments( ply, CustomizableWeaponry.registeredAttachmentsSKey, true )
-			else
-				ply:Give( l.extra )
-			end
-		end
-		
-		if l.perk then
-			local t = l.perk
-			ply[t] = true
-		end
-	end
-end
 
 function changeTeam( ply, cmd, args )
 	local t = tonumber( args[1] )
@@ -390,35 +324,18 @@ local dontgive = {
 }
 
 function GM:PlayerSpawn( ply )
-	if ply.curprimary then
-		ply.curprimary = nil
-	end
-	if ply.cursecondary then
-		ply.cursecondary = nil
-	end
-	if ply.curextra then
-		ply.curextra = nil
-	end
 
-	if( ply:Team() == 0 ) then
+	if( ply:Team() == 0 ) then --or !ply:IsAlive() then
 		ply:Spectate( OBS_MODE_IN_EYE )
 		SetupSpectator( ply )
 		return
 	end
 	
-	ply:AllowFlashlight( true )
-	
-	if ply:IsPlayer() and load[ ply ] ~= nil then
-		if( load[ply].perk ~= nil ) then
-			ply.perk = true
-		else
-			ply.perk = false
-		end
-	end
+	ply:AllowFlashlight( false )
 	
 	self.BaseClass:PlayerSpawn( ply )
 	
-		local redmodels = {
+	local redmodels = {
 		"models/player/group03/male_01.mdl",
 		"models/player/group03/male_02.mdl",
 		"models/player/group03/male_03.mdl",
@@ -438,9 +355,6 @@ function GM:PlayerSpawn( ply )
 	elseif ply:Team() == 2 then
 		ply:SetModel(table.Random(bluemodels))
 	end
-	
-	ply:SetPlayerColor( col[ply:Team()] )
-	giveLoadout( ply )
 
 	ply:SetJumpPower( 170 ) -- CTDM value was 170
 	
@@ -448,7 +362,7 @@ function GM:PlayerSpawn( ply )
 	ply:SetRunSpeed( 300 ) --CTDM value was 300
 
 
-	timer.Simple( 1, function()
+	timer.Simple( 0.1, function()
 		if ply:IsPlayer() then
 			for k, v in pairs( ply:GetWeapons() ) do
 				local x = v:GetPrimaryAmmoType()
@@ -469,9 +383,7 @@ function GM:PlayerSpawn( ply )
 		end
 	end )
 	
-	ply:SetColor( Color( 255, 255, 255, 200 ) )
-	ply:SetRenderMode( RENDERMODE_TRANSALPHA )
-	ply:SetNoCollideWithTeammates( true )
+	ply:SetNoCollideWithTeammates( false )
 
 end
 

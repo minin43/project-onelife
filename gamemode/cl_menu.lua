@@ -38,17 +38,12 @@ end
 
 --//The net message can be found in sv_loadoutmenu.lua
 function PrecacheModels()
-	net.Start( "RequestWeaponModels" )
-	net.SendToServer()
-	net.Receive( "RequestWeaponModelsCallback", function()
-		local m = net.ReadTable()
-		for k, v in pairs( m ) do
-			util.PrecacheModel( v )
-		end
-	end )
+	for k, v in pairs( GetModels() ) do
+		util.PrecacheModel( v )
+	end
 end
 
---//The net message can be found in sv_loadoutmenu.lua
+--[[//The net message can be found in sv_loadoutmenu.lua
 local primaries, secondaries, equipment
 function GetWeapons()
 	net.Start( "RequestWeapons" )
@@ -64,9 +59,9 @@ function GetWeapons()
 		AttemptMenu()
 	end )
 	return p2, s2, e2
-end
+end]]
 
---//The net message can be found in sv_loadoutmenu.lua
+--[[//The net message can be found in sv_loadoutmenu.lua
 local roles
 function GetRoles()
 	net.Start( "RequestRoles" )
@@ -77,7 +72,7 @@ function GetRoles()
 		AttemptMenu()
 	end )
 	return roles
-end
+end]]
 
 --//The net message can be found in sv_lvlhandler.lua
 local lvl
@@ -105,7 +100,7 @@ function GetMoney()
 	return money
 end
 
---//The net message can be found in sv_attachmenthandler.lua
+--[[//The net message can be found in sv_attachmenthandler.lua
 local boughtattachments, allattachments
 function GetAttachData( wep )
 	net.Start( "RequestAttachments" )
@@ -118,15 +113,15 @@ function GetAttachData( wep )
 		allattachments = at
 	end )
 	return boughtattachments, allattachments
-end
+end]]
 
 function LoadoutMenu()
-	if LocalPlayer().CanCustomizeLoadout == false then
+	if LocalPlayer().CanCustomizeLoadout == false then --As I figured out, this isn't being used, remember to broadcast a global variable, or something, to stop it instead
         return
     end
 
-	primaries, secondaries, equipment = GetWeapons()
-	roles = GetRoles()
+	--primaries, secondaries, equipment = GetWeapons()
+	--roles = GetRoles()
 	lvl = GetLevel()
 	money = GetMoney()
 end
@@ -134,7 +129,7 @@ end
 --This code is in a seperate function to server as a buffer for receiving net messages. 
 --Might be able to circumvent by making the sv_loadoutmenu a shared file and only keeping lvl and money
 function AttemptMenu()
-	if !primaries or !roles or !lvl or !money then return end
+	if !lvl or !money then return end
 	if main then return	end
 
 	local currentTeam = LocalPlayer():Team()
@@ -164,6 +159,12 @@ function AttemptMenu()
 		surface.SetDrawColor( 0, 0, 0, 250 )
         surface.DrawRect( 0, 0, main:GetWide(), main:GetTall() )
     end
+	--[[main.Think = function()
+		if LocalPlayer().CanCustomizeLoadout == false  then
+			main:Close()
+			main = nil
+		end
+	end]]
 
 	local tabs = vgui.Create( "DPanel", main )
 	tabs:SetPos( 0, 0 )
@@ -188,11 +189,10 @@ function AttemptMenu()
 			end
 		end
 		button.DoClick = function()
-			--print( "button.DoClick called" )
 			if lvl >= k and currentsheet != k then
 				DrawSheet( k )
-				LocalPlayer():EmitSound( "buttons/button22.wav" ) --shouldn't this be surface.PlaySound?
-				--print( "Setting active tab # ", k )
+				surface.PlaySound( "buttons/button22.wav" ) --shouldn't this be surface.PlaySound?
+				selectedrole = v[ teamnumber ]
 			end
 		end
 
@@ -210,6 +210,17 @@ function AttemptMenu()
 				page[ v[ teamnumber ] ] = nil
 			end
 		end
+		net.Start( "SetLoadout" )
+			local loadout = {
+				[ "primary" ] = selectedprimary or "",
+				[ "secondary" ] = selectedsecondary or "",
+				[ "equipment" ] = selectedequipment or "",
+				[ "role" ] = selectedrole or ""--,
+				--[ "pattachments" ] = primattachments or ""
+				--[ "sattachments" ] = secattachments or ""
+			}
+			net.WriteTable( loadout )
+		net.SendToServer()
 	end
 
 end
@@ -218,6 +229,9 @@ end
 --and not having all of the sheets being created inside an OnClick function
 local currentsheet = nil
 function DrawSheet( num )
+	selectedprimary = ""
+	selectedsecondary = ""
+	selectedequipment = ""
 
 	if currentsheet and currentsheet:IsValid() then
 		--print( currentsheet )
@@ -242,7 +256,6 @@ function DrawSheet( num )
 	local availablesecondaries = { }
 	local availableequipment = { }
 	local attachmentlists = { }
-	local selectedprimary, selectedsecondary, selectedequipment
 	page = { }
 	button = { }
 	for k, v in pairs( roles ) do
@@ -276,7 +289,7 @@ function DrawSheet( num )
 			end
 
 			table.Empty( availableprimaries )
-			for k2, v2 in pairs( primaries ) do
+			for k2, v2 in pairs( primaries[ teamnumber ] ) do
 				if table.HasValue( v2[ "roles" ], k ) then
 					table.insert( availableprimaries, v2 )
 				end
@@ -299,7 +312,7 @@ function DrawSheet( num )
 					end
 				end
 				button[ v2[ "name" ] ].DoClick = function()
-					LocalPlayer():EmitSound( "buttons/button22.wav" ) --shouldn't this be surface.PlaySound?
+					surface.PlaySound( "buttons/button22.wav" ) --shouldn't this be surface.PlaySound?
 					selectedprimary = v2["class"]
 					--[[net.Start( "RequestAttachments" )
 						net.WriteString( selectedprimary )
@@ -389,7 +402,7 @@ function DrawSheet( num )
 				end]]
 			customizeprimary.DoClick = function()
 				if !selectedprimary then return end
-				LocalPlayer():EmitSound( "buttons/button22.wav" ) --shouldn't this be surface.PlaySound?
+				surface.PlaySound( "buttons/button22.wav" ) --shouldn't this be surface.PlaySound?
 				CustomizeWeapon( selectedprimary )
 			end
 
@@ -419,7 +432,7 @@ function DrawSheet( num )
 			end
 
 			table.Empty( availablesecondaries )
-			for k2, v2 in pairs( secondaries ) do
+			for k2, v2 in pairs( secondaries[ teamnumber ] ) do
 				if table.HasValue( v2[ "roles" ], k ) then
 					table.insert( availablesecondaries, v2 )
 				end
@@ -435,7 +448,7 @@ function DrawSheet( num )
 					draw.SimpleText( v2["name"], "Exo 2 Regular", secondariesscrollpanel:GetWide() / 2, 35 / 2, Color( 100, 100, 100 ), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER )
 				end
 				button[ v2[ "name" ] ].DoClick = function()
-					LocalPlayer():EmitSound( "buttons/button22.wav" ) --shouldn't this be surface.PlaySound?
+					surface.PlaySound( "buttons/button22.wav" ) --shouldn't this be surface.PlaySound?
 					selectedsecondary = v2["class"]
 				end
 			end
@@ -472,7 +485,7 @@ function DrawSheet( num )
 				end]]
 			customizesecondary.DoClick = function()
 				if !selectedsecondary then return end
-				LocalPlayer():EmitSound( "buttons/button22.wav" ) --shouldn't this be surface.PlaySound?
+				surface.PlaySound( "buttons/button22.wav" ) --shouldn't this be surface.PlaySound?
 				CustomizeWeapon( selectedsecondary )
 			end
 			customizesecondary.Think = function()
@@ -496,7 +509,7 @@ function DrawSheet( num )
 			end
 
 			table.Empty( availableequipment )
-			for k2, v2 in pairs( equipment ) do
+			for k2, v2 in pairs( equipment[ teamnumber ] ) do
 				if table.HasValue( v2[ "roles" ], k ) then
 					table.insert( availableequipment, v2 )
 				end
@@ -512,7 +525,7 @@ function DrawSheet( num )
 					draw.SimpleText( v2["name"], "Exo 2 Regular", equipmentscrollpanel:GetWide() / 2, 35 / 2, Color( 100, 100, 100 ), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER )
 				end
 				button[ v2[ "name" ] ].DoClick = function()
-					LocalPlayer():EmitSound( "buttons/button22.wav" ) --shouldn't this be surface.PlaySound?
+					surface.PlaySound( "buttons/button22.wav" ) --shouldn't this be surface.PlaySound?
 					selectedequipment = v2["class"]
 				end
 			end
@@ -599,7 +612,7 @@ function CustomizeWeapon( wep )
 	-Left hand side is a giant picture of the weapon with blank attachment icons at the bottom, one for each available type,
 	right hand side is attachment information and clicking on a blank icon brings up a list of all the attachments above the icon
 	-Rip off Insurgency's customization, with all the lists on one, non-rotating, giant weapon model? This might be perfect for
-	dynamic worldmodel changing
+	dynamic worldmodel changing, which can be done but IDK if I'm capable
 	]]
 
 	--Close function:

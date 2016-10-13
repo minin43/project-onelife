@@ -12,6 +12,12 @@ https://wiki.garrysmod.com/page/Global/Material
 
 ]]
 
+surface.CreateFont( "Exo 2 Small", {
+	font = "Exo 2",
+	size = 10,
+	weight = 500
+} )
+
 surface.CreateFont( "Exo 2 Regular", {
 	font = "Exo 2",
 	size = 20,
@@ -176,7 +182,6 @@ function AttemptMenu()
 
 	local teamnumber = LocalPlayer():Team()
 	for k, v in pairs( roles ) do
-
 		local button = vgui.Create( "DButton", tabs )
 		button:SetSize( tabs:GetWide() / ( #roles + 1 ), tabs:GetTall() )
 		button:SetPos( k * ( tabs:GetWide() / ( #roles + 1 ) ) - ( tabs:GetWide() / ( #roles + 1 ) ), 0 )
@@ -195,7 +200,6 @@ function AttemptMenu()
 				selectedrole = v[ teamnumber ]
 			end
 		end
-
 	end
 
 	local spawn = vgui.Create( "DButton", tabs )
@@ -393,13 +397,13 @@ function DrawSheet( num )
 			end
 
 			local customizeprimary = vgui.Create( "DButton", primarymodelpanel )
-			customizeprimary:SetSize( primarymodelpanel:GetWide(), primarymodelpanel:GetTall() / 8 )
-			customizeprimary:SetPos( 0, primarymodelpanel:GetTall() - customizeprimary:GetTall() )
-			customizeprimary:SetText( "Customize Weapon" )
-			--[[customizeprimary.Paint = function()
+			customizeprimary:SetSize( primarymodelpanel:GetWide(), primarymodelpanel:GetTall() )
+			customizeprimary:SetPos( 0, 0 )
+			customizeprimary:SetText( "" )
+			customizeprimary.Paint = function()
 				if !secondariesscrollpanel then return end
-					draw.SimpleText( "Customize Weapon", "Exo 2 Regular", customizeprimary:GetWide() / 2, 35 / 2, Color( 100, 100, 100 ), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER )
-				end]]
+					draw.SimpleText( "Click to customize weapon", "Exo 2 Small", customizeprimary:GetWide() / 2, customizesecondary:GetTall() - 30, Color( 100, 100, 100 ), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER )
+				end
 			customizeprimary.DoClick = function()
 				if !selectedprimary then return end
 				surface.PlaySound( "buttons/button22.wav" ) --shouldn't this be surface.PlaySound?
@@ -415,8 +419,41 @@ function DrawSheet( num )
 
 			end
 			primaryinfopanel.Think = function()
+				if !selectedprimary then return end
+				local wep = weapons.Get( selectedprimary )
+				--//Column 1
+				local shotgun
+				if selectedprimary == "" or selectedprimary == "" then --insert any and all shotgun classnames here
+					shotgun = 25
+					draw.DrawText( "Pellets: " .. wep.Shots, "Exo 2 Regular", 2, 27, Color( 255, 255, 255 ) )
+					draw.DrawText( "Spread: " .. wep.ClumpSpread, "Exo 2 Regular", 2, 102, Color( 255, 255, 255 ) )
+				else
+					shotgun = 0
+					draw.DrawText( "Accuracy: " .. wep.AimSpread, "Exo 2 Regular", 2, 102, Color( 255, 255, 255 ) ) --This is for aimed only, hipfire will always be unknown
+				end
+				draw.DrawText( "Damage: " .. wep.Damage, "Exo 2 Regular", 2, 2, Color( 255, 255, 255 ) )
+				draw.DrawText( "Fire rate: " .. wep.FireDelay, "Exo 2 Regular", 2, 27 + shotgun, Color( 255, 255, 255 ) )
+				draw.DrawText( "Recoil: " .. wep.Recoil, "Exo 2 Regular", 2, 52 + shotgun, Color( 255, 255, 255 ) )
+				--//Column 2
+				draw.DrawText( "Weight: " .. wep.SpeedDec, "Exo 2 Regular", primaryinfopanel / 2 + 2, 2, Color( 255, 255, 255 ) )
+				draw.DrawText( "Clip Size: " .. wep.ClipSize, "Exo 2 Regular", primaryinfopanel / 2 + 2, 27, Color( 255, 255, 255 ) )
+				draw.DrawText( "Reload Length: " .. ( wep.ReloadSpeed * wep.ReloadTime ), "Exo 2 Regular", primaryinfopanel / 2 + 2, 52, Color( 255, 255, 255 ) )
+				draw.DrawText( "Spread Per Shot: " .. wep.SpreadPerShot, "Exo 2 Regular", primaryinfopanel / 2 + 2, 77, Color( 255, 255, 255 ) )
+				draw.DrawText( "Maximum Spread: " .. wep.MaxSpreadInc, "Exo 2 Regular", primaryinfopanel / 2 + 2, 102, Color( 255, 255, 255 ) )
 
 			end
+			--[[Add breathing to all of the guns?
+			--// Aim breathing related \\--
+SWEP.AimBreathingEnabled - boolean, if set to true, then when aiming a slight breathing view effect will be applied to the view. DEFAULT IS false
+SWEP.AimBreathingIntensity - integer/float, defines the intensity of the breathing camera movement when aiming, 1 is 100%, 1.5 is 150%, etc.; DEFAULT is 1
+SWEP.BreathRegenRate - integer/float, the rate at which breath regenerates, default is 0.2
+SWEP.BreathDrainRate - integer/float, the rate at which breath drains while holding it, default is 0.1
+SWEP.BreathIntensityDrainRate - integer/float, the rate at which the intensity of the breathing view impact decreases while holding breath, default is 1
+SWEP.BreathIntensityRegenRate - integer/float, the rate at which the intensity of the breathing view impact increases while not holding breath, default is  2
+SWEP.BreathHoldVelocityMinimum - integer/float, if our velocity surpasses this, we can't hold our breath, default is 30
+SWEP.BreathDelay - integer/float, delay in between breath hold phases, default is 0.8
+SWEP.BreathRegenDelay - integer/float, delay until breath starts regenerating, default is 0.5
+SWEP.MinimumBreathPercentage - integer/float, we can only hold our breath if our breath meter surpasses this (in percentage), default is 0.5]]
 
 
 			--//Secondaries row//--
@@ -476,13 +513,13 @@ function DrawSheet( num )
 			end
 
 			local customizesecondary = vgui.Create( "DButton", secondarymodelpanel )
-			customizesecondary:SetSize( secondarymodelpanel:GetWide(), secondarymodelpanel:GetTall() / 8 )
-			customizesecondary:SetPos( 0, secondarymodelpanel:GetTall() - customizesecondary:GetTall() )
-			customizesecondary:SetText( "Customize Weapon" )
-			--[[customizesecondary.Paint = function()
+			customizesecondary:SetSize( secondarymodelpanel:GetWide(), secondarymodelpanel:GetTall() )
+			customizesecondary:SetPos( 0, 0 )
+			customizesecondary:SetText( "" )
+			customizesecondary.Paint = function()
 				if !secondariesscrollpanel then return end
-					draw.SimpleText( "Customize Weapon", "Exo 2 Regular", customizesecondary:GetWide() / 2, 35 / 2, Color( 100, 100, 100 ), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER )
-				end]]
+					draw.SimpleText( "Click to customize weapon", "Exo 2 Regular", customizesecondary:GetWide() / 2, customizesecondary:GetTall() - 30, Color( 100, 100, 100 ), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER )
+				end
 			customizesecondary.DoClick = function()
 				if !selectedsecondary then return end
 				surface.PlaySound( "buttons/button22.wav" ) --shouldn't this be surface.PlaySound?
@@ -493,6 +530,29 @@ function DrawSheet( num )
 					surface.SetDrawColor( Color( 200, 200, 200 ) )
         			surface.DrawRect( 0, secondarymodelpanel:GetTall() - customizesecondary:GetTall(), secondarymodelpanel:GetWide(), customizesecondary:GetTall() )
 				end
+			end
+
+			local secondaryinfopanel = vgui.Create( "DPanel", page[ v[ teamnumber ] ] )
+			secondaryinfopanel:SetPos( page[ v[ teamnumber ] ]:GetWide() * ( 2 / 3 ), 0 )
+			secondaryinfopanel:SetSize( page[ v[ teamnumber ] ]:GetWide() / 3 , page[ v[ teamnumber ] ]:GetTall() / 3 )
+			secondaryinfopanel.Paint = function()
+
+			end
+			secondaryinfopanel.Think = function()
+				if !selectedsecondary then return end
+				local wep = weapons.Get( selectedsecondary )
+				--//Column 1
+				draw.DrawText( "Damage: " .. wep.Damage, "Exo 2 Regular", 2, 2, Color( 255, 255, 255 ) )
+				draw.DrawText( "Fire rate: " .. wep.FireDelay, "Exo 2 Regular", 2, 27, Color( 255, 255, 255 ) )
+				draw.DrawText( "Recoil: " .. wep.Recoil, "Exo 2 Regular", 2, 52, Color( 255, 255, 255 ) )
+				draw.DrawText( "Accuracy: " .. wep.AimSpread, "Exo 2 Regular", 2, 77, Color( 255, 255, 255 ) ) --This is for aimed only, hipfire will always be unknown
+				--//Column 2
+				draw.DrawText( "Weight: " .. wep.SpeedDec, "Exo 2 Regular", secondaryinfopanel / 2 + 2, 2, Color( 255, 255, 255 ) )
+				draw.DrawText( "Clip Size: " .. wep.ClipSize, "Exo 2 Regular", secondaryinfopanel / 2 + 2, 27, Color( 255, 255, 255 ) )
+				draw.DrawText( "Reload Length: " .. ( wep.ReloadSpeed * wep.ReloadTime ), "Exo 2 Regular", secondaryinfopanel / 2 + 2, 52, Color( 255, 255, 255 ) )
+				draw.DrawText( "Spread Per Shot: " .. wep.SpreadPerShot, "Exo 2 Regular", secondaryinfopanel / 2 + 2, 77, Color( 255, 255, 255 ) )
+				draw.DrawText( "Maximum Spread: " .. wep.MaxSpreadInc, "Exo 2 Regular", secondaryinfopanel / 2 + 2, 102, Color( 255, 255, 255 ) )
+
 			end
 
 
@@ -531,7 +591,8 @@ function DrawSheet( num )
 			end
 
 
-			--//The information section, for shit like money and stuff
+			--//The information section, for shit like money and stuff, right next to the equipment list
+			--//Maybe include a running character holding the selected weapons in between the equipment list and role info?
 
 
 			local information = vgui.Create( "DPanel", page[ v[ teamnumber ] ] )
@@ -541,7 +602,8 @@ function DrawSheet( num )
 				if !page[ v[ teamnumber ] ] then return end
 				surface.SetDrawColor( 255, 255, 255 )
         		surface.DrawRect( 0, 0, information:GetWide(), information:GetTall() )
-				draw.SimpleText( v[ 4 ], "Exo 2 Regular", 0, 0, Color( 50, 50, 50 ) ) --I need to look at all the different ways I can draw text, this way is shitty
+				draw.DrawText( "Role: " .. v[ teamnumber ], "Exo 2 Large", 2, 2, Color( 50, 50, 50 ) ) --I need to look at all the different ways I can draw text, this way is shitty
+				draw.DrawText( v[ 4 ], "Exo 2 Regular", 2, 30, Color( 50, 50, 50 ) ) --I need to look at all the different ways I can draw text, this way is shitty
 			end
 		end
 	end
@@ -567,17 +629,57 @@ function CustomizeWeapon( wep )
 		surface.DrawRect( 0, 0, customizemain:GetWide(), customizemain:GetTall() )
 	end
 
-	allatachmenttypes = { }
-	typekeys = { "Sight" = 1, "Barrel" = 2, "Under" = 3, "Lasers" = 4, "Magazine" = 5, "Flavor" = 6, "Ammo" = 7 }
-	--table.SortByMember( wep_att[ wep ], wep_att[ wep ].4
+	local modelpanel = vgui.Create( "DPanel", customizemain )
+		modelpanel:SetPos( customizemain:GetWide() / 3, customizemain:GetTall() / 3 )
+		modelpanel:SetSize( customizemain:GetWide() / 3 , customizemain:GetTall() / 3 )
+		modelpanel.Paint = function()
+			if !customizemain then return end
+			--surface.SetDrawColor( 0, 0, 0 )
+       		--surface.DrawRect( 0, 0, primarymodelpanel:GetWide(), primarymodelpanel:GetTall() )
+			surface.SetDrawColor( TeamColor )
+       		surface.DrawOutlinedRect( 0, 0, modelpanel:GetWide(), modelpanel:GetTall() )
+		end
+
+		local secondarymodel = vgui.Create( "DModelPanel", modelpanel )
+		secondarymodel:SetSize( modelpanel:GetWide(), modelpanel:GetTall() )
+		secondarymodel:SetCamPos( Vector( -55, 0, 0 ) )
+		secondarymodel:SetLookAt( Vector( 5, 0, 2 ) )
+		secondarymodel:SetAmbientLight( Color( 200, 200, 200 ) )
+		secondarymodel.Think = function()
+			if selectedsecondary then
+				secondarymodel:SetModel( weapons.Get( selectedsecondary ).WorldModel )
+			end
+		end
+	end
+
+	attachmenttypes = { "Sight", "Barrel", "Under", "Lasers", "Magazine", "Flavor", "Ammo" }
+	for k, v in pairs( attachmenttypes ) do
+		local button = vgui.Create( "DButton", customizemain )
+		button:SetSize( customizemain:GetWide() / ( #attachmenttypes ), tabs:GetTall() )
+		button:SetPos( k * ( tabs:GetWide() / ( #roles + 1 ) ) - ( tabs:GetWide() / ( #roles + 1 ) ), 0 )
+		button:SetText( "" )
+		button.Paint = function()
+			if lvl >= k then
+				draw.SimpleText( v[ teamnumber ], "Exo 2 Regular", button:GetWide() / 2, button:GetTall() / 2, FontColor, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER )
+			else
+				draw.SimpleText( "Locked", "Exo 2 Regular", button:GetWide() / 2, button:GetTall() / 2, FontColor, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER )
+			end
+		end
+		button.DoClick = function()
+			--print( "button.DoClick called" )
+			if lvl >= k and currentsheet != k then
+				DrawSheet( k )
+				LocalPlayer():EmitSound( "buttons/button22.wav" ) --shouldn't this be surface.PlaySound?
+				--print( "Setting active tab # ", k )
+			end
+		end
+	end
+
 	for k, v in pairs( wep_att[ wep ] ) do
 		if !table.HasValue( allatachmenttypes, v[ 1 ] ) then
 			table.insert( allatachmenttypes, typekeys.v[ 1 ], v[ 1 ] )
 		end
 	end
-	table.ClearKeys( allatachmenttypes )
-	print( "Printing all attachment types table:" )
-	PrintTable( allatachmenttypes )
 
 	local tabs = vgui.Create( "DPanel", customizemain )
 	tabs:SetPos( 0, 0 )
@@ -608,6 +710,7 @@ function CustomizeWeapon( wep )
 
 
 	--[[
+	-Have the weapon model as the majority of the seconadry menu, with a bunch of lists underneath of the attachment types and close button at the bottom
 	-Do like TDM and have columns of attachments (instead of weapons) with the right hand side showing the model and a short description
 	-Left hand side is a giant picture of the weapon with blank attachment icons at the bottom, one for each available type,
 	right hand side is attachment information and clicking on a blank icon brings up a list of all the attachments above the icon

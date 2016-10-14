@@ -415,7 +415,7 @@ wep_att[ "cw_kk_ins2_m45" ] = {
 wep_att[ "cw_kk_ins2_revolver" ] = {
     [ "kk_ins2_lam" ] =             { "Lasers", 150, unlocked, 1 },
     [ "kk_ins2_flashlight" ] =      { "Lasers", 200, unlocked, 2 },
-    [ "kk_ins2_revolver_mag" ] =    { "Miscellaneous", 200, unlocked, 3 }, --Find the type!
+    [ "kk_ins2_revolver_mag" ] =    { "Miscellaneous", 200, unlocked, 3 },
     [ "am_magnum" ] =               { "Ammo", 200, unlocked, 4 },
     [ "am_matchgrade" ] =           { "Ammo", 250, unlocked, 5 }
 }

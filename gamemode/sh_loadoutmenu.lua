@@ -1,7 +1,6 @@
 
 --OLD LAYOUT: { <weapon name>, <class>, <unlock level>, <world model>, <cost>, { <damage>, <accuracy>, <rate of fire> } }  
 --NEW LAYOUT: { ["name"] = "weapon name", ["class"] = "class name", ["roles"] = { roles by level } }
---{ ["name"] = "", 			["class"] = "", 		["roles"] = { 0 } }
 
 primaries = {
 	[1] = {
@@ -55,7 +54,7 @@ secondaries = {
 	}
 }
 
---// Layout: "Equipment name", "equipment class", "equipment worldmodel", ""
+--// Layout: "Equipment name", "equipment class", "roles to receive"
 equipment = {
 	[1] = {
 		{ ["name"] = "F1 Frag", 		["class"] = "cw_kk_ins2_nade_f1", 	["roles"] = { 2, 5, 7, 8 } },
@@ -145,10 +144,8 @@ end
 --hook.Add( "to-do hook", "TeamThree", TeamThree() )
 
 --//Should I edit CW2.0's pickup function as as to disallow multiple weapon pickups, or rewrite it here?
-if SERVER then  
-	--PrintTable( allregisteredattachments )
-	
-	--//This gives the player their weapons/attachments when the hit "Redeploy" in the menu
+if SERVER then  	
+	--//This gives the player their new weapons/attachments when the hit "Redeploy" in the menu
 	util.AddNetworkString( "SetLoadout" )
 	net.Receive( "SetLoadout", function( len, ply )
 		--if !ply:IsAlive() then return end
@@ -172,13 +169,13 @@ if SERVER then
 				ply.oldeq = loadout[ "equipment" ]
 			end
 			if loadout[ "role" ] then
-				--insert code here
+				ply.oldrole = loadout[ "role" ]
 			end
 			if loadout[ "pattachments" ] then
-				--insert code here
+				ply.oldpatt = loadout[ "pattachments" ]
 			end
 			if loadout[ "sattachments" ] then
-				--insert code here
+				ply.oldsatt = loadout[ "sattachments" ]
 			end
 		end
 
@@ -191,6 +188,7 @@ if SERVER then
 			ply:Give( table.Random( randomtable ) )
 		end
 		
+		--//Give ammo here
 		local ammoneeded = {
 			[ "cw_kk_ins2_nade_m18" ] = 2,
 			[ "cw_kk_ins2_nade_m67" ] = 2,
@@ -207,7 +205,6 @@ if SERVER then
 		timer.Simple( 0.1, function()
 			if ply:IsPlayer() then
 				for k, v in pairs( ply:GetWeapons() ) do
-					print( v:GetClass() )
 					local x = v:GetPrimaryAmmoType()
 					local y = v:Clip1()
 					if !previouslyremoved[ x ] then
@@ -237,12 +234,14 @@ if SERVER then
 		if ply.oldeq then
 			ply:Give( ply.oldeq )
 		end
-		--[[if ply.oldpatt then
-			ply:Give( ply.oldpatt ) or something
-		end]]
-		--[[if ply.oldsatt then
-			ply:Give( ply.oldsatt ) or something
-		end]]
+		if ply.oldpatt then
+			--ply:Give( ply.oldpatt ) Remember, it's a table and the key = attachment type, value = attachment classname
+			print( "The primary weapon has attachments that should be auto-equipped.")
+		end
+		if ply.oldsatt then
+			--ply:Give( ply.oldsatt ) Remember, it's a table and the key = attachment type, value = attachment classname
+			print( "The secondary weapon has attachments that should be auto-equipped.")
+		end
 
 		if teamnumber == 1 then
 			ply:Give( "cw_kk_ins2_mel_gurkha" )

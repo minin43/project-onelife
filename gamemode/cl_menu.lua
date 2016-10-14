@@ -219,9 +219,9 @@ function AttemptMenu()
 				[ "primary" ] = selectedprimary or "",
 				[ "secondary" ] = selectedsecondary or "",
 				[ "equipment" ] = selectedequipment or "",
-				[ "role" ] = selectedrole or ""--,
-				--[ "pattachments" ] = primattachments or ""
-				--[ "sattachments" ] = secattachments or ""
+				[ "role" ] = selectedrole or "",
+				[ "pattachments" ] = pattach or { },
+				[ "sattachments" ] = sattach or { }
 			}
 			net.WriteTable( loadout )
 		net.SendToServer()
@@ -318,16 +318,6 @@ function DrawSheet( num )
 				button[ v2[ "name" ] ].DoClick = function()
 					surface.PlaySound( "buttons/button22.wav" ) --shouldn't this be surface.PlaySound?
 					selectedprimary = v2["class"]
-					--[[net.Start( "RequestAttachments" )
-						net.WriteString( selectedprimary )
-					net.SendToServer()
-					if attachmentlists then
-						print( "attachmentlists is valid, emptying table..." ) --this isn't working as intended
-						for k3, v3 in pairs( attachmentlists ) do
-							v3:CloseMenu()
-						end
-						table.Empty( attachmentlists )
-					end]]
 				end
 			end
 
@@ -364,6 +354,7 @@ function DrawSheet( num )
 				if !selectedprimary then return end
 				surface.PlaySound( "buttons/button22.wav" ) --shouldn't this be surface.PlaySound?
 				CustomizeWeapon( selectedprimary )
+				pattach = { }
 			end
 
 			--//If the panel name is anything to go by, the weapon info on the right hand side of the screen
@@ -483,6 +474,7 @@ SWEP.MinimumBreathPercentage - integer/float, we can only hold our breath if our
 				if !selectedsecondary then return end
 				surface.PlaySound( "buttons/button22.wav" ) --shouldn't this be surface.PlaySound?
 				CustomizeWeapon( selectedsecondary )
+				sattach = { }
 			end
 			customizesecondary.Think = function()
 				if !selectedsecondary then
@@ -666,17 +658,38 @@ function CustomizeWeapon( wep )
 		local counter = 0
 		for k2, v2 in pairs( wep_att[ wep ] ) do
 			if v2[ 1 ] == v then
-				--PrintTable( allattachments[ k2 ] )
 				counter = counter + 1
+				local usedtext = CustomizableWeaponry.registeredAttachmentsSKey[ k2 ].displayName
+				if #usedtext > 12 then usedtext = CustomizableWeaponry.registeredAttachmentsSKey[ k2 ].displayNameShort end
+				local usedcolor = Color( 120, 120, 120)
+				
 				list[ k2 ] = vgui.Create( "DButton", list[ v ] )
 				list[ k2 ]:SetSize( list[ v ]:GetWide(), 20 )
 				list[ k2 ]:SetPos( 0, counter * 22 + 27 )
 				list[ k2 ]:SetText( "" )
 				list[ k2 ].Paint = function()
 					if !customizemain then return end
-					local usedtext = CustomizableWeaponry.registeredAttachmentsSKey[ k2 ].displayName
-					if #usedtext > 12 then usedtext = CustomizableWeaponry.registeredAttachmentsSKey[ k2 ].displayNameShort end
-					draw.SimpleText( usedtext, "Exo 2 Regular", list[ k2 ]:GetWide() / 2, 10 / 2, Color( 100, 100, 100 ), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER )
+					draw.SimpleText( usedtext, "Exo 2 Regular", list[ k2 ]:GetWide() / 2, 10 / 2, usedcolor, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER )
+				end
+				list[ k2 ].DoClick = function()
+					for k3, v3 in pairs( primaries[ teamnumber ] ) do
+						if v3[ "class" ] == wep then
+							pattach[ v ] = k2
+							break
+						end
+					end
+					for k3, v3 in pairs( secondaries[ teamnumber ] ) do
+						if v3[ "class" ] == wep then
+							sattach[ v ] = k2
+							break
+						end
+					end
+					print( v, k2 )
+				end
+				list[ k2 ].Think = function()
+					if dicks then --this needs to check if the attachment was bought or not
+						usedcolor = Color( 70, 70, 70 )
+					end
 				end
 			end
 		end

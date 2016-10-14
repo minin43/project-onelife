@@ -357,33 +357,12 @@ function GM:PlayerSpawn( ply )
 	end
 
 	ply:SetJumpPower( 170 ) -- CTDM value was 170
-	
 	ply:SetWalkSpeed( 180 ) --CTDM value was 180
 	ply:SetRunSpeed( 300 ) --CTDM value was 300
 
-
-	timer.Simple( 0.1, function()
-		if ply:IsPlayer() then
-			for k, v in pairs( ply:GetWeapons() ) do
-				local x = v:GetPrimaryAmmoType()
-				local y = v:Clip1()
-				local give = true
-				
-				for k2, v2 in next, dontgive do
-					if v2 == v then
-						give = false
-						break
-					end
-				end
-				if give == true then
-					ply:GiveAmmo( ( y * 5 ), x, true )
-				end
-			end
-			ply:GiveAmmo( 2, "40MM", true )
-		end
-	end )
-	
 	ply:SetNoCollideWithTeammates( false )
+
+	GiveOldLoadout( ply )
 
 end
 

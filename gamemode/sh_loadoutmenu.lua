@@ -146,6 +146,7 @@ end
 
 --//Should I edit CW2.0's pickup function as as to disallow multiple weapon pickups, or rewrite it here?
 if SERVER then  
+	--PrintTable( allregisteredattachments )
 	
 	--//This gives the player their weapons/attachments when the hit "Redeploy" in the menu
 	util.AddNetworkString( "SetLoadout" )
@@ -206,14 +207,15 @@ if SERVER then
 		timer.Simple( 0.1, function()
 			if ply:IsPlayer() then
 				for k, v in pairs( ply:GetWeapons() ) do
+					print( v:GetClass() )
 					local x = v:GetPrimaryAmmoType()
 					local y = v:Clip1()
 					if !previouslyremoved[ x ] then
 						ply:RemoveAmmo( ply:GetAmmoCount( x ), x )
 						table.insert( previouslyremoved, x )
 					end
-					if ammoneeded[v] then
-						ply:GiveAmmo( ammoneeded[v], x, true )
+					if ammoneeded[ v:GetClass() ] then
+						ply:GiveAmmo( ammoneeded[ v:GetClass() ], x, true )
 					else
 						ply:GiveAmmo( ( y * 5 ), x, true )
 					end

@@ -14,7 +14,7 @@ https://wiki.garrysmod.com/page/Global/Material
 
 surface.CreateFont( "Exo 2 Small", {
 	font = "Exo 2",
-	size = 10,
+	size = 15,
 	weight = 500
 } )
 
@@ -264,7 +264,7 @@ function DrawSheet( num )
 	button = { }
 	for k, v in pairs( roles ) do
 		if num == k then
-			--//Here is where most of the screen drawing will be done
+			--//Here is where lots of the screen drawing will be done
 			page[ v[ teamnumber ] ] = vgui.Create( "DFrame", main )
 			currentsheet = page[ v[ teamnumber ] ]
 			page[ v[ teamnumber ] ]:SetSize( main:GetWide(), main:GetTall() - 30 ) --30 because that's how tall tabs is
@@ -299,7 +299,7 @@ function DrawSheet( num )
 				end
 			end
 
-			--//This is all the buttons that get created
+			--//This is all the primary weapon buttons that get created
 			for k2, v2 in pairs( availableprimaries ) do
 				button[ v2[ "name" ] ] = vgui.Create( "DButton", primariesscrollpanel )
 				button[ v2[ "name" ] ]:SetPos( 0, 35 * ( k2 - 1 ) + 35 )
@@ -343,7 +343,7 @@ function DrawSheet( num )
 
 			local primarymodel = vgui.Create( "DModelPanel", primarymodelpanel )
 			primarymodel:SetSize( primarymodelpanel:GetWide(), primarymodelpanel:GetTall() )
-			primarymodel:SetCamPos( Vector( -55, 0, 0 ) )
+			primarymodel:SetCamPos( Vector( -45, 0, 0 ) )
 			primarymodel:SetLookAt( Vector( 5, 0, 2 ) )
 			primarymodel:SetAmbientLight( Color( 200, 200, 200 ) )
 			primarymodel.Think = function()
@@ -462,7 +462,7 @@ SWEP.MinimumBreathPercentage - integer/float, we can only hold our breath if our
 
 			local secondarymodel = vgui.Create( "DModelPanel", secondarymodelpanel )
 			secondarymodel:SetSize( secondarymodelpanel:GetWide(), secondarymodelpanel:GetTall() )
-			secondarymodel:SetCamPos( Vector( -55, 0, 0 ) )
+			secondarymodel:SetCamPos( Vector( -45, 0, 0 ) )
 			secondarymodel:SetLookAt( Vector( 5, 0, 2 ) )
 			secondarymodel:SetAmbientLight( Color( 200, 200, 200 ) )
 			secondarymodel.Think = function()
@@ -575,13 +575,35 @@ end
 
 --This is the menu that opens when you press the "customize weapon" button
 function CustomizeWeapon( wep )
-	main:SetDisabled( true )
+
+	local currentTeam = LocalPlayer():Team()
+	local TeamColor
+	if currentTeam == 0 then --???
+		TeamColor = Color( 255, 255, 255 )
+	elseif currentTeam == 1 then --red
+		TeamColor = Color( 100, 15, 15 )
+	elseif currentTeam == 2 then --blue
+		TeamColor = Color( 33, 150, 243, 100 )
+    elseif currentTeam == 3 then --black/FFA
+        TeamColor = Color( 15, 160, 15 )
+	end
+
+	--main:SetDisabled( true )
 	for k, v in pairs( main:GetChildren() ) do
-		v:SetDisabled( true )
+		if v:GetName() == "DLabel" then
+			v:SetDisabled( true )
+		elseif v:GetName() == "DPanel" then
+			v:SetDisabled( true )
+			for k2, v2 in pairs( v:GetChildren() ) do
+				v2:SetEnabled( false )
+			end
+		elseif v:GetName() == "DButton" then --For some reason button wants to be special
+			v:SetEnabled( false )
+		end
 	end
 
 	customizemain = vgui.Create( "DFrame" )
-	customizemain:SetSize( ScrW() / 21, ScrH() / 9 ) --Consider adjusting
+	customizemain:SetSize( 800, 600 ) --Consider adjusting
 	customizemain:SetTitle( "" )
 	customizemain:SetVisible( true )
 	customizemain:SetDraggable( false )
@@ -589,13 +611,15 @@ function CustomizeWeapon( wep )
 	customizemain:MakePopup()
 	customizemain:Center()
 	customizemain.Paint = function()
+		if !customizemain then return end
+		Derma_DrawBackgroundBlur( customizemain, CurTime() )
 		surface.SetDrawColor( Color( 0, 0, 0, 250 ) )
 		surface.DrawRect( 0, 0, customizemain:GetWide(), customizemain:GetTall() )
 	end
 
 	local modelpanel = vgui.Create( "DPanel", customizemain )
-	modelpanel:SetPos( customizemain:GetWide() / 3, customizemain:GetTall() / 3 )
-	modelpanel:SetSize( customizemain:GetWide() / 3 , customizemain:GetTall() / 3 )
+	modelpanel:SetPos( 0, 0 )
+	modelpanel:SetSize( customizemain:GetWide(), customizemain:GetTall() / 3 )
 	modelpanel.Paint = function()
 		if !customizemain then return end
 		--surface.SetDrawColor( 0, 0, 0 )
@@ -604,87 +628,91 @@ function CustomizeWeapon( wep )
     	surface.DrawOutlinedRect( 0, 0, modelpanel:GetWide(), modelpanel:GetTall() )
 	end
 
-	local secondarymodel = vgui.Create( "DModelPanel", modelpanel )
-	secondarymodel:SetSize( modelpanel:GetWide(), modelpanel:GetTall() )
-	secondarymodel:SetCamPos( Vector( -55, 0, 0 ) )
-	secondarymodel:SetLookAt( Vector( 5, 0, 2 ) )
-	secondarymodel:SetAmbientLight( Color( 200, 200, 200 ) )
-	secondarymodel.Think = function()
-		if selectedsecondary then
-			secondarymodel:SetModel( weapons.Get( selectedsecondary ).WorldModel )
+	local model = vgui.Create( "DModelPanel", modelpanel )
+	model:SetSize( modelpanel:GetWide(), modelpanel:GetTall() )
+	model:SetCamPos( Vector( 0, 50, 0 ) )
+	model:SetLookAt( Vector( 5, 0, 0 ) )
+	model:SetAmbientLight( Color( 200, 200, 200 ) )
+	function model:LayoutEntity( Entity ) return end
+	model.Think = function()
+		if wep then
+			model:SetModel( weapons.Get( wep ).WorldModel )
 		end
 	end
 
-	attachmenttypes = { "Sight", "Barrel", "Under", "Lasers", "Magazine", "Flavor", "Ammo" }
+	local attachmenttypes = { "Sight", "Barrel", "Under", "Lasers", "Miscellaneous", "Ammo" }
+	local bar = vgui.Create( "DPanel", customizemain )
+	bar:SetSize( customizemain:GetWide(), 35 + 1 )
+	bar:SetPos( 0, customizemain:GetTall() / 3 - 1 )
+	bar.Paint = function()
+		if !customizemain then return end
+		surface.SetDrawColor( TeamColor )
+    	surface.DrawRect( 0, 0, bar:GetWide(), bar:GetTall() )
+		for k, v in pairs( attachmenttypes ) do
+			draw.SimpleText( v, "Exo 2 Regular", bar:GetWide() / #attachmenttypes * k - ( bar:GetWide() / #attachmenttypes / 2), bar:GetTall() / 2, FontColor, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER )
+		end
+	end
+
+	list = { }
 	for k, v in pairs( attachmenttypes ) do
-		local button = vgui.Create( "DButton", customizemain )
-		button:SetSize( customizemain:GetWide() / ( #attachmenttypes ), tabs:GetTall() )
-		button:SetPos( k * ( tabs:GetWide() / ( #roles + 1 ) ) - ( tabs:GetWide() / ( #roles + 1 ) ), 0 )
-		button:SetText( "" )
-		button.Paint = function()
-			if lvl >= k then
-				draw.SimpleText( v[ teamnumber ], "Exo 2 Regular", button:GetWide() / 2, button:GetTall() / 2, FontColor, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER )
-			else
-				draw.SimpleText( "Locked", "Exo 2 Regular", button:GetWide() / 2, button:GetTall() / 2, FontColor, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER )
-			end
+		list[ v ] = vgui.Create( "DScrollPanel", customizemain )
+		list[ v ]:SetSize( customizemain:GetWide() / #attachmenttypes + 1, customizemain:GetTall() / 3 )
+		list[ v ]:SetPos( customizemain:GetWide() / #attachmenttypes * ( k - 1 ), customizemain:GetTall() / 3 )
+		list[ v ].Paint = function()
+			surface.SetDrawColor( TeamColor )
+        	surface.DrawOutlinedRect( 0, 0, list[ v ]:GetWide(), list[ v ]:GetTall() )
 		end
-		button.DoClick = function()
-			--print( "button.DoClick called" )
-			if lvl >= k and currentsheet != k then
-				DrawSheet( k )
-				LocalPlayer():EmitSound( "buttons/button22.wav" ) --shouldn't this be surface.PlaySound?
-				--print( "Setting active tab # ", k )
+
+		local counter = 0
+		for k2, v2 in pairs( wep_att[ wep ] ) do
+			if v2[ 1 ] == v then
+				--PrintTable( allattachments[ k2 ] )
+				counter = counter + 1
+				list[ k2 ] = vgui.Create( "DButton", list[ v ] )
+				list[ k2 ]:SetSize( list[ v ]:GetWide(), 20 )
+				list[ k2 ]:SetPos( 0, counter * 22 + 27 )
+				list[ k2 ]:SetText( "" )
+				list[ k2 ].Paint = function()
+					if !customizemain then return end
+					local usedtext = CustomizableWeaponry.registeredAttachmentsSKey[ k2 ].displayName
+					if #usedtext > 12 then usedtext = CustomizableWeaponry.registeredAttachmentsSKey[ k2 ].displayNameShort end
+					draw.SimpleText( usedtext, "Exo 2 Regular", list[ k2 ]:GetWide() / 2, 10 / 2, Color( 100, 100, 100 ), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER )
+				end
 			end
 		end
 	end
 
-	for k, v in pairs( wep_att[ wep ] ) do
+	--[[for k, v in pairs( wep_att[ wep ] ) do
 		if !table.HasValue( allatachmenttypes, v[ 1 ] ) then
 			table.insert( allatachmenttypes, typekeys.v[ 1 ], v[ 1 ] )
 		end
-	end
+	end]]
 
-	local tabs = vgui.Create( "DPanel", customizemain )
-	tabs:SetPos( 0, 0 )
-	tabs:SetSize( main:GetWide() - 100, 30 )
-	tabs.Paint = function()
-        surface.SetDrawColor( TeamColor )
-        surface.DrawRect( 0, 0, tabs:GetWide(), tabs:GetTall() )
-    end
-
-	--//Oh shit I'm doing this wrong
-	for k, v in pairs( allatachmenttypes ) do
-		local button = vgui.Create( "Dbutton", tabs )
-		button:SetSize( tabs:GetWide() / ( #allatachmenttypes ), tabs:GetTall() )
-		button:SetPos( k * ( tabs:GetWide() / ( #allatachmenttypes ) ) - ( tabs:GetWide() / ( #allatachmenttypes ) ), 0 )
-		button:SetText( "" )
-		button.Paint = function()
-			draw.SimpleText( v, "Exo 2 Regular", button:GetWide() / 2, button:GetTall() / 2, FontColor, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER )
+	local closebutton = vgui.Create( "DButton", modelpanel )
+	closebutton:SetSize( modelpanel:GetWide(), modelpanel:GetTall() )
+	closebutton:SetPos( 0, 0 )
+	closebutton:SetText( "" )
+	closebutton.Paint = function()
+		if !customizemain then return end
+			draw.SimpleText( weapons.Get( wep ).PrintName, "Exo 2 Regular", closebutton:GetWide() / 2, 30, Color( 100, 100, 100 ), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER )
+			draw.SimpleText( "Click to close weapon customization", "Exo 2 Regular", closebutton:GetWide() / 2, closebutton:GetTall() - 30, Color( 100, 100, 100 ), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER )
 		end
-		button.DoClick = function()
-			--print( "button.DoClick called" )
-			if lvl >= k and currentsheet != k then
-				DrawSheet( k )
-				LocalPlayer():EmitSound( "buttons/button22.wav" ) --shouldn't this be surface.PlaySound?
-				--print( "Setting active tab # ", k )
+	closebutton.DoClick = function()
+		customizemain:Close()
+		--Close function:
+		--main:SetDisabled( false )
+		for k, v in pairs( main:GetChildren() ) do
+			if v:GetName() == "DLabel" then
+				v:SetDisabled( false )
+			elseif v:GetName() == "DPanel" then
+				v:SetDisabled( false )
+				for k2, v2 in pairs( v:GetChildren() ) do
+					v2:SetEnabled( true )
+				end
+			elseif v:GetName() == "DButton" then --For some reason button wants to be special
+				v:SetEnabled( true )
 			end
 		end
-	end
-
-
-	--[[
-	-Have the weapon model as the majority of the seconadry menu, with a bunch of lists underneath of the attachment types and close button at the bottom
-	-Do like TDM and have columns of attachments (instead of weapons) with the right hand side showing the model and a short description
-	-Left hand side is a giant picture of the weapon with blank attachment icons at the bottom, one for each available type,
-	right hand side is attachment information and clicking on a blank icon brings up a list of all the attachments above the icon
-	-Rip off Insurgency's customization, with all the lists on one, non-rotating, giant weapon model? This might be perfect for
-	dynamic worldmodel changing, which can be done but IDK if I'm capable
-	]]
-
-	--Close function:
-	main:SetDisabled( false )
-	for k, v in pairs( main:GetChildren() ) do
-		v:SetDisabled( false )
 	end
 end
 

@@ -316,12 +316,6 @@ hook.Add( "PlayerDisconnected", "Spec_DC", function( ply )
 	end
 end )
 
-local dontgive = {
-	"fas2_ammobox",
-	"fast2_ifak",
-	"fas2_m67",
-	"seal6-claymore"
-}
 
 function GM:PlayerSpawn( ply )
 
@@ -362,6 +356,7 @@ function GM:PlayerSpawn( ply )
 
 	ply:SetNoCollideWithTeammates( false )
 
+	--//Found in sh_loadoutmenu//--
 	GiveOldLoadout( ply )
 
 end

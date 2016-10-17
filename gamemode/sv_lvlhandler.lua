@@ -89,7 +89,7 @@ end
 net.Receive( "RequestLevel", function( len, ply )
 	local level = lvl.GetLevel( ply ) or 1
 	net.Start( "RequestLevelCallback" )
-		net.WriteInt( level, 8 )
+		net.WriteString( tostring( level ) )
 	net.Send( ply )
 end )
 

@@ -100,7 +100,7 @@ wep_att[ "cw_kk_ins2_mosin" ] = {
     [ "kk_ins2_aimpoint" ] =        { "Sight", 150, unlocked, 3 },
     [ "kk_ins2_elcan" ] =           { "Sight", 200, unlocked, 4 },
     [ "kk_ins2_po4" ] =             { "Sight", 200, unlocked, 5 },
-    [ "kk_ins2_scope_mosin" ] =     { "Sight", 250, unlocked = true, 6 },
+    [ "kk_ins2_scope_mosin" ] =     { "Sight", 0, unlocked = true, 6 },
     [ "kk_ins2_suppressor_ins" ] =  { "Barrel", 150, unlocked, 7 },
     [ "kk_ins2_bipod" ] =           { "Under", 150, unlocked, 8 },
     [ "kk_ins2_lam" ] =             { "Lasers", 100, unlocked, 9 },
@@ -321,7 +321,7 @@ wep_att[ "cw_kk_ins2_m40a1" ] = {
     [ "kk_ins2_aimpoint" ] =        { "Sight", 150, unlocked, 3 },
     [ "kk_ins2_elcan" ] =           { "Sight", 200, unlocked, 4 },
     [ "kk_ins2_po4" ] =             { "Sight", 200, unlocked, 5 },
-    [ "kk_ins2_scope_m40" ] =       { "Sight", 250, unlocked = true, 6 },
+    [ "kk_ins2_scope_m40" ] =       { "Sight", 0, unlocked = true, 6 },
     [ "kk_ins2_suppressor_sec" ] =  { "Barrel", 150, unlocked, 7 },
     [ "kk_ins2_bipod" ] =           { "Under", 150, unlocked, 8 },
     [ "kk_ins2_lam" ] =             { "Lasers", 100, unlocked, 9 },
@@ -419,3 +419,5 @@ wep_att[ "cw_kk_ins2_revolver" ] = {
     [ "am_magnum" ] =               { "Ammo", 200, unlocked, 4 },
     [ "am_matchgrade" ] =           { "Ammo", 250, unlocked, 5 }
 }
+
+--Include some function that checks for bought attachments and sets "unlocked" to true for all, probably on player join

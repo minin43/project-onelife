@@ -28,6 +28,10 @@ function StartGame( mode )
         print( "Invalid mode type, preventing game start." )
         return
     end
+    if GetGlobalBool( "GameInProgress" ) == true then 
+        print( "There is already a game in-progress..." )
+        return 
+    end
     SetGlobalInt( "RoundWinner", 0 )
     SetGlobalString( "GameType", mode )
     SetGlobalBool( "GameInProgress", true )
@@ -85,6 +89,7 @@ function RoundBegin( round )
     end )
     --Unlocks all player movements but disallows kit customization
     print( "Round has started..." )
+    SetGlobalBool( "RoundInProgress", true )
     for k, v in pairs( player.GetAll() ) do
 	    v:Freeze( false )
         --v.CanCustomizeLoadout = false
@@ -118,6 +123,7 @@ function RoundEnd( round, victor )
         print( "Nobody's won the game yet." )
         timer.Simple( 15, function()
             StartRound( round + 1 )
+            SetGlobalBool( "RoundInProgress", false )
         end )
     end
 end 

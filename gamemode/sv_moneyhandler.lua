@@ -70,12 +70,12 @@ net.Receive( "BuyAttachment", function( len, ply )
 	local attachmenttype = net.ReadString()
 	local price = tonumber( net.ReadString() )
 	local file = util.JSONToTable( file.Read( "onelife/users/" .. id( ply:SteamID() ) .. ".txt", "DATA" ) )
-	local parentweptable = file[ parentwep ]
+	local parentweptable = file[ parentwep ] or { [ attachment ] = { } }
 	--file = { ["wep_class"] = { ["attachment"] = "attachmenttype" }
 		
 
-	table.insert( parentweptable, attachment, attachmenttype )
-	table.Empty( file[ parentwep ] )
+	table.insert( parentweptable[ attachment ], attachmenttype )
+	if file[ parentwep ] then table.Empty( file[ parentwep ] ) end
 	table.insert( file[ parentwep ], parentweptable )
 
 	local newfile = util.TableToJSON( file ) --{ file[ 1 ], currentattachments } )

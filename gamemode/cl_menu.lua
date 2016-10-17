@@ -49,93 +49,11 @@ function PrecacheModels()
 	end
 end
 
---[[//The net message can be found in sv_loadoutmenu.lua
-local primaries, secondaries, equipment
-function GetWeapons()
-	net.Start( "RequestWeapons" )
-	net.SendToServer()
-	net.Receive( "RequestWeaponsCallback", function()
-		--Table layouts: { ["name"] = "weapon name", ["class"] = "class name", ["roles"] = { roles by level } }
-		local p = net.ReadTable()
-		local s = net.ReadTable()
-		local e = net.ReadTable()
-		primaries = p
-		secondaries = s
-		equipment = e
-		AttemptMenu()
-	end )
-	return p2, s2, e2
-end]]
-
---[[//The net message can be found in sv_loadoutmenu.lua
-local roles
-function GetRoles()
-	net.Start( "RequestRoles" )
-	net.SendToServer()
-	net.Receive( "RequestRolesCallback", function()
-		local r = net.ReadTable()
-		roles = r
-		AttemptMenu()
-	end )
-	return roles
-end]]
-
---//The net message can be found in sv_lvlhandler.lua
-local lvl
-function GetLevel()
-	net.Start( "RequestLevel" )
-	net.SendToServer()
-	net.Receive( "RequestLevelCallback", function()
-		local l = net.ReadInt( 8 ) or 1
-		lvl = l
-		AttemptMenu()
-	end )
-	return lvl
-end
-
---//The net message can be found in sv_moneyhandler.lua
-local money
-function GetMoney()
-	net.Start( "RequestMoney" )
-	net.SendToServer()
-	net.Receive( "RequestMoneyCallback", function()
-		local num = tonumber( net.ReadString() )
-		money = num
-		AttemptMenu()
-	end )
-	return money
-end
-
---[[//The net message can be found in sv_attachmenthandler.lua
-local boughtattachments, allattachments
-function GetAttachData( wep )
-	net.Start( "RequestAttachments" )
-		net.WriteString( wep )
-	net.SendToServer()
-	net.Receive( "RequestAttachmentsCallback", function()
-		local av = net.ReadTable() --this table is all of the player's bought attachments,  { ["wep_class"] = { ["attachment"] = "attachmenttype" }
-		local at = net.ReadTable() --the key is the attachment name, v is a table of the attachment's type and attachment's price
-		boughtattachments = av
-		allattachments = at
-	end )
-	return boughtattachments, allattachments
-end]]
-
 function LoadoutMenu()
-	if LocalPlayer().CanCustomizeLoadout == false then --As I figured out, this isn't being used, remember to broadcast a global variable, or something, to stop it instead
+	if GetGlobalBool( "RoundInProgress" ) == true then
         return
     end
-
-	--primaries, secondaries, equipment = GetWeapons()
-	--roles = GetRoles()
-	lvl = GetLevel()
-	money = GetMoney()
-end
-
---This code is in a seperate function to server as a buffer for receiving net messages. 
---Might be able to circumvent by making the sv_loadoutmenu a shared file and only keeping lvl and money
-function AttemptMenu()
-	if !lvl or !money then return end
+	
 	if main then return	end
 
 	local currentTeam = LocalPlayer():Team()
@@ -165,12 +83,12 @@ function AttemptMenu()
 		surface.SetDrawColor( 0, 0, 0, 250 )
         surface.DrawRect( 0, 0, main:GetWide(), main:GetTall() )
     end
-	--[[main.Think = function()
-		if LocalPlayer().CanCustomizeLoadout == false  then
+	main.Think = function()
+		if GetGlobalBool( "RoundInProgress" ) == true then
 			main:Close()
 			main = nil
 		end
-	end]]
+	end
 
 	local tabs = vgui.Create( "DPanel", main )
 	tabs:SetPos( 0, 0 )
@@ -179,6 +97,13 @@ function AttemptMenu()
         surface.SetDrawColor( TeamColor )
         surface.DrawRect( 0, 0, tabs:GetWide(), tabs:GetTall() )
     end
+
+	local lvl = 0
+	net.Start( "RequestLevel" )
+	net.SendToServer()
+	net.Receive( "RequestLevelCallback", function( len, ply )
+		lvl = tonumber( net.ReadString() )
+	end )
 
 	local teamnumber = LocalPlayer():Team()
 	for k, v in pairs( roles ) do
@@ -196,7 +121,7 @@ function AttemptMenu()
 		button.DoClick = function()
 			if lvl >= k and currentsheet != k then
 				DrawSheet( k )
-				surface.PlaySound( "buttons/button22.wav" ) --shouldn't this be surface.PlaySound?
+				surface.PlaySound( "buttons/button22.wav" )
 				selectedrole = v[ teamnumber ]
 			end
 		end
@@ -207,9 +132,11 @@ function AttemptMenu()
 	spawn:SetPos( tabs:GetWide() - spawn:GetWide(), 0 )
 	spawn:SetText( "Redeploy" )
 	spawn.DoClick = function()
+		surface.PlaySound( "buttons/button22.wav" )
 		main:Close()
 		if main then
 			main = nil
+			if !page then return end
 			for k, v in pairs( roles ) do
 				page[ v[ teamnumber ] ] = nil
 			end
@@ -229,8 +156,7 @@ function AttemptMenu()
 
 end
 
---This code is in a seperate function to keep things looking cleaner 
---and not having all of the sheets being created inside an OnClick function
+--This code is in a seperate function to keep things looking cleaner and not having all of the sheets being created inside an OnClick function, because that would look shitty
 local currentsheet = nil
 function DrawSheet( num )
 	selectedprimary = nil
@@ -238,7 +164,6 @@ function DrawSheet( num )
 	selectedequipment = nil
 
 	if currentsheet and currentsheet:IsValid() then
-		--print( currentsheet )
 		currentsheet:Close()
 		currentsheet = nil
 	end
@@ -292,6 +217,7 @@ function DrawSheet( num )
         		surface.DrawOutlinedRect( 0, 0, primariesscrollpanel:GetWide(), 35 )
 			end
 
+			--Gotta make sure we only get the primary weapons available for the class
 			table.Empty( availableprimaries )
 			for k2, v2 in pairs( primaries[ teamnumber ] ) do
 				if table.HasValue( v2[ "roles" ], k ) then
@@ -307,16 +233,14 @@ function DrawSheet( num )
 				button[ v2[ "name" ] ]:SetText( "" )
 				button[ v2[ "name" ] ].Paint = function()
 					if !primariesscrollpanel then return end
-					draw.SimpleText( v2["name"], "Exo 2 Regular", primariesscrollpanel:GetWide() / 2, 35 / 2, Color( 100, 100, 100 ), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER )
-				end
-				button[ v2[ "name" ] ].Think = function()
-					if selectedprimary == v2[ "class" ] then --It works, I just have to get the outlining done right. Or maybe a highlight?
+					draw.SimpleText( v2["name"], "Exo 2 Regular", primariesscrollpanel:GetWide() / 2, 35 / 2, Color( 150, 150, 150 ), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER )
+					if selectedprimary == v2[ "class" ] then
 						surface.SetDrawColor( TeamColor )
         				surface.DrawOutlinedRect( 0, 35 * ( k2 - 1 ), primariesscrollpanel:GetWide(), 35 )
-					end
+					end 
 				end
 				button[ v2[ "name" ] ].DoClick = function()
-					surface.PlaySound( "buttons/button22.wav" ) --shouldn't this be surface.PlaySound?
+					surface.PlaySound( "buttons/button22.wav" )
 					selectedprimary = v2["class"]
 				end
 			end
@@ -352,7 +276,7 @@ function DrawSheet( num )
 				end
 			customizeprimary.DoClick = function()
 				if !selectedprimary then return end
-				surface.PlaySound( "buttons/button22.wav" ) --shouldn't this be surface.PlaySound?
+				surface.PlaySound( "buttons/button22.wav" )
 				CustomizeWeapon( selectedprimary )
 				pattach = { }
 			end
@@ -388,22 +312,10 @@ function DrawSheet( num )
 				--//Column 2
 				draw.SimpleText( "Weight: " .. wep.SpeedDec, "Exo 2 Regular", primaryinfopanel:GetWide() / 2 + 4, 2 + offset, Color( 255, 255, 255 ) )
 				draw.SimpleText( "Clip Size: " .. wep.Primary.ClipSize, "Exo 2 Regular", primaryinfopanel:GetWide() / 2 + 4, 27 + offset, Color( 255, 255, 255 ) )
-				draw.SimpleText( "Reload Length: " --[[.. wep.ReloadTimes[ base_reload[ 2 ] ]], "Exo 2 Regular", primaryinfopanel:GetWide() / 2 + 4, 52 + offset, Color( 255, 255, 255 ) )
+				draw.SimpleText( "Reload Length (seconds): " --[[.. wep.ReloadTime]], "Exo 2 Regular", primaryinfopanel:GetWide() / 2 + 4, 52 + offset, Color( 255, 255, 255 ) )
 				draw.SimpleText( "Spread Per Shot: " .. wep.SpreadPerShot, "Exo 2 Regular", primaryinfopanel:GetWide() / 2 + 4, 77 + offset, Color( 255, 255, 255 ) )
 				draw.SimpleText( "Maximum Spread: " .. wep.MaxSpreadInc, "Exo 2 Regular", primaryinfopanel:GetWide() / 2 + 4, 102 + offset, Color( 255, 255, 255 ) )
 			end
-			--[[Add breathing to all of the guns?
-			--// Aim breathing related \\--
-SWEP.AimBreathingEnabled - boolean, if set to true, then when aiming a slight breathing view effect will be applied to the view. DEFAULT IS false
-SWEP.AimBreathingIntensity - integer/float, defines the intensity of the breathing camera movement when aiming, 1 is 100%, 1.5 is 150%, etc.; DEFAULT is 1
-SWEP.BreathRegenRate - integer/float, the rate at which breath regenerates, default is 0.2
-SWEP.BreathDrainRate - integer/float, the rate at which breath drains while holding it, default is 0.1
-SWEP.BreathIntensityDrainRate - integer/float, the rate at which the intensity of the breathing view impact decreases while holding breath, default is 1
-SWEP.BreathIntensityRegenRate - integer/float, the rate at which the intensity of the breathing view impact increases while not holding breath, default is  2
-SWEP.BreathHoldVelocityMinimum - integer/float, if our velocity surpasses this, we can't hold our breath, default is 30
-SWEP.BreathDelay - integer/float, delay in between breath hold phases, default is 0.8
-SWEP.BreathRegenDelay - integer/float, delay until breath starts regenerating, default is 0.5
-SWEP.MinimumBreathPercentage - integer/float, we can only hold our breath if our breath meter surpasses this (in percentage), default is 0.5]]
 
 
 			--//Secondaries row//--
@@ -435,7 +347,7 @@ SWEP.MinimumBreathPercentage - integer/float, we can only hold our breath if our
 					draw.SimpleText( v2["name"], "Exo 2 Regular", secondariesscrollpanel:GetWide() / 2, 35 / 2, Color( 100, 100, 100 ), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER )
 				end
 				button[ v2[ "name" ] ].DoClick = function()
-					surface.PlaySound( "buttons/button22.wav" ) --shouldn't this be surface.PlaySound?
+					surface.PlaySound( "buttons/button22.wav" )
 					selectedsecondary = v2["class"]
 				end
 			end
@@ -445,8 +357,6 @@ SWEP.MinimumBreathPercentage - integer/float, we can only hold our breath if our
 			secondarymodelpanel:SetSize( page[ v[ teamnumber ] ]:GetWide() / 3 , page[ v[ teamnumber ] ]:GetTall() / 3 )
 			secondarymodelpanel.Paint = function()
 				if !page[ v[ teamnumber ] ] then return end
-				--surface.SetDrawColor( 0, 0, 0 )
-        		--surface.DrawRect( 0, 0, primarymodelpanel:GetWide(), primarymodelpanel:GetTall() )
 				surface.SetDrawColor( TeamColor )
         		surface.DrawOutlinedRect( 0, 0, secondarymodelpanel:GetWide(), secondarymodelpanel:GetTall() )
 			end
@@ -472,7 +382,7 @@ SWEP.MinimumBreathPercentage - integer/float, we can only hold our breath if our
 				end
 			customizesecondary.DoClick = function()
 				if !selectedsecondary then return end
-				surface.PlaySound( "buttons/button22.wav" ) --shouldn't this be surface.PlaySound?
+				surface.PlaySound( "buttons/button22.wav" )
 				CustomizeWeapon( selectedsecondary )
 				sattach = { }
 			end
@@ -506,7 +416,7 @@ SWEP.MinimumBreathPercentage - integer/float, we can only hold our breath if our
 				--//Column 2
 				draw.SimpleText( "Weight: " .. wep.SpeedDec, "Exo 2 Regular", secondaryinfopanel:GetWide() / 2 + 4, 2 + offset, Color( 255, 255, 255 ) )
 				draw.SimpleText( "Clip Size: " .. wep.Primary.ClipSize, "Exo 2 Regular", secondaryinfopanel:GetWide() / 2 + 4, 27 + offset, Color( 255, 255, 255 ) )
-				draw.SimpleText( "Reload Length: " --[[.. ( wep.ReloadSpeed * wep.ReloadTime )]], "Exo 2 Regular", secondaryinfopanel:GetWide() / 2 + 4, 52 + offset, Color( 255, 255, 255 ) )
+				draw.SimpleText( "Reload Length (seconds): " .. wep.ReloadTime, "Exo 2 Regular", secondaryinfopanel:GetWide() / 2 + 4, 52 + offset, Color( 255, 255, 255 ) )
 				draw.SimpleText( "Spread Per Shot: " .. wep.SpreadPerShot, "Exo 2 Regular", secondaryinfopanel:GetWide() / 2 + 4, 77 + offset, Color( 255, 255, 255 ) )
 				draw.SimpleText( "Maximum Spread: " .. wep.MaxSpreadInc, "Exo 2 Regular", secondaryinfopanel:GetWide() / 2 + 2, 102 + offset, Color( 255, 255, 255 ) )
 			end
@@ -541,13 +451,13 @@ SWEP.MinimumBreathPercentage - integer/float, we can only hold our breath if our
 					draw.SimpleText( v2["name"], "Exo 2 Regular", equipmentscrollpanel:GetWide() / 2, 35 / 2, Color( 100, 100, 100 ), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER )
 				end
 				button[ v2[ "name" ] ].DoClick = function()
-					surface.PlaySound( "buttons/button22.wav" ) --shouldn't this be surface.PlaySound?
+					surface.PlaySound( "buttons/button22.wav" )
 					selectedequipment = v2["class"]
 				end
 			end
 
 
-			--//The information section, for shit like money and stuff, right next to the equipment list
+			--//The information section, for shit like level and stuff, right next to the equipment list
 			--//Maybe include a running character holding the selected weapons in between the equipment list and role info?
 
 
@@ -565,8 +475,9 @@ SWEP.MinimumBreathPercentage - integer/float, we can only hold our breath if our
 	end
 end
 
---This is the menu that opens when you press the "customize weapon" button
+--This is the menu that opens when you press the "customize weapon" button, also in a seperate function to keep things looking clean and not having everything inside an OnClick function
 function CustomizeWeapon( wep )
+
 
 	local currentTeam = LocalPlayer():Team()
 	local TeamColor
@@ -580,7 +491,6 @@ function CustomizeWeapon( wep )
         TeamColor = Color( 15, 160, 15 )
 	end
 
-	--main:SetDisabled( true )
 	for k, v in pairs( main:GetChildren() ) do
 		if v:GetName() == "DLabel" then
 			v:SetDisabled( true )
@@ -595,7 +505,7 @@ function CustomizeWeapon( wep )
 	end
 
 	customizemain = vgui.Create( "DFrame" )
-	customizemain:SetSize( 800, 600 ) --Consider adjusting
+	customizemain:SetSize( 800, 650 ) --Consider adjusting
 	customizemain:SetTitle( "" )
 	customizemain:SetVisible( true )
 	customizemain:SetDraggable( false )
@@ -614,8 +524,6 @@ function CustomizeWeapon( wep )
 	modelpanel:SetSize( customizemain:GetWide(), customizemain:GetTall() / 3 )
 	modelpanel.Paint = function()
 		if !customizemain then return end
-		--surface.SetDrawColor( 0, 0, 0 )
-    	--surface.DrawRect( 0, 0, primarymodelpanel:GetWide(), primarymodelpanel:GetTall() )
 		surface.SetDrawColor( TeamColor )
     	surface.DrawOutlinedRect( 0, 0, modelpanel:GetWide(), modelpanel:GetTall() )
 	end
@@ -656,6 +564,7 @@ function CustomizeWeapon( wep )
 		end
 
 		local counter = 0
+		selectedattachment = nil
 		for k2, v2 in pairs( wep_att[ wep ] ) do
 			if v2[ 1 ] == v then
 				counter = counter + 1
@@ -668,26 +577,18 @@ function CustomizeWeapon( wep )
 				list[ k2 ]:SetPos( 0, counter * 22 + 27 )
 				list[ k2 ]:SetText( "" )
 				list[ k2 ].Paint = function()
-					if !customizemain then return end
+					if !list[ k2 ] or !list then return end
 					draw.SimpleText( usedtext, "Exo 2 Regular", list[ k2 ]:GetWide() / 2, 10 / 2, usedcolor, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER )
 				end
 				list[ k2 ].DoClick = function()
-					for k3, v3 in pairs( primaries[ teamnumber ] ) do
-						if v3[ "class" ] == wep then
-							pattach[ v ] = k2
-							break
-						end
-					end
-					for k3, v3 in pairs( secondaries[ teamnumber ] ) do
-						if v3[ "class" ] == wep then
-							sattach[ v ] = k2
-							break
-						end
-					end
-					print( v, k2 )
+					selectedattachment = k2
+					selectedattachmenttype = v2[ 1 ]
+					surface.PlaySound( "buttons/button22.wav" )
 				end
 				list[ k2 ].Think = function()
-					if dicks then --this needs to check if the attachment was bought or not
+					if wep_att[ wep ][ k2 ][ "unlocked" ] then
+						usedcolor = Color( 200, 200, 200 )
+					else
 						usedcolor = Color( 70, 70, 70 )
 					end
 				end
@@ -695,7 +596,114 @@ function CustomizeWeapon( wep )
 		end
 	end
 
-	--[[for k, v in pairs( wep_att[ wep ] ) do
+	local money = 0
+	net.Start( "RequestMoney" )
+	net.SendToServer()
+	net.Receive( "RequestMoneyCallback", function( len, ply )
+		money = tonumber( net.ReadString() )
+	end )
+
+	local attachmentdatapanel = vgui.Create( "DPanel", customizemain )
+	attachmentdatapanel:SetSize( customizemain:GetWide(), customizemain:GetTall() / 3 + 2 )
+	attachmentdatapanel:SetPos( 0, customizemain:GetTall() * ( 2 / 3 ) - 1 )
+	attachmentdatapanel.Paint = function()
+		if !customizemain then return end
+		surface.SetDrawColor( TeamColor )
+    	surface.DrawOutlinedRect( 0, 0, attachmentdatapanel:GetWide(), attachmentdatapanel:GetTall() )
+
+		draw.SimpleText( "Cash: $" .. money, "Exo 2 Regular", attachmentdatapanel:GetWide() - 6, 5, Color( 150, 150, 150 ), TEXT_ALIGN_RIGHT, TEXT_ALIGN_RIGHT )
+
+		if !selectedattachment then return end
+		local attachdescription = ""
+		surface.SetFont( "Exo 2 Large" )
+		local info = "Description: "
+		local infowidth, infoheight = surface.GetTextSize( info )
+		for k, v in pairs( CustomizableWeaponry.registeredAttachmentsSKey[ selectedattachment ].description ) do
+			draw.SimpleText( v[ "t" ], "Exo 2 Regular", infowidth - 40, 40 + ( 20 * ( k - 1 ) ), Color( v[ "c" ][ "r" ], v[ "c" ][ "g" ], v[ "c" ][ "b" ] ) )
+		end
+		draw.SimpleText( "Attachment name: " .. CustomizableWeaponry.registeredAttachmentsSKey[ selectedattachment ].displayName, "Exo 2 Large", 6, 5, Color( 150, 150, 150 ) )
+		draw.SimpleText( "Description: ", "Exo 2 Regular", 6, 40, Color( 150, 150, 150 ) )
+		draw.SimpleText( "Stat modifiers: ", "Exo 2 Regular", attachmentdatapanel:GetWide() / 2 + 6, 40, Color( 200, 200, 200 ) )
+		local counter = 0
+		for k, v in pairs( CustomizableWeaponry.registeredAttachmentsSKey[ selectedattachment ].statModifiers ) do
+			counter = counter + 1
+			draw.SimpleText( k .. ":  " .. v, "Exo 2 Regular", attachmentdatapanel:GetWide() / 2 + 121, 40 + ( 20 * ( counter - 1 ) ), Color( 150, 150, 150 ) )
+		end
+	end
+
+	local buybutton = vgui.Create( "DButton", attachmentdatapanel )
+	buybutton:SetSize( attachmentdatapanel:GetWide() / 3, 20 )
+	buybutton:SetPos( ( attachmentdatapanel:GetWide() / 2 ) - ( buybutton:GetWide() + 1 ), attachmentdatapanel:GetTall() - buybutton:GetTall() )
+	buybutton:SetText( "" )
+	buybutton.Paint = function()
+		if !selectedattachment or !attachmentdatapanel then return end
+		surface.SetDrawColor( TeamColor )
+        surface.DrawRect( 0, 0, buybutton:GetWide(), buybutton:GetTall() )
+		if wep_att[ wep ][ selectedattachment ][ "unlocked" ] then
+			draw.SimpleText( "Attachment is unlocked", "Exo 2 Regular", buybutton:GetWide() / 2, buybutton:GetTall() / 2, Color( 200, 200, 200 ), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER )
+		else
+			draw.SimpleText( "Unlock price: " .. wep_att[ wep ][ selectedattachment ][ 2 ], "Exo 2 Regular", buybutton:GetWide() / 2, buybutton:GetTall() / 2, Color( 200, 200, 200 ), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER )
+		end
+	end
+	buybutton.DoClick = function()
+		if wep_att[ wep ][ selectedattachment ][ "unlocked" ] then return end
+		surface.PlaySound( "buttons/button22.wav" )
+		print( "Buying attachment: ", selectedattachment, " on weapon: ", wep, " for $", wep_att[ wep ][ selectedattachment ][ 2 ] )
+		net.Start( "BuyAttachment" )
+			net.WriteString( wep )
+			net.WriteString( selectedattachment )
+			net.WriteString( wep_att[ wep ][ selectedattachment ][ 1 ] )
+			net.WriteString( tostring( wep_att[ wep ][ selectedattachment ][ 2 ] ) )
+		net.SendToServer()
+		net.Receive( "BuyAttachmentCallback", function( len, ply )
+			money = tonumber( net.ReadString() )
+		end )
+		print( wep_att[ wep ][ selectedattachment ][ "unlocked" ] )
+		wep_att[ wep ][ selectedattachment ][ "unlocked" ] = true
+		print( wep_att[ wep ][ selectedattachment ][ "unlocked" ] )
+	end
+
+	local equipbutton = vgui.Create( "DButton", attachmentdatapanel )
+	equipbutton:SetSize( attachmentdatapanel:GetWide() / 3, 20 )
+	equipbutton:SetPos( ( attachmentdatapanel:GetWide() / 2 ) + 1, attachmentdatapanel:GetTall() - equipbutton:GetTall() )
+	equipbutton:SetText( "" )
+	equipbutton.Paint = function()
+		if !selectedattachment or !attachmentdatapanel then return end
+		surface.SetDrawColor( TeamColor )
+        surface.DrawRect( 0, 0, equipbutton:GetWide(), equipbutton:GetTall() )
+		if wep_att[ wep ][ selectedattachment ][ "unlocked" ] then
+			draw.SimpleText( "Equip Attachment", "Exo 2 Regular", equipbutton:GetWide() / 2, equipbutton:GetTall() / 2, Color( 200, 200, 200 ), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER )
+		else
+			draw.SimpleText( "Attachment locked", "Exo 2 Regular", equipbutton:GetWide() / 2, equipbutton:GetTall() / 2, Color( 200, 200, 200 ), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER )
+		end
+	end
+	equipbutton.Think = function()
+		if !selectedattachment or !attachmentdatapanel then return end
+		if wep_att[ wep ][ selectedattachment ][ "unlocked" ] then
+			equipbutton:SetEnabled( true )
+		else
+			equipbutton:SetEnabled( false )
+		end
+	end
+	equipbutton.DoClick = function()
+		surface.PlaySound( "buttons/button22.wav" )
+		for k3, v3 in pairs( primaries[ currentTeam ] ) do
+			if v3[ "class" ] == wep then
+				--print( "k and v: ", k, v, "k2 and v2: ", k2, v2, "k3 and v3: ", k3, v3, v3["class"] )
+				pattach[ selectedattachmenttype ] = selectedattachment
+				break
+			end
+		end
+		for k3, v3 in pairs( secondaries[ currentTeam ] ) do
+			if v3[ "class" ] == wep then
+				sattach[ selectedattachmenttype ] = selectedattachment
+				break
+			end
+		end
+	end
+
+	--[[		If I want to sort, I'll have to change the format of wep_att[ wep ][ attachment ]
+		for k, v in pairs( wep_att[ wep ] ) do
 		if !table.HasValue( allatachmenttypes, v[ 1 ] ) then
 			table.insert( allatachmenttypes, typekeys.v[ 1 ], v[ 1 ] )
 		end
@@ -711,6 +719,7 @@ function CustomizeWeapon( wep )
 			draw.SimpleText( "Click to close weapon customization", "Exo 2 Regular", closebutton:GetWide() / 2, closebutton:GetTall() - 30, Color( 100, 100, 100 ), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER )
 		end
 	closebutton.DoClick = function()
+		surface.PlaySound( "buttons/button22.wav" )
 		customizemain:Close()
 		--Close function:
 		--main:SetDisabled( false )
@@ -727,6 +736,7 @@ function CustomizeWeapon( wep )
 			end
 		end
 	end
+
 end
 
 concommand.Add( "pol_menu", LoadoutMenu )

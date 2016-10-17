@@ -98,19 +98,19 @@ local models = { }
 function GetModels()
 	for k, v in pairs( primaries ) do
 		for k2, v2 in pairs( v ) do
-			local model = weapons.GetStored( v2["class"] )
+			local model = weapons.Get( v2["class"] )
 			table.insert( models, model["WorldModel"] )
 		end
 	end
 	for k, v in pairs( secondaries ) do
 		for k2, v2 in pairs( v ) do
-			local model = weapons.GetStored( v2["class"] )
+			local model = weapons.Get( v2["class"] )
 			table.insert( models, model["WorldModel"] )
 		end
 	end
 	for k, v in pairs( equipment ) do
 		for k2, v2 in pairs( v ) do
-			local model = weapons.GetStored( v2["class"] )
+			local model = weapons.Get( v2["class"] )
 			table.insert( models, model["WorldModel"] )
 		end
 	end
@@ -152,6 +152,7 @@ if SERVER then
 		--ply.oldprim, ply.oldsec, ply.oldeq, ply.oldpatt, ply.oldsatt
 
 		local loadout = net.ReadTable()
+		local give40mm = false
 		ply:StripWeapons()
 		teamnumber = ply:Team()
 
@@ -171,10 +172,21 @@ if SERVER then
 			if loadout[ "role" ] then
 				ply.oldrole = loadout[ "role" ]
 			end
-			if loadout[ "pattachments" ] then
+			if loadout[ "pattachments" ] and loadout[ "primary" ] then
+				timer.Simple( 0.2, function()
+					for k, v in pairs( loadout[ "pattachments" ] ) do
+						ply:GetWeapon( loadout[ "primary" ] ):attachSpecificAttachment( v )
+						if v == "kk_ins2_gl_gp25" or v == "kk_ins2_gl_m203" then give40mm = true end
+					end
+				end )
 				ply.oldpatt = loadout[ "pattachments" ]
 			end
-			if loadout[ "sattachments" ] then
+			if loadout[ "sattachments" ] and loadout[ "secondary" ] then
+				timer.Simple( 0.2, function()
+					for k, v in pairs( loadout[ "sattachments" ] ) do
+						ply:GetWeapon( loadout[ "secondary" ] ):attachSpecificAttachment( v, k, false )
+					end
+				end )
 				ply.oldsatt = loadout[ "sattachments" ]
 			end
 		end
@@ -218,7 +230,9 @@ if SERVER then
 					end
 				end	
 				ply:RemoveAmmo( ply:GetAmmoCount( "40MM" ), "40MM" )
-				ply:GiveAmmo( 2, "40MM", true )
+				if give40mm then
+					ply:GiveAmmo( 2, "40MM", true )
+				end
 			end
 		end )
 	end )
@@ -234,13 +248,19 @@ if SERVER then
 		if ply.oldeq then
 			ply:Give( ply.oldeq )
 		end
-		if ply.oldpatt then
-			--ply:Give( ply.oldpatt ) Remember, it's a table and the key = attachment type, value = attachment classname
-			print( "The primary weapon has attachments that should be auto-equipped.")
+		if ply.oldpatt and ply.oldprim then
+			timer.Simple( 0.2, function()
+				for k, v in pairs( ply.oldpatt ) do
+					ply:GetWeapon( ply.oldprim ):attachSpecificAttachment( v )
+				end
+			end )
 		end
-		if ply.oldsatt then
-			--ply:Give( ply.oldsatt ) Remember, it's a table and the key = attachment type, value = attachment classname
-			print( "The secondary weapon has attachments that should be auto-equipped.")
+		if ply.oldsatt and ply.oldsec then
+			timer.Simple( 0.2, function()
+				for k, v in pairs( ply.oldsatt ) do
+					ply:GetWeapon( ply.oldsec ):attachSpecificAttachment( v )
+				end
+			end )
 		end
 
 		if teamnumber == 1 then

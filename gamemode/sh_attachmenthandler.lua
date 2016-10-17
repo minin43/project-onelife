@@ -421,3 +421,11 @@ wep_att[ "cw_kk_ins2_revolver" ] = {
 }
 
 --Include some function that checks for bought attachments and sets "unlocked" to true for all, probably on player join
+if CLIENT then
+    net.Receive( "InitialUnlock", function( len, ply )
+        local unlocks = net.ReadTable() --unlock = { [ "weaponclassname" ] = { "attachment1class, attachment2class" } }
+        for k, v in pairs( unlocks ) do
+            wep_att[ k ][ v ][ "unlocked" ] = true
+        end
+    end)
+end

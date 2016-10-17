@@ -90,6 +90,13 @@ function LoadoutMenu()
 		end
 	end
 
+	hook.Add( "PlayerButtonDown", function( ply, button )
+		if button == "KEY_C" and main:IsValid() then
+			main:Close()
+			main = nil
+		end
+	end )
+
 	local tabs = vgui.Create( "DPanel", main )
 	tabs:SetPos( 0, 0 )
 	tabs:SetSize( main:GetWide(), 30 )
@@ -236,7 +243,7 @@ function DrawSheet( num )
 					draw.SimpleText( v2["name"], "Exo 2 Regular", primariesscrollpanel:GetWide() / 2, 35 / 2, Color( 150, 150, 150 ), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER )
 					if selectedprimary == v2[ "class" ] then
 						surface.SetDrawColor( TeamColor )
-        				surface.DrawOutlinedRect( 0, 35 * ( k2 - 1 ), primariesscrollpanel:GetWide(), 35 )
+        				surface.DrawOutlinedRect( 0, 0, button[ v2[ "name" ] ]:GetWide(), button[ v2[ "name" ] ]:GetTall() )
 					end 
 				end
 				button[ v2[ "name" ] ].DoClick = function()
@@ -300,21 +307,21 @@ function DrawSheet( num )
 				local shotgun
 				if selectedprimary == "cw_kk_ins2_toz" or selectedprimary == "cw_kk_ins2_m590" then --insert any and all shotgun classnames here
 					shotgun = 25
-					draw.SimpleText( "Pellets: " .. wep.Shots, "Exo 2 Regular", 4, 27 + offset, Color( 255, 255, 255 ) )
-					draw.SimpleText( "Spread: " .. wep.ClumpSpread, "Exo 2 Regular", 4, 102 + offset, Color( 255, 255, 255 ) )
+					draw.SimpleText( "Pellets: " .. math.Round( wep.Shots, 3 ), "Exo 2 Regular", 4, 27 + offset, Color( 255, 255, 255 ) )
+					draw.SimpleText( "Spread: " .. math.Round( wep.ClumpSpread, 3 ), "Exo 2 Regular", 4, 102 + offset, Color( 255, 255, 255 ) )
 				else
 					shotgun = 0
-					draw.SimpleText( "Accuracy: " .. wep.AimSpread, "Exo 2 Regular", 4, 77 + offset, Color( 255, 255, 255 ) ) --This is for aimed only, hipfire will always be unknown
+					draw.SimpleText( "Accuracy: " .. math.Round( wep.AimSpread, 3 ), "Exo 2 Regular", 4, 77 + offset, Color( 255, 255, 255 ) ) --This is for aimed only, hipfire will always be unknown
 				end
-				draw.SimpleText( "Damage: " .. wep.Damage, "Exo 2 Regular", 4, 2 + offset, Color( 255, 255, 255 ) )
-				draw.SimpleText( "Fire rate: " .. wep.FireDelay, "Exo 2 Regular", 4, 27 + offset + shotgun, Color( 255, 255, 255 ) )
-				draw.SimpleText( "Recoil: " .. wep.Recoil, "Exo 2 Regular", 4, 52 + offset + shotgun, Color( 255, 255, 255 ) )
+				draw.SimpleText( "Damage: " .. math.Round( wep.Damage, 3 ), "Exo 2 Regular", 4, 2 + offset, Color( 255, 255, 255 ) )
+				draw.SimpleText( "Fire rate: " .. math.Round( wep.FireDelay, 3 ), "Exo 2 Regular", 4, 27 + offset + shotgun, Color( 255, 255, 255 ) )
+				draw.SimpleText( "Recoil: " .. math.Round( wep.Recoil, 3 ), "Exo 2 Regular", 4, 52 + offset + shotgun, Color( 255, 255, 255 ) )
 				--//Column 2
-				draw.SimpleText( "Weight: " .. wep.SpeedDec, "Exo 2 Regular", primaryinfopanel:GetWide() / 2 + 4, 2 + offset, Color( 255, 255, 255 ) )
-				draw.SimpleText( "Clip Size: " .. wep.Primary.ClipSize, "Exo 2 Regular", primaryinfopanel:GetWide() / 2 + 4, 27 + offset, Color( 255, 255, 255 ) )
-				draw.SimpleText( "Reload Length (seconds): " --[[.. wep.ReloadTime]], "Exo 2 Regular", primaryinfopanel:GetWide() / 2 + 4, 52 + offset, Color( 255, 255, 255 ) )
-				draw.SimpleText( "Spread Per Shot: " .. wep.SpreadPerShot, "Exo 2 Regular", primaryinfopanel:GetWide() / 2 + 4, 77 + offset, Color( 255, 255, 255 ) )
-				draw.SimpleText( "Maximum Spread: " .. wep.MaxSpreadInc, "Exo 2 Regular", primaryinfopanel:GetWide() / 2 + 4, 102 + offset, Color( 255, 255, 255 ) )
+				draw.SimpleText( "Weight: " .. math.Round( wep.SpeedDec, 3 ), "Exo 2 Regular", primaryinfopanel:GetWide() / 2 + 4, 2 + offset, Color( 255, 255, 255 ) )
+				draw.SimpleText( "Clip Size: " .. math.Round( wep.Primary.ClipSize, 3 ), "Exo 2 Regular", primaryinfopanel:GetWide() / 2 + 4, 27 + offset, Color( 255, 255, 255 ) )
+				draw.SimpleText( "Reload Length (seconds): " --[[.. math.Round( wep.ReloadTime, 3 )]], "Exo 2 Regular", primaryinfopanel:GetWide() / 2 + 4, 52 + offset, Color( 255, 255, 255 ) )
+				draw.SimpleText( "Spread Per Shot: " .. math.Round( wep.SpreadPerShot, 3 ), "Exo 2 Regular", primaryinfopanel:GetWide() / 2 + 4, 77 + offset, Color( 255, 255, 255 ) )
+				draw.SimpleText( "Maximum Spread: " .. math.Round( wep.MaxSpreadInc, 3 ), "Exo 2 Regular", primaryinfopanel:GetWide() / 2 + 4, 102 + offset, Color( 255, 255, 255 ) )
 			end
 
 
@@ -345,6 +352,10 @@ function DrawSheet( num )
 				button[ v2[ "name" ] ].Paint = function()
 					if !secondariesscrollpanel then return end
 					draw.SimpleText( v2["name"], "Exo 2 Regular", secondariesscrollpanel:GetWide() / 2, 35 / 2, Color( 100, 100, 100 ), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER )
+					if selectedsecondary == v2[ "class" ] then
+						surface.SetDrawColor( TeamColor )
+        				surface.DrawOutlinedRect( 0, 0, button[ v2[ "name" ] ]:GetWide(), button[ v2[ "name" ] ]:GetTall() )
+					end 
 				end
 				button[ v2[ "name" ] ].DoClick = function()
 					surface.PlaySound( "buttons/button22.wav" )
@@ -409,16 +420,16 @@ function DrawSheet( num )
 				local infowidth, infoheight = surface.GetTextSize( info )
 				draw.SimpleText( info, "Exo 2 Large", secondaryinfopanel:GetWide() / 2 - ( infowidth / 2 ), 10, Color( 255, 240, 240 ) )
 				--//Column 1
-				draw.SimpleText( "Damage: " .. wep.Damage, "Exo 2 Regular", 4, 2 + offset, Color( 255, 255, 255 ) )
-				draw.SimpleText( "Fire rate: " .. wep.FireDelay, "Exo 2 Regular", 4, 27 + offset, Color( 255, 255, 255 ) )
-				draw.SimpleText( "Recoil: " .. wep.Recoil, "Exo 2 Regular", 4, 52 + offset, Color( 255, 255, 255 ) )
-				draw.SimpleText( "Accuracy: " .. wep.AimSpread, "Exo 2 Regular", 4, 77 + offset, Color( 255, 255, 255 ) ) --This is for aimed only, hipfire will always be unknown
+				draw.SimpleText( "Damage: " .. math.Round( wep.Damage, 3 )	, "Exo 2 Regular", 4, 2 + offset, Color( 255, 255, 255 ) )
+				draw.SimpleText( "Fire rate: " .. math.Round( wep.FireDelay, 3 ), "Exo 2 Regular", 4, 27 + offset, Color( 255, 255, 255 ) )
+				draw.SimpleText( "Recoil: " .. math.Round( wep.Recoil, 3 ), "Exo 2 Regular", 4, 52 + offset, Color( 255, 255, 255 ) )
+				draw.SimpleText( "Accuracy: " .. math.Round( wep.AimSpread, 3 ), "Exo 2 Regular", 4, 77 + offset, Color( 255, 255, 255 ) ) --This is for aimed only, hipfire will always be unknown
 				--//Column 2
-				draw.SimpleText( "Weight: " .. wep.SpeedDec, "Exo 2 Regular", secondaryinfopanel:GetWide() / 2 + 4, 2 + offset, Color( 255, 255, 255 ) )
-				draw.SimpleText( "Clip Size: " .. wep.Primary.ClipSize, "Exo 2 Regular", secondaryinfopanel:GetWide() / 2 + 4, 27 + offset, Color( 255, 255, 255 ) )
-				draw.SimpleText( "Reload Length (seconds): " .. wep.ReloadTime, "Exo 2 Regular", secondaryinfopanel:GetWide() / 2 + 4, 52 + offset, Color( 255, 255, 255 ) )
-				draw.SimpleText( "Spread Per Shot: " .. wep.SpreadPerShot, "Exo 2 Regular", secondaryinfopanel:GetWide() / 2 + 4, 77 + offset, Color( 255, 255, 255 ) )
-				draw.SimpleText( "Maximum Spread: " .. wep.MaxSpreadInc, "Exo 2 Regular", secondaryinfopanel:GetWide() / 2 + 2, 102 + offset, Color( 255, 255, 255 ) )
+				draw.SimpleText( "Weight: " .. math.Round( wep.SpeedDec, 3 ), "Exo 2 Regular", secondaryinfopanel:GetWide() / 2 + 4, 2 + offset, Color( 255, 255, 255 ) )
+				draw.SimpleText( "Clip Size: " .. math.Round( wep.Primary.ClipSize, 3 ), "Exo 2 Regular", secondaryinfopanel:GetWide() / 2 + 4, 27 + offset, Color( 255, 255, 255 ) )
+				draw.SimpleText( "Reload Length (seconds): " .. math.Round( wep.ReloadTime, 3 ), "Exo 2 Regular", secondaryinfopanel:GetWide() / 2 + 4, 52 + offset, Color( 255, 255, 255 ) )
+				draw.SimpleText( "Spread Per Shot: " .. math.Round( wep.SpreadPerShot, 3 ), "Exo 2 Regular", secondaryinfopanel:GetWide() / 2 + 4, 77 + offset, Color( 255, 255, 255 ) )
+				draw.SimpleText( "Maximum Spread: " .. math.Round( wep.MaxSpreadInc, 3 ), "Exo 2 Regular", secondaryinfopanel:GetWide() / 2 + 2, 102 + offset, Color( 255, 255, 255 ) )
 			end
 
 
@@ -449,6 +460,10 @@ function DrawSheet( num )
 				button[ v2[ "name" ] ].Paint = function()
 					if !equipmentscrollpanel then return end
 					draw.SimpleText( v2["name"], "Exo 2 Regular", equipmentscrollpanel:GetWide() / 2, 35 / 2, Color( 100, 100, 100 ), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER )
+					if selectedequipment == v2[ "class" ] then
+						surface.SetDrawColor( TeamColor )
+        				surface.DrawOutlinedRect( 0, 0, button[ v2[ "name" ] ]:GetWide(), button[ v2[ "name" ] ]:GetTall() )
+					end 
 				end
 				button[ v2[ "name" ] ].DoClick = function()
 					surface.PlaySound( "buttons/button22.wav" )
@@ -578,6 +593,13 @@ function CustomizeWeapon( wep )
 				list[ k2 ]:SetText( "" )
 				list[ k2 ].Paint = function()
 					if !list[ k2 ] or !list then return end
+					if pattach[ v ] == k2 or sattach[ v ] == k2 then
+						surface.SetDrawColor( Color( 0, 0, 255 ) )
+        				surface.DrawRect( 0, 0, list[ k2 ]:GetWide(), list[ k2 ]:GetTall() )
+					elseif selectedattachment == k2 then
+						surface.SetDrawColor( Color( 255, 0, 0 ) )
+        				surface.DrawOutlinedRect( 0, 0, list[ k2 ]:GetWide(), list[ k2 ]:GetTall() )
+					end
 					draw.SimpleText( usedtext, "Exo 2 Regular", list[ k2 ]:GetWide() / 2, 10 / 2, usedcolor, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER )
 				end
 				list[ k2 ].DoClick = function()
@@ -593,6 +615,20 @@ function CustomizeWeapon( wep )
 					end
 				end
 			end
+		end
+	
+		local icon = vgui.Create( "SpawnIcon", modelpanel )
+		icon:SetSize( 30, 30 )
+		if k <= #attachmenttypes / 2 then
+			icon:SetPos( )
+		else
+			icon:SetPos( )
+		end
+		icon.Think = function()
+			if selectedattachment then
+				icon:SetModel( selectedattachment )
+			else
+				icon:SetModel( )
 		end
 	end
 
@@ -647,20 +683,19 @@ function CustomizeWeapon( wep )
 	end
 	buybutton.DoClick = function()
 		if wep_att[ wep ][ selectedattachment ][ "unlocked" ] then return end
+		if money < wep_att[ wep ][ selectedattachment ][ 2 ] ) then return end
 		surface.PlaySound( "buttons/button22.wav" )
 		print( "Buying attachment: ", selectedattachment, " on weapon: ", wep, " for $", wep_att[ wep ][ selectedattachment ][ 2 ] )
 		net.Start( "BuyAttachment" )
 			net.WriteString( wep )
 			net.WriteString( selectedattachment )
-			net.WriteString( wep_att[ wep ][ selectedattachment ][ 1 ] )
+			--net.WriteString( wep_att[ wep ][ selectedattachment ][ 1 ] )
 			net.WriteString( tostring( wep_att[ wep ][ selectedattachment ][ 2 ] ) )
 		net.SendToServer()
 		net.Receive( "BuyAttachmentCallback", function( len, ply )
 			money = tonumber( net.ReadString() )
 		end )
-		print( wep_att[ wep ][ selectedattachment ][ "unlocked" ] )
 		wep_att[ wep ][ selectedattachment ][ "unlocked" ] = true
-		print( wep_att[ wep ][ selectedattachment ][ "unlocked" ] )
 	end
 
 	local equipbutton = vgui.Create( "DButton", attachmentdatapanel )
@@ -689,7 +724,6 @@ function CustomizeWeapon( wep )
 		surface.PlaySound( "buttons/button22.wav" )
 		for k3, v3 in pairs( primaries[ currentTeam ] ) do
 			if v3[ "class" ] == wep then
-				--print( "k and v: ", k, v, "k2 and v2: ", k2, v2, "k3 and v3: ", k3, v3, v3["class"] )
 				pattach[ selectedattachmenttype ] = selectedattachment
 				break
 			end
@@ -722,7 +756,6 @@ function CustomizeWeapon( wep )
 		surface.PlaySound( "buttons/button22.wav" )
 		customizemain:Close()
 		--Close function:
-		--main:SetDisabled( false )
 		for k, v in pairs( main:GetChildren() ) do
 			if v:GetName() == "DLabel" then
 				v:SetDisabled( false )
@@ -740,3 +773,9 @@ function CustomizeWeapon( wep )
 end
 
 concommand.Add( "pol_menu", LoadoutMenu )
+
+hook.Add( "", function( ply, button )
+	if button == "KEY_C" and !main:IsValid() then
+		LoadoutMenu()
+	end
+end )

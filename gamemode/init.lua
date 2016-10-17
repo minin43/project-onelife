@@ -25,6 +25,7 @@ include( "sv_customspawns.lua" )
 include( "sv_leaderboards.lua" )
 include( "sv_roundhandler.lua" )
 include( "sv_playerhandler.lua" )
+include( "sv_weaponstats.lua" )
 
 for k, v in pairs( file.Find( "onelife/gamemode/perks/*.lua", "LUA" ) ) do
 	include( "/perks/" .. v )
@@ -102,6 +103,12 @@ function GM:PlayerInitialSpawn( ply )
 			file.Write( "onelife/users/" .. id( ply:SteamID() ) .. ".txt", util.TableToJSON( { ply:Name(), contents[ 2 ] } ) )
 		end
 	end
+
+	util.AddNetworkString( "InitialUnlock" )
+	local file = util.JSONToTable( file.Read( "onelife/users/" .. id( ply:SteamID() ) .. ".txt", "DATA" ) )
+	net.Start( "InitialUnlock" )
+		net.WriteTable( file[ 2 ] )
+	net.Send( ply )
 
 	if ply:IsBot() then
 		ply:SetTeam( 2 )

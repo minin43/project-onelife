@@ -24,6 +24,13 @@ surface.CreateFont( "Exo 2 Regular", {
 	weight = 500
 } )
 
+surface.CreateFont( "Exo 2 Regular Underlined", {
+	font = "Exo 2",
+	size = 20,
+	weight = 500,
+	underline = true
+} )
+
 surface.CreateFont( "Exo 2 Large", {
 	font = "Exo 2",
 	size = 30,
@@ -56,15 +63,15 @@ function LoadoutMenu()
 	
 	if main then return	end
 
-	local currentTeam = LocalPlayer():Team()
+	local teamnumber = LocalPlayer():Team()
 	local TeamColor
-	if currentTeam == 0 then --???
+	if teamnumber == 0 then --???
 		TeamColor = Color( 255, 255, 255 )
-	elseif currentTeam == 1 then --red
+	elseif teamnumber == 1 then --red
 		TeamColor = Color( 100, 15, 15 )
-	elseif currentTeam == 2 then --blue
+	elseif teamnumber == 2 then --blue
 		TeamColor = Color( 33, 150, 243, 100 )
-    elseif currentTeam == 3 then --black/FFA
+    elseif teamnumber == 3 then --black/FFA
         TeamColor = Color( 15, 160, 15 )
 	end
 
@@ -182,19 +189,18 @@ function DrawSheet( num )
 		currentsheet = nil
 	end
 
-	local currentTeam = LocalPlayer():Team()
+	local teamnumber = LocalPlayer():Team()
 	local TeamColor
-	if currentTeam == 0 then --???
+	if teamnumber == 0 then --???
 		TeamColor = Color( 255, 255, 255 )
-	elseif currentTeam == 1 then --red
+	elseif teamnumber == 1 then --red
 		TeamColor = Color( 100, 15, 15 )
-	elseif currentTeam == 2 then --blue
+	elseif teamnumber == 2 then --blue
 		TeamColor = Color( 33, 150, 243, 100 )
-    elseif currentTeam == 3 then --black/FFA
+    elseif teamnumber == 3 then --black/FFA
         TeamColor = Color( 15, 160, 15 )
 	end
 
-	local teamnumber = LocalPlayer():Team()
 	local availableprimaries = { }
 	local availablesecondaries = { }
 	local availableequipment = { }
@@ -293,7 +299,7 @@ function DrawSheet( num )
 			customizeprimary.DoClick = function()
 				if !selectedprimary then return end
 				surface.PlaySound( "buttons/button22.wav" )
-				CustomizeWeapon( selectedprimary )
+				CustomizeWeapon( selectedprimary, "primary" )
 				pattach = { }
 			end
 
@@ -403,7 +409,7 @@ function DrawSheet( num )
 			customizesecondary.DoClick = function()
 				if !selectedsecondary then return end
 				surface.PlaySound( "buttons/button22.wav" )
-				CustomizeWeapon( selectedsecondary )
+				CustomizeWeapon( selectedsecondary, "secondary" )
 				sattach = { }
 			end
 			customizesecondary.Think = function()
@@ -436,7 +442,7 @@ function DrawSheet( num )
 				--//Column 2
 				draw.SimpleText( "Weight: " .. math.Round( wep.SpeedDec, 3 ), "Exo 2 Regular", secondaryinfopanel:GetWide() / 2 + 4, 2 + offset, Color( 255, 255, 255 ) )
 				draw.SimpleText( "Clip Size: " .. math.Round( wep.Primary.ClipSize, 3 ), "Exo 2 Regular", secondaryinfopanel:GetWide() / 2 + 4, 27 + offset, Color( 255, 255, 255 ) )
-				draw.SimpleText( "Reload Length (seconds): " .. math.Round( wep.ReloadTime, 3 ), "Exo 2 Regular", secondaryinfopanel:GetWide() / 2 + 4, 52 + offset, Color( 255, 255, 255 ) )
+				draw.SimpleText( "Reload Length (seconds): " --[[.. math.Round( wep.ReloadTime, 3 )]], "Exo 2 Regular", secondaryinfopanel:GetWide() / 2 + 4, 52 + offset, Color( 255, 255, 255 ) )
 				draw.SimpleText( "Spread Per Shot: " .. math.Round( wep.SpreadPerShot, 3 ), "Exo 2 Regular", secondaryinfopanel:GetWide() / 2 + 4, 77 + offset, Color( 255, 255, 255 ) )
 				draw.SimpleText( "Maximum Spread: " .. math.Round( wep.MaxSpreadInc, 3 ), "Exo 2 Regular", secondaryinfopanel:GetWide() / 2 + 2, 102 + offset, Color( 255, 255, 255 ) )
 			end
@@ -484,6 +490,8 @@ function DrawSheet( num )
 			--//The information section, for shit like level and stuff, right next to the equipment list
 			--//Maybe include a running character holding the selected weapons in between the equipment list and role info?
 
+			--local aplayer = ents.Create( LocalPlayer():GetModel() ) or ents.Create( "models/player/group03/male_01.mdl" )
+			--aplayer:Spawn()
 
 			local information = vgui.Create( "DPanel", page[ v[ teamnumber ] ] )
 			information:SetSize( page[ v[ teamnumber ] ]:GetWide() * ( 2 / 3 ), page[ v[ teamnumber ] ]:GetTall() / 3 )
@@ -500,18 +508,18 @@ function DrawSheet( num )
 end
 
 --This is the menu that opens when you press the "customize weapon" button, also in a seperate function to keep things looking clean and not having everything inside an OnClick function
-function CustomizeWeapon( wep )
+function CustomizeWeapon( wep, weptype )
 
 
-	local currentTeam = LocalPlayer():Team()
+	local teamnumber = LocalPlayer():Team()
 	local TeamColor
-	if currentTeam == 0 then --???
+	if teamnumber == 0 then --???
 		TeamColor = Color( 255, 255, 255 )
-	elseif currentTeam == 1 then --red
+	elseif teamnumber == 1 then --red
 		TeamColor = Color( 100, 15, 15 )
-	elseif currentTeam == 2 then --blue
+	elseif teamnumber == 2 then --blue
 		TeamColor = Color( 33, 150, 243, 100 )
-    elseif currentTeam == 3 then --black/FFA
+    elseif teamnumber == 3 then --black/FFA
         TeamColor = Color( 15, 160, 15 )
 	end
 
@@ -597,19 +605,19 @@ function CustomizeWeapon( wep )
 				local usedcolor = Color( 120, 120, 120)
 				
 				list[ k2 ] = vgui.Create( "DButton", list[ v ] )
-				list[ k2 ]:SetSize( list[ v ]:GetWide(), 20 )
-				list[ k2 ]:SetPos( 0, counter * 22 + 27 )
+				list[ k2 ]:SetSize( list[ v ]:GetWide(), 22 )
+				list[ k2 ]:SetPos( 0, counter * 22 + 20 )
 				list[ k2 ]:SetText( "" )
 				list[ k2 ].Paint = function()
 					if !list[ k2 ] or !list or list[ k2 ] == NULL then return end
-					if pattach[ v ] == k2 --[[or sattach[ v ] == k2]] then
-						surface.SetDrawColor( Color( 0, 0, 255 ) )
+					if ( weptype == "primary" and pattach[ v ] == k2 ) or ( weptype == "secondary" and sattach[ v ] == k2 ) then
+						surface.SetDrawColor( Color( 0, 80, 0 ) )
         				surface.DrawRect( 0, 0, list[ k2 ]:GetWide(), list[ k2 ]:GetTall() )
 					elseif selectedattachment == k2 then
-						surface.SetDrawColor( Color( 255, 0, 0 ) )
-        				surface.DrawOutlinedRect( 0, 0, list[ k2 ]:GetWide(), list[ k2 ]:GetTall() )
+						surface.SetDrawColor( Color( 250, 250, 250 ) )
+        				surface.DrawOutlinedRect( 0, 0, list[ k2 ]:GetWide() - 1, list[ k2 ]:GetTall() )
 					end
-					draw.SimpleText( usedtext, "Exo 2 Regular", list[ k2 ]:GetWide() / 2, 10 / 2, usedcolor, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER )
+					draw.SimpleText( usedtext, "Exo 2 Regular", list[ k2 ]:GetWide() / 2, list[ k2 ]:GetTall() / 2, usedcolor, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER )
 				end
 				list[ k2 ].DoClick = function()
 					selectedattachment = k2
@@ -627,17 +635,17 @@ function CustomizeWeapon( wep )
 		end
 	
 		--[[local icon = vgui.Create( "SpawnIcon", modelpanel )
-		icon:SetSize( 30, 30 )
+		icon:SetSize( 60, 60 )
 		if k <= #attachmenttypes / 2 then
-			icon:SetPos( 30, ( 30 * k ) + 10 )
+			icon:SetPos( 10, ( 30 * k ) + 20 )
 		else
-			icon:SetPos( modelpanel:GetWide() - 30 - icon:GetWide(), ( 30 * k ) + 10 )
+			icon:SetPos( modelpanel:GetWide() - 30 - icon:GetWide(), ( 30 * ( k - ( k / 2 ) ) + 20 )
 		end
 		icon.Think = function()
 			if selectedattachment then
 				icon:SetModel( selectedattachment )
-			else
-				--icon:SetModel( )
+			--else
+				--icon:SetModel( "" ) --icon:SetModel( nil ) or draw a black overlay using Paint
 			end
 		end]]
 	end
@@ -732,13 +740,13 @@ function CustomizeWeapon( wep )
 	end
 	equipbutton.DoClick = function()
 		surface.PlaySound( "buttons/button22.wav" )
-		for k3, v3 in pairs( primaries[ currentTeam ] ) do
+		for k3, v3 in pairs( primaries[ teamnumber ] ) do
 			if v3[ "class" ] == wep then
 				pattach[ selectedattachmenttype ] = selectedattachment
 				break
 			end
 		end
-		for k3, v3 in pairs( secondaries[ currentTeam ] ) do
+		for k3, v3 in pairs( secondaries[ teamnumber ] ) do
 			if v3[ "class" ] == wep then
 				sattach[ selectedattachmenttype ] = selectedattachment
 				break

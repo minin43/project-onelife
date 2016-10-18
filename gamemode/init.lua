@@ -94,18 +94,6 @@ function GM:ShowHelp( ply ) --F1
 	end
 end
 
-hook.Add( "PlayerSpawn", function( ply )
-	--I have to find a way to make this work, this should maybe be saved for when adding hooks in to roundhandler
-	if alreadydone == true then return else alreadydone = true end
-	util.AddNetworkString( "InitialUnlock" )
-	local list = util.JSONToTable( file.Read( "onelife/users/" .. id( ply:SteamID() ) .. ".txt", "DATA" ) )
-	net.Start( "InitialUnlock" )
-		print( "InitalUnlock started on server, sending table:")
-		PrintTable( list[ 2 ] )
-		net.WriteTable( list[ 2 ] )
-	net.Send( ply )
-end )
-
 function GM:PlayerInitialSpawn( ply )
 	if not file.Exists( "onelife/users/" .. id( ply:SteamID() ) .. ".txt", "DATA" ) then
 		file.Write( "onelife/users/" .. id( ply:SteamID() ) .. ".txt", util.TableToJSON( { ply:Name(), {} } ) )

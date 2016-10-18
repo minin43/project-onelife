@@ -157,6 +157,13 @@ function LoadoutMenu()
 				[ "pattachments" ] = pattach or { },
 				[ "sattachments" ] = sattach or { }
 			}
+			print( "Sending server these weapons:" )
+			print( loadout[ "primary" ] )
+			PrintTable( loadout[ "pattachments" ] )
+			print( loadout[ "secondary" ] )
+			PrintTable( loadout[ "sattachments" ] )
+			print( loadout[ "equipment" ] )
+			
 			net.WriteTable( loadout )
 		net.SendToServer()
 	end
@@ -194,6 +201,8 @@ function DrawSheet( num )
 	local attachmentlists = { }
 	page = { }
 	button = { }
+	pattach = { }
+	sattach = { }
 	for k, v in pairs( roles ) do
 		if num == k then
 			--//Here is where lots of the screen drawing will be done
@@ -332,7 +341,7 @@ function DrawSheet( num )
 			secondariesscrollpanel:SetSize( page[ v[ teamnumber ] ]:GetWide() / 3 , page[ v[ teamnumber ] ]:GetTall() / 3 )
 			secondariesscrollpanel:SetPos( 0, page[ v[ teamnumber ] ]:GetTall() / 3 )
 			secondariesscrollpanel.Paint = function()
-				draw.SimpleText( "Secondaries", "Exo 2 Large", secondariesscrollpanel:GetWide() / 2, 35 / 2, Color( 150, 150, 150 ), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER )
+				draw.SimpleText( "Secondaries", "Exo 2 Large", secondariesscrollpanel:GetWide() / 2, 35 / 2, Color( 200, 200, 200 ), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER )
 				surface.SetDrawColor( TeamColor )
         		surface.DrawOutlinedRect( 0, 0, secondariesscrollpanel:GetWide(), 35 )
 			end
@@ -440,7 +449,7 @@ function DrawSheet( num )
 			equipmentscrollpanel:SetSize( page[ v[ teamnumber ] ]:GetWide() / 3 , page[ v[ teamnumber ] ]:GetTall() / 3 )
 			equipmentscrollpanel:SetPos( 0, page[ v[ teamnumber ] ]:GetTall() * ( 2 / 3 ) )
 			equipmentscrollpanel.Paint = function()
-				draw.SimpleText( "Equipment", "Exo 2 Large", equipmentscrollpanel:GetWide() / 2, 35 / 2, Color( 150, 150, 150 ), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER )
+				draw.SimpleText( "Equipment", "Exo 2 Large", equipmentscrollpanel:GetWide() / 2, 35 / 2, Color( 200, 200, 200 ), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER )
 				surface.SetDrawColor( TeamColor )
         		surface.DrawOutlinedRect( 0, 0, equipmentscrollpanel:GetWide(), 35 )
 			end
@@ -592,8 +601,8 @@ function CustomizeWeapon( wep )
 				list[ k2 ]:SetPos( 0, counter * 22 + 27 )
 				list[ k2 ]:SetText( "" )
 				list[ k2 ].Paint = function()
-					if !list[ k2 ] or !list then return end
-					if pattach[ v ] == k2 or sattach[ v ] == k2 then
+					if !list[ k2 ] or !list or list[ k2 ] == NULL then return end
+					if pattach[ v ] == k2 --[[or sattach[ v ] == k2]] then
 						surface.SetDrawColor( Color( 0, 0, 255 ) )
         				surface.DrawRect( 0, 0, list[ k2 ]:GetWide(), list[ k2 ]:GetTall() )
 					elseif selectedattachment == k2 then
@@ -617,19 +626,20 @@ function CustomizeWeapon( wep )
 			end
 		end
 	
-		local icon = vgui.Create( "SpawnIcon", modelpanel )
+		--[[local icon = vgui.Create( "SpawnIcon", modelpanel )
 		icon:SetSize( 30, 30 )
 		if k <= #attachmenttypes / 2 then
-			icon:SetPos( )
+			icon:SetPos( 30, ( 30 * k ) + 10 )
 		else
-			icon:SetPos( )
+			icon:SetPos( modelpanel:GetWide() - 30 - icon:GetWide(), ( 30 * k ) + 10 )
 		end
 		icon.Think = function()
 			if selectedattachment then
 				icon:SetModel( selectedattachment )
 			else
-				icon:SetModel( )
-		end
+				--icon:SetModel( )
+			end
+		end]]
 	end
 
 	local money = 0
@@ -683,7 +693,7 @@ function CustomizeWeapon( wep )
 	end
 	buybutton.DoClick = function()
 		if wep_att[ wep ][ selectedattachment ][ "unlocked" ] then return end
-		if money < wep_att[ wep ][ selectedattachment ][ 2 ] ) then return end
+		if money < wep_att[ wep ][ selectedattachment ][ 2 ] then return end
 		surface.PlaySound( "buttons/button22.wav" )
 		print( "Buying attachment: ", selectedattachment, " on weapon: ", wep, " for $", wep_att[ wep ][ selectedattachment ][ 2 ] )
 		net.Start( "BuyAttachment" )
@@ -769,13 +779,14 @@ function CustomizeWeapon( wep )
 			end
 		end
 	end
-
 end
 
 concommand.Add( "pol_menu", LoadoutMenu )
 
-hook.Add( "", function( ply, button )
+hook.Add( "PlayerButtonDown", function( ply, button )
+	print( ply, button )
 	if button == "KEY_C" and !main:IsValid() then
+		print("Client pressed C")
 		LoadoutMenu()
 	end
 end )

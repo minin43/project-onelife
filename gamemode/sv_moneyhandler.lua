@@ -65,20 +65,39 @@ net.Receive( "RequestMoney", function( len, ply )
 end )
 
 net.Receive( "BuyAttachment", function( len, ply )
-	local parentwep = net.ReadString() --Make sure parent gets added to the client file
+	local parentwep = net.ReadString()
 	local attachment = net.ReadString()
 	--local attachmenttype = net.ReadString()
 	local price = tonumber( net.ReadString() )
 
-	local file = util.JSONToTable( file.Read( "onelife/users/" .. id( ply:SteamID() ) .. ".txt", "DATA" ) )
-	local parentweptable = file[ 2 ][ parentwep ] or { }
+	local original = util.JSONToTable( file.Read( "onelife/users/" .. id( ply:SteamID() ) .. ".txt", "DATA" ) )
+	if original[ 2 ][ parentwep ] then
+		table.insert( original[ 2 ][ parentwep ], attachment )
+	else
+		original[ 2 ][ parentwep ] = { attachment }
+	end
+	PrintTable( original )
 
-	table.insert( parentweptable, attachment )
-	if file[ 2 ][ parentwep ] then table.Empty( file[ 2 ][ parentwep ] ) end
-	table.insert( file[ 2 ][ parentwep ], parentweptable )
+	--[[local parentweptable = original[ 2 ][ parentwep ] or { }
+	print("pre-editted original")
+	PrintTable( original )
+	print("pre-editted parentweptable")
+	PrintTable( parentweptable )
 
-	local newfile = util.TableToJSON( file ) --{ file[ 1 ], currentattachments } )
-	file.Write( "onelife/users/" .. id( ply:SteamID() ) .. ".txt", newfile ) --Do we have to send the client any additional info?
+	table.insert( , attachment )
+	print("parentweptable editted:")
+	PrintTable( parentweptable )
+	if original[ 2 ][ parentwep ] then 
+		table.Empty( original[ 2 ][ parentwep ] )
+		table.insert( original[ 2 ][ parentwep ], parentweptable )
+	else
+		original[ 2 ][ parentwep ] = parentweptable
+	end
+
+	print( "The editted table to be made into a JSON string" )
+	PrintTable( original )]]
+	local newfile = util.TableToJSON( original ) --{ original[ 1 ], currentattachments } )
+	file.Write( "onelife/users/" .. id( ply:SteamID() ) .. ".txt", newfile )
 
 	price = -price
 	AddMoney( ply, price )

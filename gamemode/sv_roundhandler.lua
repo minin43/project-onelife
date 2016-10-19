@@ -10,6 +10,7 @@ modes = {
     [ "oma" ] = { --One Man Army, Last Team Standing but every man for themself
         [ "Rounds" ] = 3,
         [ "RoundTime" ] = 180,
+        TeamThree = true,
     },
     [ "hot" ] = { --HotPoint, whoever captures the single point uncontested wins
         [ "Rounds" ] = 5,
@@ -29,7 +30,7 @@ function StartGame( mode )
         return
     end
     if GetGlobalBool( "GameInProgress" ) == true then 
-        print( "There is already a game in-progress..." )
+        print( "There is already a game in progress..." )
         return 
     end
     SetGlobalInt( "RoundWinner", 0 )
@@ -38,11 +39,12 @@ function StartGame( mode )
     SetGlobalInt( "Round", 1 )
     SetGlobalInt( "RedTeamWins", 0 )
     SetGlobalInt( "BlueTeamWins", 0 )
+    SetGlobalBool( "TeamThree", modes[ mode ][ "TeamThree" ] )
     StartRound( 1 )
 end
 
 function StartRound( round )
-    SetGlobalInt( "RoundTime", 180 )
+    SetGlobalInt( "RoundTime", modes[ GetGlobalString( GameType ) ][ "RoundTime" ] )
     SetGlobalInt( "Round", round )
     RoundPrep( round )
 end
@@ -55,7 +57,7 @@ function RoundPrep( round )
     print( "Round preperation starting, cleaning up map..." )
 
     if round != 1 then
-        --ChangeSides() --To-do function
+        --ChangeSides() --To-do function, use this to change everyone's team, red to blue and blue to red, but keep their team name the same
     end
 
     print( "All teams valid...")
@@ -77,12 +79,12 @@ end
 
 --Game starting, player movement freed
 function RoundBegin( round )
-    print( "Starting game/round..." )
+    print( "Starting round...", round )
     --Start the round's countdown timer
     timer.Create( "Time Countdown", 1, 0, function()
         SetGlobalInt( "RoundTime", GetGlobalInt( "RoundTime" ) - 1 )
         if GetGlobalInt( "RoundTime" ) == 0 then
-            RoundEnd( round, 3 )
+            RoundEnd( round, 0 )
             SetGlobalInt( "RoundTime", -1 )
             timer.Remove( "Time Countdown" )
         end
@@ -129,36 +131,45 @@ function RoundEnd( round, victor )
 end 
 
 function GameWon()
-    if GetGlobalInt( "RedTeamWins" ) == 3 or GetGlobalInt( "BlueTeamWins" ) == 3 then
+    if GetGlobalInt( "RedTeamWins" ) > ( modes[ GetGlobalString( GameType ) ][ "Rounds" ] / 2 ) or GetGlobalInt( "BlueTeamWins" ) > ( modes[ GetGlobalString( GameType ) ][ "Rounds" ] / 2 ) then
         return true
     end
     return false
 end
 
 function allteamsvalid()
-    print( "AllTeamsValid Initializing...")
+    print( "Initial Team Checker Initializing...")
     local redvalid = false
     local bluevalid = false
+    local blackvalid = false
     for k, v in pairs( team.GetAllTeams() ) do
         --print( k, v, team.GetName( k ), "v value: ", team.GetName( v ) )
-        if team.GetName( k ) == "Black" then print( "This team is the FFA team" )
-        elseif team.GetName( k ) == "Red" then
-            print( "Red Team teamchecker commencing..." )
+        if k == 3 then
+            print( "Team 3 teamchecker commencing..." )
+            if table.Count( team.GetPlayers( 3 ) ) > 1 then
+                blackvalid = true
+            end
+            print( "Team 3 is valid? ", blackvalid )
+        elseif k == 1 then
+            print( "Team 1 teamchecker commencing..." )
             if table.Count( team.GetPlayers( 1 ) ) > 0 then
                 redvalid = true
             end
-            print( "Red team's validity is: ", redvalid )
-        elseif team.GetName( k ) == "Blue" then
-            print( "Blue Team teamchecker commencing..." )
+            print( "Team 1 is valid? ", redvalid )
+        elseif k == 2 then
+            print( "Team 2 teamchecker commencing..." )
             if table.Count( team.GetPlayers( 2 ) ) > 0 then
                 bluevalid = true
             end
-            print( "Blue team's validity is: ", bluevalid )
+            print( "Team 2 is valid? ", bluevalid )
         end
     end
     
     if redvalid and bluevalid then
-        print( "All teams are valid" )
+        print( "Teams 1 and 2 are valid" )
+        return true
+    elseif blackvalid then
+        print( "Team 3 is valid" )
         return true
     end    
     return false

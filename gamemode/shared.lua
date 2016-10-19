@@ -1,11 +1,16 @@
 GM.Name = "Project: OneLife"
 GM.Author = "Logan"
 GM.Email = "lobsterlogan43@yahoo.com"
-GM.Website = "N/A"
+GM.Website = "egncommunity.com"
 
-team.SetUp( 1, "Red", Color( 255, 0, 0 ) )
-team.SetUp( 2, "Blue", Color( 0, 0, 255 ) )
-team.SetUp( 3, "Black", Color( 0, 0, 0 ) )
+possibleteams = {
+	{ "Task Force 141", "U.S. Army Rangers", "Marines" },
+	{ "Spetsnaz", "Militia", "OpFor" }--, "Any more?" }
+}
+
+team.SetUp( 1, "Team " .. table.Random( possibleteams[ 2 ] ), Color( 255, 0, 0 ) )
+team.SetUp( 2, "Team " .. table.Random( possibleteams[ 1 ] ), Color( 0, 0, 255 ) )
+team.SetUp( 3, "Solo", Color( 0, 255, 0 ) )
 
 if SERVER then
     

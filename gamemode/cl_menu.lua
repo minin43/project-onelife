@@ -554,6 +554,13 @@ function DrawSheet( num )
 			--local aplayer = ents.Create( LocalPlayer():GetModel() ) or ents.Create( "models/player/group03/male_01.mdl" )
 			--aplayer:Spawn()
 
+			local lvl
+			net.Start( "RequestLevel" )
+			net.SendToServer()
+			net.Receive( "RequestLevelCallback", function()
+				lvl = tonumber( net.ReadString() )
+			end)
+
 			local information = vgui.Create( "DPanel", page[ v[ teamnumber ] ] )
 			information:SetSize( page[ v[ teamnumber ] ]:GetWide() / 3, page[ v[ teamnumber ] ]:GetTall() / 3 )
 			information:SetPos( page[ v[ teamnumber ] ]:GetWide() / 3 * 2, page[ v[ teamnumber ] ]:GetTall() - ( page[ v[ teamnumber ] ]:GetTall() / 3) )
@@ -563,6 +570,7 @@ function DrawSheet( num )
         		surface.DrawOutlinedRect( 0, 0, information:GetWide(), information:GetTall() )
 				draw.DrawText( "Role: " .. v[ teamnumber ], "Exo 2 Large", 2, 2, Color( 50, 50, 50 ) ) --I need to look at all the different ways I can draw text, this way is shitty
 				draw.DrawText( v[ 4 ], "Exo 2 Regular", 2, 30, Color( 50, 50, 50 ) ) --I need to look at all the different ways I can draw text, this way is shitty
+				draw.DrawText( "Level: " .. lvl, "Exo 2 Regular", 2, 55, Color( 50, 50, 50 ) )
 			end
 		end
 	end

@@ -176,7 +176,9 @@ if SERVER then
 				timer.Simple( 0.2, function()
 					for k, v in pairs( loadout[ "pattachments" ] ) do
 						ply:GetWeapon( loadout[ "primary" ] ):attachSpecificAttachment( v )
-						if v == "kk_ins2_gl_gp25" or v == "kk_ins2_gl_m203" then give40mm = true end
+						if v == "kk_ins2_gl_gp25" or v == "kk_ins2_gl_m203" then 
+							give40mm = true 
+						end
 					end
 				end )
 				ply.oldpatt = loadout[ "pattachments" ]
@@ -214,12 +216,12 @@ if SERVER then
 			[ "cw_kk_ins2_nade_ied" ] = 1
 		}
 		local previouslyremoved = { }
-		timer.Simple( 0.1, function()
+		timer.Simple( 0.25, function()
 			if ply:IsPlayer() then
 				for k, v in pairs( ply:GetWeapons() ) do
 					local x = v:GetPrimaryAmmoType()
 					local y = v:Clip1()
-					if !previouslyremoved[ x ] then
+					if !table.HasValue( previouslyremoved, x ) then
 						ply:RemoveAmmo( ply:GetAmmoCount( x ), x )
 						table.insert( previouslyremoved, x )
 					end
@@ -271,6 +273,42 @@ if SERVER then
 			randomtable = { "cw_kk_ins2_mel_gurkha", "cw_kk_ins2_mel_bayonet" }
 			ply:Give( table.Random( randomtable ) )
 		end
+
+		--//Give ammo here
+		local ammoneeded = {
+			[ "cw_kk_ins2_nade_m18" ] = 2,
+			[ "cw_kk_ins2_nade_m67" ] = 2,
+			[ "cw_kk_ins2_nade_f1" ] = 2,
+			[ "cw_kk_ins2_rpg" ] = 1,
+			[ "cw_kk_ins2_nade_m84" ] = 2,
+			[ "cw_kk_ins2_gp25" ] = 3,
+			[ "cw_kk_ins2_p2a1" ] = 2,
+			[ "cw_kk_ins2_nade_c4" ] = 1,
+			[ "cw_kk_ins2_at4" ] = 1,
+			[ "cw_kk_ins2_nade_ied" ] = 1
+		}
+		local previouslyremoved = { }
+		timer.Simple( 0.25, function()
+			if ply:IsPlayer() then
+				for k, v in pairs( ply:GetWeapons() ) do
+					local x = v:GetPrimaryAmmoType()
+					local y = v:Clip1()
+					if !table.HasValue( previouslyremoved, x ) then
+						ply:RemoveAmmo( ply:GetAmmoCount( x ), x )
+						table.insert( previouslyremoved, x )
+					end
+					if ammoneeded[ v:GetClass() ] then
+						ply:GiveAmmo( ammoneeded[ v:GetClass() ], x, true )
+					else
+						ply:GiveAmmo( ( y * 5 ), x, true )
+					end
+				end	
+				ply:RemoveAmmo( ply:GetAmmoCount( "40MM" ), "40MM" )
+				if give40mm then
+					ply:GiveAmmo( 2, "40MM", true )
+				end
+			end
+		end )
 	end
 
 

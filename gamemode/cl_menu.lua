@@ -24,11 +24,10 @@ surface.CreateFont( "Exo 2 Regular", {
 	weight = 500
 } )
 
-surface.CreateFont( "Exo 2 Regular Underlined", {
+surface.CreateFont( "Exo 2 Huge", {
 	font = "Exo 2",
-	size = 20,
-	weight = 500,
-	underline = true
+	size = 40,
+	weight = 700
 } )
 
 surface.CreateFont( "Exo 2 Large", {
@@ -97,12 +96,13 @@ function LoadoutMenu()
 		end
 	end
 
-	hook.Add( "PlayerButtonDown", function( ply, button )
-		if button == "KEY_C" and main:IsValid() then
+	--[[function PlayerButtonDown( ply, button )
+		if input.GetKeyName( button ) == "c" and main then
+			print("close the menu")
 			main:Close()
 			main = nil
 		end
-	end )
+	end]]
 
 	local tabs = vgui.Create( "DPanel", main )
 	tabs:SetPos( 0, 0 )
@@ -164,13 +164,6 @@ function LoadoutMenu()
 				[ "pattachments" ] = pattach or { },
 				[ "sattachments" ] = sattach or { }
 			}
-			print( "Sending server these weapons:" )
-			print( loadout[ "primary" ] )
-			PrintTable( loadout[ "pattachments" ] )
-			print( loadout[ "secondary" ] )
-			PrintTable( loadout[ "sattachments" ] )
-			print( loadout[ "equipment" ] )
-			
 			net.WriteTable( loadout )
 		net.SendToServer()
 	end
@@ -225,6 +218,10 @@ function DrawSheet( num )
         		surface.DrawRect( 0, 0, main:GetWide(), main:GetTall() - 30 )
     		end
 
+			surface.SetFont( "Exo 2 Regular" )
+			local text = "Click to customize weapon"
+			textwidth, textheight = surface.GetTextSize( text )
+
 
 			--//Primaries row//--
 
@@ -249,9 +246,10 @@ function DrawSheet( num )
 
 			--//This is all the primary weapon buttons that get created
 			for k2, v2 in pairs( availableprimaries ) do
+				local hoverprimaries
 				button[ v2[ "name" ] ] = vgui.Create( "DButton", primariesscrollpanel )
 				button[ v2[ "name" ] ]:SetPos( 0, 35 * ( k2 - 1 ) + 35 )
-				button[ v2[ "name" ] ]:SetSize( primariesscrollpanel:GetWide(), 45 )
+				button[ v2[ "name" ] ]:SetSize( primariesscrollpanel:GetWide(), 35 )
 				button[ v2[ "name" ] ]:SetText( "" )
 				button[ v2[ "name" ] ].Paint = function()
 					if !primariesscrollpanel then return end
@@ -260,6 +258,16 @@ function DrawSheet( num )
 						surface.SetDrawColor( TeamColor )
         				surface.DrawOutlinedRect( 0, 0, button[ v2[ "name" ] ]:GetWide(), button[ v2[ "name" ] ]:GetTall() )
 					end 
+					if hoverprimaries then
+						surface.SetDrawColor( Color( 255, 255, 255, 10 ) )
+						surface.DrawRect( 0, 0, button[ v2[ "name" ] ]:GetWide(), button[ v2[ "name" ] ]:GetTall() )
+					end
+				end
+				button[ v2[ "name" ] ].OnCursorEntered = function()
+					hoverprimaries = true
+				end
+				button[ v2[ "name" ] ].OnCursorExited = function()
+					hoverprimaries = false
 				end
 				button[ v2[ "name" ] ].DoClick = function()
 					surface.PlaySound( "buttons/button22.wav" )
@@ -288,14 +296,25 @@ function DrawSheet( num )
 				end
 			end
 
+			local hoverprimary
 			local customizeprimary = vgui.Create( "DButton", primarymodelpanel )
 			customizeprimary:SetSize( primarymodelpanel:GetWide(), primarymodelpanel:GetTall() )
 			customizeprimary:SetPos( 0, 0 )
 			customizeprimary:SetText( "" )
 			customizeprimary.Paint = function()
 				if !primariesscrollpanel then return end
-					draw.SimpleText( "Click to customize weapon", "Exo 2 Regular", customizeprimary:GetWide() / 2, customizeprimary:GetTall() - 30, Color( 100, 100, 100 ), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER )
+				draw.SimpleText( "Click to customize weapon", "Exo 2 Regular", customizeprimary:GetWide() / 2, customizeprimary:GetTall() - 30, Color( 100, 100, 100 ), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER )
+				if hoverprimary then
+					surface.SetDrawColor( TeamColor )
+					surface.DrawLine( ( customizeprimary:GetWide() / 2 ) - ( textwidth / 2 ), customizeprimary:GetTall() - 30 + ( textheight / 2 ), customizeprimary:GetWide() / 2 + ( textwidth / 2 ), ( customizeprimary:GetTall() - 30 + ( textheight / 2 ) ) )				
 				end
+			end
+			customizeprimary.OnCursorEntered = function()
+				hoverprimary = true
+			end
+			customizeprimary.OnCursorExited = function()
+				hoverprimary = false
+			end
 			customizeprimary.DoClick = function()
 				if !selectedprimary then return end
 				surface.PlaySound( "buttons/button22.wav" )
@@ -360,17 +379,28 @@ function DrawSheet( num )
 			end
 
 			for k2, v2 in pairs( availablesecondaries ) do
+				local hoversecondaries
 				button[ v2[ "name" ] ] = vgui.Create( "DButton", secondariesscrollpanel )
 				button[ v2[ "name" ] ]:SetPos( 0, 35 * ( k2 - 1 ) + 35 )
 				button[ v2[ "name" ] ]:SetSize( secondariesscrollpanel:GetWide(), 35 )
 				button[ v2[ "name" ] ]:SetText( "" )
 				button[ v2[ "name" ] ].Paint = function()
 					if !secondariesscrollpanel then return end
-					draw.SimpleText( v2["name"], "Exo 2 Regular", secondariesscrollpanel:GetWide() / 2, 35 / 2, Color( 100, 100, 100 ), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER )
+					draw.SimpleText( v2["name"], "Exo 2 Regular", secondariesscrollpanel:GetWide() / 2, 35 / 2, Color( 150, 150, 150 ), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER )
 					if selectedsecondary == v2[ "class" ] then
 						surface.SetDrawColor( TeamColor )
         				surface.DrawOutlinedRect( 0, 0, button[ v2[ "name" ] ]:GetWide(), button[ v2[ "name" ] ]:GetTall() )
 					end 
+					if hoversecondaries then
+						surface.SetDrawColor( Color( 255, 255, 255, 10 ) )
+						surface.DrawRect( 0, 0, button[ v2[ "name" ] ]:GetWide(), button[ v2[ "name" ] ]:GetTall() )
+					end
+				end
+				button[ v2[ "name" ] ].OnCursorEntered = function()
+					hoversecondaries = true
+				end
+				button[ v2[ "name" ] ].OnCursorExited = function()
+					hoversecondaries = false
 				end
 				button[ v2[ "name" ] ].DoClick = function()
 					surface.PlaySound( "buttons/button22.wav" )
@@ -398,26 +428,37 @@ function DrawSheet( num )
 				end
 			end
 
+			local hoversecondary
 			local customizesecondary = vgui.Create( "DButton", secondarymodelpanel )
 			customizesecondary:SetSize( secondarymodelpanel:GetWide(), secondarymodelpanel:GetTall() )
 			customizesecondary:SetPos( 0, 0 )
 			customizesecondary:SetText( "" )
 			customizesecondary.Paint = function()
 				if !secondariesscrollpanel then return end
-					draw.SimpleText( "Click to customize weapon", "Exo 2 Regular", customizesecondary:GetWide() / 2, customizesecondary:GetTall() - 30, Color( 100, 100, 100 ), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER )
+				draw.SimpleText( "Click to customize weapon", "Exo 2 Regular", customizesecondary:GetWide() / 2, customizesecondary:GetTall() - 30, Color( 100, 100, 100 ), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER )
+				if hoversecondary then
+					surface.SetDrawColor( TeamColor )
+					surface.DrawLine( ( customizesecondary:GetWide() / 2 ) - ( textwidth / 2 ), customizesecondary:GetTall() - 30 + ( textheight / 2 ), customizesecondary:GetWide() / 2 + ( textwidth / 2 ), ( customizesecondary:GetTall() - 30 + ( textheight / 2 ) ) )				
 				end
+			end
+			customizesecondary.OnCursorEntered = function()
+				hoversecondary = true
+			end
+			customizesecondary.OnCursorExited = function()
+				hoversecondary = false
+			end
 			customizesecondary.DoClick = function()
 				if !selectedsecondary then return end
 				surface.PlaySound( "buttons/button22.wav" )
 				CustomizeWeapon( selectedsecondary, "secondary" )
 				sattach = { }
 			end
-			customizesecondary.Think = function()
+			--[[customizesecondary.Think = function()
 				if !selectedsecondary then
 					surface.SetDrawColor( Color( 200, 200, 200 ) )
         			surface.DrawRect( 0, secondarymodelpanel:GetTall() - customizesecondary:GetTall(), secondarymodelpanel:GetWide(), customizesecondary:GetTall() )
 				end
-			end
+			end]]
 
 			--//If the panel name is anything to go by, the weapon info on the right hand side of the screen
 			local secondaryinfopanel = vgui.Create( "DPanel", page[ v[ teamnumber ] ] )
@@ -468,17 +509,28 @@ function DrawSheet( num )
 			end
 
 			for k2, v2 in pairs( availableequipment ) do
+				local hoverequipment
 				button[ v2[ "name" ] ] = vgui.Create( "DButton", equipmentscrollpanel )
 				button[ v2[ "name" ] ]:SetPos( 0, 35 * ( k2 - 1 ) + 35 )
 				button[ v2[ "name" ] ]:SetSize( equipmentscrollpanel:GetWide(), 35 )
 				button[ v2[ "name" ] ]:SetText( "" )
 				button[ v2[ "name" ] ].Paint = function()
 					if !equipmentscrollpanel then return end
-					draw.SimpleText( v2["name"], "Exo 2 Regular", equipmentscrollpanel:GetWide() / 2, 35 / 2, Color( 100, 100, 100 ), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER )
+					draw.SimpleText( v2["name"], "Exo 2 Regular", equipmentscrollpanel:GetWide() / 2, 35 / 2, Color( 150, 150, 150 ), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER )
 					if selectedequipment == v2[ "class" ] then
-						surface.SetDrawColor( TeamColor )
-        				surface.DrawOutlinedRect( 0, 0, button[ v2[ "name" ] ]:GetWide(), button[ v2[ "name" ] ]:GetTall() )
-					end 
+					surface.SetDrawColor( TeamColor )
+       				surface.DrawOutlinedRect( 0, 0, button[ v2[ "name" ] ]:GetWide(), button[ v2[ "name" ] ]:GetTall() )
+					end
+					if hoverequipment then
+						surface.SetDrawColor( Color( 255, 255, 255, 10 ) )
+						surface.DrawRect( 0, 0, button[ v2[ "name" ] ]:GetWide(), button[ v2[ "name" ] ]:GetTall() )
+					end
+				end
+				button[ v2[ "name" ] ].OnCursorEntered = function()
+					hoverequipment = true
+				end
+				button[ v2[ "name" ] ].OnCursorExited = function()
+					hoverequipment = false
 				end
 				button[ v2[ "name" ] ].DoClick = function()
 					surface.PlaySound( "buttons/button22.wav" )
@@ -486,6 +538,15 @@ function DrawSheet( num )
 				end
 			end
 
+			local wip = vgui.Create( "DPanel", page[ v[ teamnumber ] ] )
+			wip:SetSize( page[ v[ teamnumber ] ]:GetWide() / 3, page[ v[ teamnumber ] ]:GetTall() / 3 )
+			wip:SetPos( page[ v[ teamnumber ] ]:GetWide() / 3, page[ v[ teamnumber ] ]:GetTall() - ( page[ v[ teamnumber ] ]:GetTall() / 3) )
+			wip.Paint = function()
+				if !page[ v[ teamnumber ] ] then return end
+				surface.SetDrawColor( TeamColor )
+        		surface.DrawOutlinedRect( 0, 0, wip:GetWide(), wip:GetTall() )
+				draw.DrawText( "W.I.P.", "Exo 2 Huge", wip:GetWide() / 2, wip:GetTall() / 2, Color( 50, 50, 50 ), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER )
+			end
 
 			--//The information section, for shit like level and stuff, right next to the equipment list
 			--//Maybe include a running character holding the selected weapons in between the equipment list and role info?
@@ -494,12 +555,12 @@ function DrawSheet( num )
 			--aplayer:Spawn()
 
 			local information = vgui.Create( "DPanel", page[ v[ teamnumber ] ] )
-			information:SetSize( page[ v[ teamnumber ] ]:GetWide() * ( 2 / 3 ), page[ v[ teamnumber ] ]:GetTall() / 3 )
-			information:SetPos( page[ v[ teamnumber ] ]:GetWide() / 3, page[ v[ teamnumber ] ]:GetTall() - ( page[ v[ teamnumber ] ]:GetTall() / 3) )
+			information:SetSize( page[ v[ teamnumber ] ]:GetWide() / 3, page[ v[ teamnumber ] ]:GetTall() / 3 )
+			information:SetPos( page[ v[ teamnumber ] ]:GetWide() / 3 * 2, page[ v[ teamnumber ] ]:GetTall() - ( page[ v[ teamnumber ] ]:GetTall() / 3) )
 			information.Paint = function()
 				if !page[ v[ teamnumber ] ] then return end
-				surface.SetDrawColor( 255, 255, 255 )
-        		surface.DrawRect( 0, 0, information:GetWide(), information:GetTall() )
+				surface.SetDrawColor( TeamColor )
+        		surface.DrawOutlinedRect( 0, 0, information:GetWide(), information:GetTall() )
 				draw.DrawText( "Role: " .. v[ teamnumber ], "Exo 2 Large", 2, 2, Color( 50, 50, 50 ) ) --I need to look at all the different ways I can draw text, this way is shitty
 				draw.DrawText( v[ 4 ], "Exo 2 Regular", 2, 30, Color( 50, 50, 50 ) ) --I need to look at all the different ways I can draw text, this way is shitty
 			end
@@ -524,12 +585,15 @@ function CustomizeWeapon( wep, weptype )
 	end
 
 	for k, v in pairs( main:GetChildren() ) do
+		--print( k, v, v:GetName() )
 		if v:GetName() == "DLabel" then
 			v:SetDisabled( true )
 		elseif v:GetName() == "DPanel" then
 			v:SetDisabled( true )
 			for k2, v2 in pairs( v:GetChildren() ) do
+				--print( k2, v2, v2:GetName(), v2:GetDisabled() )
 				v2:SetEnabled( false )
+				--print( v2:GetDisabled() )
 			end
 		elseif v:GetName() == "DButton" then --For some reason button wants to be special
 			v:SetEnabled( false )
@@ -549,6 +613,12 @@ function CustomizeWeapon( wep, weptype )
 		Derma_DrawBackgroundBlur( customizemain, CurTime() )
 		surface.SetDrawColor( Color( 0, 0, 0, 250 ) )
 		surface.DrawRect( 0, 0, customizemain:GetWide(), customizemain:GetTall() )
+	end
+	customizemain.Think = function()
+		if main == nil then
+			customizemain:Close()
+			customizemain = nil
+		end
 	end
 
 	local modelpanel = vgui.Create( "DPanel", customizemain )
@@ -599,36 +669,39 @@ function CustomizeWeapon( wep, weptype )
 		selectedattachment = nil
 		for k2, v2 in pairs( wep_att[ wep ] ) do
 			if v2[ 1 ] == v then
-				counter = counter + 1
-				local usedtext = CustomizableWeaponry.registeredAttachmentsSKey[ k2 ].displayName
-				if #usedtext > 12 then usedtext = CustomizableWeaponry.registeredAttachmentsSKey[ k2 ].displayNameShort end
-				local usedcolor = Color( 120, 120, 120)
-				
-				list[ k2 ] = vgui.Create( "DButton", list[ v ] )
-				list[ k2 ]:SetSize( list[ v ]:GetWide(), 22 )
-				list[ k2 ]:SetPos( 0, counter * 22 + 20 )
-				list[ k2 ]:SetText( "" )
-				list[ k2 ].Paint = function()
-					if !list[ k2 ] or !list or list[ k2 ] == NULL then return end
-					if ( weptype == "primary" and pattach[ v ] == k2 ) or ( weptype == "secondary" and sattach[ v ] == k2 ) then
-						surface.SetDrawColor( Color( 0, 80, 0 ) )
-        				surface.DrawRect( 0, 0, list[ k2 ]:GetWide(), list[ k2 ]:GetTall() )
-					elseif selectedattachment == k2 then
-						surface.SetDrawColor( Color( 250, 250, 250 ) )
-        				surface.DrawOutlinedRect( 0, 0, list[ k2 ]:GetWide() - 1, list[ k2 ]:GetTall() )
+				--I hate this if statement, why doesn't Lua have a "continue" break, it would be so nice... Change 5 around if the role that gets GLs changes
+				if ( k2 != "kk_ins2_gl_gp25" and k2 != "kk_ins2_gl_m203" ) or ( ( k2 == "kk_ins2_gl_gp25" or k2 == "kk_ins2_gl_m203" ) and selectedrole == roles[ 5 ][ teamnumber ] ) then 
+					counter = counter + 1
+					local usedtext = CustomizableWeaponry.registeredAttachmentsSKey[ k2 ].displayName
+					if #usedtext > 12 then usedtext = CustomizableWeaponry.registeredAttachmentsSKey[ k2 ].displayNameShort end
+					local usedcolor = Color( 120, 120, 120)
+					
+					list[ k2 ] = vgui.Create( "DButton", list[ v ] )
+					list[ k2 ]:SetSize( list[ v ]:GetWide(), 22 )
+					list[ k2 ]:SetPos( 0, counter * 22 + 20 )
+					list[ k2 ]:SetText( "" )
+					list[ k2 ].Paint = function()
+						if !list[ k2 ] or !list or list[ k2 ] == NULL then return end
+						if ( weptype == "primary" and pattach[ v ] == k2 ) or ( weptype == "secondary" and sattach[ v ] == k2 ) then
+							surface.SetDrawColor( Color( 0, 80, 0 ) )
+        					surface.DrawRect( 0, 0, list[ k2 ]:GetWide(), list[ k2 ]:GetTall() )
+						elseif selectedattachment == k2 then
+							surface.SetDrawColor( Color( 250, 250, 250 ) )
+        					surface.DrawOutlinedRect( 0, 0, list[ k2 ]:GetWide() - 1, list[ k2 ]:GetTall() )
+						end
+						draw.SimpleText( usedtext, "Exo 2 Regular", list[ k2 ]:GetWide() / 2, list[ k2 ]:GetTall() / 2, usedcolor, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER )
 					end
-					draw.SimpleText( usedtext, "Exo 2 Regular", list[ k2 ]:GetWide() / 2, list[ k2 ]:GetTall() / 2, usedcolor, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER )
-				end
-				list[ k2 ].DoClick = function()
-					selectedattachment = k2
-					selectedattachmenttype = v2[ 1 ]
-					surface.PlaySound( "buttons/button22.wav" )
-				end
-				list[ k2 ].Think = function()
-					if wep_att[ wep ][ k2 ][ "unlocked" ] then
-						usedcolor = Color( 200, 200, 200 )
-					else
-						usedcolor = Color( 70, 70, 70 )
+					list[ k2 ].DoClick = function()
+						selectedattachment = k2
+						selectedattachmenttype = v2[ 1 ]
+						surface.PlaySound( "buttons/button22.wav" )
+					end
+					list[ k2 ].Think = function()
+						if wep_att[ wep ][ k2 ][ "unlocked" ] then
+							usedcolor = Color( 200, 200, 200 )
+						else
+							usedcolor = Color( 70, 70, 70 )
+						end
 					end
 				end
 			end
@@ -679,9 +752,13 @@ function CustomizeWeapon( wep, weptype )
 		draw.SimpleText( "Description: ", "Exo 2 Regular", 6, 40, Color( 150, 150, 150 ) )
 		draw.SimpleText( "Stat modifiers: ", "Exo 2 Regular", attachmentdatapanel:GetWide() / 2 + 6, 40, Color( 200, 200, 200 ) )
 		local counter = 0
-		for k, v in pairs( CustomizableWeaponry.registeredAttachmentsSKey[ selectedattachment ].statModifiers ) do
-			counter = counter + 1
-			draw.SimpleText( k .. ":  " .. v, "Exo 2 Regular", attachmentdatapanel:GetWide() / 2 + 121, 40 + ( 20 * ( counter - 1 ) ), Color( 150, 150, 150 ) )
+		if istable( CustomizableWeaponry.registeredAttachmentsSKey[ selectedattachment ].statModifiers ) then
+			for k, v in pairs( CustomizableWeaponry.registeredAttachmentsSKey[ selectedattachment ].statModifiers ) do
+				counter = counter + 1
+				draw.SimpleText( k .. ":  " .. v, "Exo 2 Regular", attachmentdatapanel:GetWide() / 2 + 121, 40 + ( 20 * ( counter - 1 ) ), Color( 150, 150, 150 ) )
+			end
+		else
+			draw.SimpleText( "None", "Exo 2 Regular", attachmentdatapanel:GetWide() / 2 + 121, 40, Color( 150, 150, 150 ) )
 		end
 	end
 
@@ -701,9 +778,12 @@ function CustomizeWeapon( wep, weptype )
 	end
 	buybutton.DoClick = function()
 		if wep_att[ wep ][ selectedattachment ][ "unlocked" ] then return end
-		if money < wep_att[ wep ][ selectedattachment ][ 2 ] then return end
-		surface.PlaySound( "buttons/button22.wav" )
-		print( "Buying attachment: ", selectedattachment, " on weapon: ", wep, " for $", wep_att[ wep ][ selectedattachment ][ 2 ] )
+		if money < wep_att[ wep ][ selectedattachment ][ 2 ] then 
+			surface.PlaySound( "buttons/combine_button_locked.wav" ) 
+			gui.OpenURL( "https://egncommunity.com/donate/" )
+			return 
+		end
+		surface.PlaySound( "ambient/levels/labs/coinslot1.wav" )
 		net.Start( "BuyAttachment" )
 			net.WriteString( wep )
 			net.WriteString( selectedattachment )
@@ -791,10 +871,12 @@ end
 
 concommand.Add( "pol_menu", LoadoutMenu )
 
-hook.Add( "PlayerButtonDown", function( ply, button )
-	print( ply, button )
-	if button == "KEY_C" and !main:IsValid() then
-		print("Client pressed C")
+function GM:PlayerButtonDown( ply, button )
+	if input.GetKeyName( button ) == "c" and !main then
 		LoadoutMenu()
+	--[[elseif input.GetKeyName( button ) == "c" and main then
+		print("close the menu")
+		main:Close()
+		main = nil]]
 	end
-end )
+end

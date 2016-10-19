@@ -76,26 +76,7 @@ net.Receive( "BuyAttachment", function( len, ply )
 	else
 		original[ 2 ][ parentwep ] = { attachment }
 	end
-	PrintTable( original )
-
-	--[[local parentweptable = original[ 2 ][ parentwep ] or { }
-	print("pre-editted original")
-	PrintTable( original )
-	print("pre-editted parentweptable")
-	PrintTable( parentweptable )
-
-	table.insert( , attachment )
-	print("parentweptable editted:")
-	PrintTable( parentweptable )
-	if original[ 2 ][ parentwep ] then 
-		table.Empty( original[ 2 ][ parentwep ] )
-		table.insert( original[ 2 ][ parentwep ], parentweptable )
-	else
-		original[ 2 ][ parentwep ] = parentweptable
-	end
-
-	print( "The editted table to be made into a JSON string" )
-	PrintTable( original )]]
+	
 	local newfile = util.TableToJSON( original ) --{ original[ 1 ], currentattachments } )
 	file.Write( "onelife/users/" .. id( ply:SteamID() ) .. ".txt", newfile )
 

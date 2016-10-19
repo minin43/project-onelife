@@ -420,26 +420,13 @@ wep_att[ "cw_kk_ins2_revolver" ] = {
     [ "am_matchgrade" ] =           { "Ammo", 250, unlocked, 5 }
 }
 
---Include some function that checks for bought attachments and sets "unlocked" to true for all, probably on player join
-if SERVER then
-    function GM:PlayerSpawn( ply )
-        util.AddNetworkString( "InitialUnlock" )
-	    local list = util.JSONToTable( file.Read( "onelife/users/" .. id( ply:SteamID() ) .. ".txt", "DATA" ) )
-	    net.Start( "InitialUnlock" )
-		    print( "InitalUnlock started on server, sending table:")
-		    PrintTable( list[ 2 ] )
-		    net.WriteTable( list[ 2 ] )
-	    net.Send( ply )
-    end
-end
-
 if CLIENT then
     net.Receive( "InitialUnlock", function( len, ply )
-        print( "InitialUnlock Received")
         local unlocks = net.ReadTable() or { }
         for k, v in pairs( unlocks ) do
-            print( "Unlocking " .. v .. " for weapon ", k, " for player ", ply )
-            wep_att[ k ][ v ][ "unlocked" ] = true
+            for k2, v2 in pairs( v ) do
+                wep_att[ k ][ v2 ][ "unlocked" ] = true
+            end
         end
     end )
 end

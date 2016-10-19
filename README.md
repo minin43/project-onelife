@@ -5,4 +5,4 @@ These modes may be pulled from other games (Counter Strike, Insurgency, etc) and
 likely be clunky, ineficient, and slow, as I'm still new to this.
 
 For anyone other than myself reading this, feel free to help out if you'd like, but I reserve the right to ignore any pull requests.
-This gamemode will soon hopefully be featured on amrcommunity.com
+This gamemode will soon hopefully be featured on egncommunity.com

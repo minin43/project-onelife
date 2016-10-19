@@ -27,8 +27,15 @@ include( "sv_roundhandler.lua" )
 include( "sv_playerhandler.lua" )
 include( "sv_weaponstats.lua" )
 
-for k, v in pairs( file.Find( "onelife/gamemode/perks/*.lua", "LUA" ) ) do
+--[[for k, v in pairs( file.Find( "onelife/gamemode/perks/*.lua", "LUA" ) ) do
 	include( "/perks/" .. v )
+end]]
+for k, v in pairs( player.GetAll() ) do
+	util.AddNetworkString( "InitialUnlock" )
+	local list = util.JSONToTable( file.Read( "onelife/users/" .. id( v:SteamID() ) .. ".txt", "DATA" ) )
+	net.Start( "InitialUnlock" )
+	    net.WriteTable( list[ 2 ] )
+	net.Send( v )
 end
 
 local _Ply = FindMetaTable( "Player" )
@@ -103,14 +110,6 @@ function GM:PlayerInitialSpawn( ply )
 			file.Write( "onelife/users/" .. id( ply:SteamID() ) .. ".txt", util.TableToJSON( { ply:Name(), contents[ 2 ] } ) )
 		end
 	end
-
-	--[[util.AddNetworkString( "InitialUnlock" )
-	local list = util.JSONToTable( file.Read( "onelife/users/" .. id( ply:SteamID() ) .. ".txt", "DATA" ) )
-	net.Start( "InitialUnlock" )
-		print( "InitalUnlock started on server, sending table:")
-		PrintTable( list[ 2 ] )
-		net.WriteTable( list[ 2 ] )
-	net.Send( ply )]]
 
 	if ply:IsBot() then
 		ply:SetTeam( 2 )
@@ -327,6 +326,11 @@ end )
 
 
 function GM:PlayerSpawn( ply )
+	util.AddNetworkString( "InitialUnlock" )
+	local list = util.JSONToTable( file.Read( "onelife/users/" .. id( ply:SteamID() ) .. ".txt", "DATA" ) )
+	net.Start( "InitialUnlock" )
+	    net.WriteTable( list[ 2 ] )
+	net.Send( ply )
 
 	if( ply:Team() == 0 ) then --or !ply:IsAlive() then
 		ply:Spectate( OBS_MODE_IN_EYE )

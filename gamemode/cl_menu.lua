@@ -26,8 +26,8 @@ surface.CreateFont( "Exo 2 Regular", {
 
 surface.CreateFont( "Exo 2 Huge", {
 	font = "Exo 2",
-	size = 40,
-	weight = 700
+	size = 1000,
+	weight = 1100
 } )
 
 surface.CreateFont( "Exo 2 Large", {
@@ -410,7 +410,7 @@ function DrawSheet( num )
 
 			local secondarymodelpanel = vgui.Create( "DPanel", page[ v[ teamnumber ] ] )
 			secondarymodelpanel:SetPos( page[ v[ teamnumber ] ]:GetWide() / 3, page[ v[ teamnumber ] ]:GetTall() / 3 )
-			secondarymodelpanel:SetSize( page[ v[ teamnumber ] ]:GetWide() / 3 , page[ v[ teamnumber ] ]:GetTall() / 3 )
+			secondarymodelpanel:SetSize( page[ v[ teamnumber ] ]:GetWide() / 3 , page[ v[ teamnumber ] ]:GetTall() / 3 + 1 )
 			secondarymodelpanel.Paint = function()
 				if !page[ v[ teamnumber ] ] then return end
 				surface.SetDrawColor( TeamColor )
@@ -545,7 +545,7 @@ function DrawSheet( num )
 				if !page[ v[ teamnumber ] ] then return end
 				surface.SetDrawColor( TeamColor )
         		surface.DrawOutlinedRect( 0, 0, wip:GetWide(), wip:GetTall() )
-				draw.DrawText( "W.I.P.", "Exo 2 Huge", wip:GetWide() / 2, wip:GetTall() / 2, Color( 50, 50, 50 ), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER )
+				draw.DrawText( "W.I.P.", "Exo 2 Huge", wip:GetWide() / 2, wip:GetTall() / 3, Color( 50, 50, 50 ), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER )
 			end
 
 			--//The information section, for shit like level and stuff, right next to the equipment list
@@ -554,23 +554,31 @@ function DrawSheet( num )
 			--local aplayer = ents.Create( LocalPlayer():GetModel() ) or ents.Create( "models/player/group03/male_01.mdl" )
 			--aplayer:Spawn()
 
-			local lvl
+			local lvl = 0
 			net.Start( "RequestLevel" )
 			net.SendToServer()
 			net.Receive( "RequestLevelCallback", function()
 				lvl = tonumber( net.ReadString() )
 			end)
 
+			local money = 0
+			net.Start( "RequestMoney" )
+			net.SendToServer()
+			net.Receive( "RequestMoneyCallback", function()
+				money = tonumber( net.ReadString() )
+			end )
+
 			local information = vgui.Create( "DPanel", page[ v[ teamnumber ] ] )
-			information:SetSize( page[ v[ teamnumber ] ]:GetWide() / 3, page[ v[ teamnumber ] ]:GetTall() / 3 )
-			information:SetPos( page[ v[ teamnumber ] ]:GetWide() / 3 * 2, page[ v[ teamnumber ] ]:GetTall() - ( page[ v[ teamnumber ] ]:GetTall() / 3) )
+			information:SetSize( page[ v[ teamnumber ] ]:GetWide() / 3 + 1, page[ v[ teamnumber ] ]:GetTall() / 3 )
+			information:SetPos( page[ v[ teamnumber ] ]:GetWide() / 3 * 2 - 1, page[ v[ teamnumber ] ]:GetTall() - ( page[ v[ teamnumber ] ]:GetTall() / 3) )
 			information.Paint = function()
 				if !page[ v[ teamnumber ] ] then return end
 				surface.SetDrawColor( TeamColor )
         		surface.DrawOutlinedRect( 0, 0, information:GetWide(), information:GetTall() )
-				draw.DrawText( "Role: " .. v[ teamnumber ], "Exo 2 Large", 2, 2, Color( 50, 50, 50 ) ) --I need to look at all the different ways I can draw text, this way is shitty
-				draw.DrawText( v[ 4 ], "Exo 2 Regular", 2, 30, Color( 50, 50, 50 ) ) --I need to look at all the different ways I can draw text, this way is shitty
-				draw.DrawText( "Level: " .. lvl, "Exo 2 Regular", 2, 55, Color( 50, 50, 50 ) )
+				draw.DrawText( "Role: " .. v[ teamnumber ], "Exo 2 Large", 2, 2, Color( 200, 200, 200 ) ) --I need to look at all the different ways I can draw text, this way is shitty
+				draw.DrawText( v[ 4 ], "Exo 2 Regular", 2, 30, Color( 150, 150, 150 ) ) --I need to look at all the different ways I can draw text, this way is shitty
+				draw.DrawText( "Level: " .. lvl, "Exo 2 Regular", 2, 55, Color( 200, 200, 200 ) )
+				draw.DrawText( "Money: " .. money, "Exo 2 Regular", 2, 70, Color( 200, 200, 200 ) )
 			end
 		end
 	end

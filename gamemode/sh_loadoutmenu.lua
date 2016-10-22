@@ -2,7 +2,7 @@
 --OLD LAYOUT: { <weapon name>, <class>, <unlock level>, <world model>, <cost>, { <damage>, <accuracy>, <rate of fire> } }  
 --NEW LAYOUT: { ["name"] = "weapon name", ["class"] = "class name", ["roles"] = { roles by level } }
 
-primaries = {
+primaries = primaries or {
 	[1] = {
 		{ ["name"] = "AK-74", 			["class"] = "cw_kk_ins2_ak74", 		["roles"] = { 5, 8 } },
 		{ ["name"] = "AKM", 			["class"] = "cw_kk_ins2_akm", 		["roles"] = { 1, 2, 3, 4, 5, 6, 7, 8 } },
@@ -38,7 +38,7 @@ primaries = {
 }
 
 
-secondaries = {
+secondaries = secondaries or {
 	[1] = {
 		{ ["name"] = "M1911", 		["class"] = "cw_kk_ins2_m1911", 	["roles"] = { 1, 2, 3, 4, 5, 6, 7, 8 } },
 		{ ["name"] = "Makarov", 	["class"] = "cw_kk_ins2_makarov", 	["roles"] = { 1, 2, 3, 4, 5, 6, 7, 8 } },
@@ -55,7 +55,7 @@ secondaries = {
 }
 
 --// Layout: "Equipment name", "equipment class", "roles to receive"
-equipment = {
+equipment = equipment or {
 	[1] = {
 		{ ["name"] = "F1 Frag", 		["class"] = "cw_kk_ins2_nade_f1", 	["roles"] = { 2, 5, 7, 8 } },
 		{ ["name"] = "IED", 			["class"] = "cw_kk_ins2_nade_ied", 	["roles"] = { 7 } },

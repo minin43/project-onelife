@@ -6,6 +6,7 @@ local table = table
 
 local gradient = surface.GetTextureID( "gui/gradient" )
 local damage = Material( "tdm/damage.png" )
+local pointer = surface.GetTextureID( "gui/point.png" )
 
 surface.CreateFont( "test", { font = "BF4 Numbers", size = 70, weight = 1, antialias = true } )
 surface.CreateFont( "ammo1", { font = "BF4 Numbers", size = 80, weight = 1, antialias = true } )

@@ -6,7 +6,7 @@ lvl = {}
 
 lvl.levels = {}
 	
-lvl.exp = 1000
+lvl.exp = 500
 
 lvl.VIPGroups = { --This is a multiplier, adjust accordingly
 	{ "vip", 1.10 },
@@ -18,8 +18,8 @@ for i = 1, 8 do
 	lvl.levels[ i ] = i * lvl.exp
 end
 
-for i = 9, 100 do
-	lvl.levels[ i ] = i * lvl.exp * 2
+for i = 9, 16 do
+	lvl.levels[ i ] = i * lvl.exp * lvl.exp
 end
 
 lvl.maxlevel = #lvl.levels

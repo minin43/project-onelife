@@ -1,4 +1,4 @@
-wep_att = { }
+wep_att = wep_att or { }
 
 --wep_att[ classname ] = { [ attachmentname ] = { attachmenttype, price } }
 --//RedPrimaries

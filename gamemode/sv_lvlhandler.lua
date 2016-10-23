@@ -110,7 +110,7 @@ hook.Add( "LevelUp", "OnLevelUp", function( ply, newlv )
 	local color_green = Color( 102, 255, 51 )
 	local color_white = Color( 255, 255, 255 )
 
-	if lvl.GetLevel( ply ) >= 9 then
+	if lvl.GetLevel( ply ) >= #roles then
 		ULib.tsayColor( nil, true, color_green, ply:Nick(), color_white, " leveled up to ", color_green, "Level " .. tostring( newlv ), color_white, "." )
 		for k, v in next, player.GetAll() do
 			--v:ChatPrint( tostring( ply:Nick() ) .. " leveled up to level " .. tostring( newlv ) )

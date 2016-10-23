@@ -36,7 +36,7 @@ local levelgroups = {
 }
 
 local icongroups = {
-	{ "STEAM_0:1:34834901", "Logan", 			"icon16/award_star_gold_3.png"}, --Das me
+	{ "STEAM_0:0:34834901", "Logan", 			"icon16/award_star_gold_3.png"}, --Das me
 	{ "user", 				"user", 			"icon16/status_online.png" },
     { "vip", 				"VIP", 				"icon16/star.png" },
     { "vip+", 				"VIP+", 			"icon16/star.png" },
@@ -168,7 +168,52 @@ function CreateScoreboard()
 		dlist2:SetSize( enemyteam:GetWide() - 2, enemyteam:GetTall() - 45 )	
 		dlist2:EnableVerticalScrollbar( true )
 		dlist2:SetSpacing( 2 )
-	--end	
+	--end
+
+	for k, v in pairs( team.GetAll() ) do
+		for k2, v2 in pairs( team.GetSortedPlayers( v ) ) do
+			local playerrow = vgui.Create( "DPanel" )
+			playerrow:SetSize( 578, 30 )
+			--//Every other panel gets highlighted
+			playerrow.Paint = function()
+				if k % 2 == 0 then
+					surface.SetDrawColor( 0, 0, 0, 64 )
+					surface.DrawRect( 0, 0, playerrow:GetSize() )
+				end
+			end
+
+			--//This sets the color to be used based on the player's ULX group
+			local namecolor = Color( 255, 255, 255 )
+			local group = v:GetUserGroup()
+			for k2, v2 in pairs( colors ) do
+				if isstring( k2 ) and group == k2 then
+					namecolor = v2
+					break
+				end
+			end
+
+			local levelrank = levelgroups[ 1 ][ 3 ]
+			for k2, v2 in pairs( levelgroups ) do
+				if tonumber( v:GetNWString( "level" ) ) == v2[ 1 ] then
+					levelrank = Material( v2[ 3 ] )
+					break
+				end
+			end
+
+			local ulxrank = "icon16/status_online.png"
+			for k2, v2 in pairs( icongroups ) do
+				if v:SteamID() == v2[ 1 ] then
+					ulxrank = Material( v2[ 3 ] )
+					break
+				elseif group == v2[ 1 ] then
+					ulxrank = Material( v2[ 3 ] )
+					break
+				end
+			end
+
+			--warherb
+		end
+	end
 end
 
 function GM:ScoreboardShow()

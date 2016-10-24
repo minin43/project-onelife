@@ -36,6 +36,20 @@ surface.CreateFont( "Exo 2 Large", {
 	weight = 500
 } )
 
+local money = 0
+net.Start( "RequestMoney" )
+net.SendToServer()
+net.Receive( "RequestMoneyCallback", function()
+	money = tonumber( net.ReadString() )
+end )
+
+local lvl = 0
+net.Start( "RequestLevel" )
+net.SendToServer()
+net.Receive( "RequestLevelCallback", function( len, ply )
+	lvl = tonumber( net.ReadString() )
+end )
+
 -- http://lua-users.org/wiki/FormattingNumbers
 local function comma_value( amount )
 	local formatted = amount
@@ -48,7 +62,6 @@ local function comma_value( amount )
 	return formatted
 end
 
---//The net message can be found in sv_loadoutmenu.lua
 function PrecacheModels()
 	for k, v in pairs( GetModels() ) do
 		util.PrecacheModel( v )
@@ -96,13 +109,15 @@ function LoadoutMenu()
 		end
 	end
 
-	--[[function PlayerButtonDown( ply, button )
-		if input.GetKeyName( button ) == "c" and main then
-			print("close the menu")
-			main:Close()
-			main = nil
+	timer.Simple( 1, function()
+		function PlayerButtonDown( ply, button )
+			if input.GetKeyName( button ) == "c" and main then
+				print( ply, " pressed C, closing menu..." )
+				main:Close()
+				main = nil
+			end
 		end
-	end]]
+	end
 
 	local tabs = vgui.Create( "DPanel", main )
 	tabs:SetPos( 0, 0 )
@@ -111,13 +126,6 @@ function LoadoutMenu()
         surface.SetDrawColor( TeamColor )
         surface.DrawRect( 0, 0, tabs:GetWide(), tabs:GetTall() )
     end
-
-	local lvl = 0
-	net.Start( "RequestLevel" )
-	net.SendToServer()
-	net.Receive( "RequestLevelCallback", function( len, ply )
-		lvl = tonumber( net.ReadString() )
-	end )
 
 	local teamnumber = LocalPlayer():Team()
 	for k, v in pairs( roles ) do
@@ -156,6 +164,7 @@ function LoadoutMenu()
 				page[ v[ teamnumber ] ] = nil
 			end
 		end
+		--//SetLoadout can be found in sh_loadoutmenu.lua
 		net.Start( "SetLoadout" )
 			local loadout = {
 				[ "primary" ] = selectedprimary or "",
@@ -169,12 +178,49 @@ function LoadoutMenu()
 		net.SendToServer()
 	end
 
-	--[[local playerinfo = vgui.Create( "DPanel", main )
-	playerinfo:SetSize( main:GetWide(), main:GetTall() - 30 )
-	playerinfo:SetPos( 0, 30 )
+	local playerinfo = vgui.Create( "DPanel", main )
+	playerinfo:SetSize( main:GetWide(), ( main:GetTall() - 30 ) / 3 )
+	playerinfo:SetPos( 0, playerinfo:GetTall() )
 	playerinfo.Paint = function()
+		surface.SetDrawColor( TeamColor )
+		surface.DrawLine( playerinfo:GetWide() / 3, 0, playerinfo:GetWide() * ( 2 / 3 ), 0 )
+		surface.DrawLine( playerinfo:GetWide() / 3, playerinfo:GetTall(), playerinfo:GetWide() * ( 2 / 3 ), playerinfo:GetTall() )
 
-	end]]
+		local avataroffset = 136 --avatar size + 8
+		draw.SimpleText( LocalPlayer():Nick(), "Exo 2 Large", avataroffset, 0, Color( 255, 255, 255 ) )
+		draw.SimpleText( "Level: " .. lvl, "Exo 2 Regular", avataroffset, 32, Color( 255, 255, 255 ) )
+		draw.SimpleText( "Money: $" .. money, "Exo 2 Regular", avataroffset, 52, Color( 255, 255, 255 ) )
+	end
+	
+	local avatar = vgui.Create( "AvatarImage", playerinfo )
+	avatar:SetPos( 0, 0 )
+	avatar:SetSize( 128, 128 )
+	--avatar:SetPlayer( LocalPlayer() ) --Is this even needed?
+
+	--Life stats can be found in, you guessed it, sv_lifestats.lua
+	net.Start( "RequestLifestats" )
+	net.SendToServer()
+	net.Receive( "RequestLifestatsCallback", function()
+		local stats = {
+			[ "Time played" ] = tonumber( net.ReadString() )
+			[ "Kills" ] = tonumber( net.ReadString() )
+			[ "Deaths" ] = tonumber( net.ReadString() )
+			[ "Headshots" ] = tonumber( net.ReadString() )
+			[ "K/D" ] = math.Round( stats[ "Kills" ] / stats[ "Deaths" ], 3 )
+		}
+		--Let's think of some more...
+
+		local lifestats = vgui.Create( "DPanel", playerinfo )
+		lifestats:SetSize( playerinfo:GetWide(), playerinfo:GetTall() - avatar:GetTall() )
+		lifestats:SetPos( 0, avatar:GetTall() )
+		lifestats.Paint = function()
+			local counter
+			for k, v in pairs( stats ) do
+				draw.SimpleText( k .. v, "Exo 2 Regular", 2, ( 20 * counter ) + 2, Color( 255, 255, 255 ) )
+				counter = counter + 1
+			end
+		end
+	end )
 end
 
 --This code is in a seperate function to keep things looking cleaner and not having all of the sheets being created inside an OnClick function, because that would look shitty
@@ -561,20 +607,6 @@ function DrawSheet( num )
 			--local aplayer = ents.Create( LocalPlayer():GetModel() ) or ents.Create( "models/player/group03/male_01.mdl" )
 			--aplayer:Spawn()
 
-			local lvl = 0
-			net.Start( "RequestLevel" )
-			net.SendToServer()
-			net.Receive( "RequestLevelCallback", function()
-				lvl = tonumber( net.ReadString() )
-			end)
-
-			local money = 0
-			net.Start( "RequestMoney" )
-			net.SendToServer()
-			net.Receive( "RequestMoneyCallback", function()
-				money = tonumber( net.ReadString() )
-			end )
-
 			local information = vgui.Create( "DPanel", page[ v[ teamnumber ] ] )
 			information:SetSize( page[ v[ teamnumber ] ]:GetWide() / 3 + 1, page[ v[ teamnumber ] ]:GetTall() / 3 )
 			information:SetPos( page[ v[ teamnumber ] ]:GetWide() / 3 * 2 - 1, page[ v[ teamnumber ] ]:GetTall() - ( page[ v[ teamnumber ] ]:GetTall() / 3) )
@@ -585,7 +617,7 @@ function DrawSheet( num )
 				draw.DrawText( "Role: " .. v[ teamnumber ], "Exo 2 Large", 2, 2, Color( 200, 200, 200 ) )
 				draw.DrawText( v[ 4 ], "Exo 2 Regular", 2, 30, Color( 150, 150, 150 ) )
 				draw.DrawText( "Level: " .. lvl, "Exo 2 Regular", 2, 55, Color( 200, 200, 200 ) )
-				draw.DrawText( "Money: " .. money, "Exo 2 Regular", 2, 80, Color( 200, 200, 200 ) )
+				draw.DrawText( "Money: $" .. money, "Exo 2 Regular", 2, 80, Color( 200, 200, 200 ) )
 			end
 		end
 	end
@@ -747,7 +779,6 @@ function CustomizeWeapon( wep, weptype )
 		end]]
 	end
 
-	local money = 0
 	net.Start( "RequestMoney" )
 	net.SendToServer()
 	net.Receive( "RequestMoneyCallback", function( len, ply )
@@ -762,7 +793,7 @@ function CustomizeWeapon( wep, weptype )
 		surface.SetDrawColor( TeamColor )
     	surface.DrawOutlinedRect( 0, 0, attachmentdatapanel:GetWide(), attachmentdatapanel:GetTall() )
 
-		draw.SimpleText( "Cash: $" .. money, "Exo 2 Regular", attachmentdatapanel:GetWide() - 6, 5, Color( 150, 150, 150 ), TEXT_ALIGN_RIGHT, TEXT_ALIGN_RIGHT )
+		draw.SimpleText( "Money: $" .. money, "Exo 2 Regular", attachmentdatapanel:GetWide() - 6, 5, Color( 150, 150, 150 ), TEXT_ALIGN_RIGHT, TEXT_ALIGN_RIGHT )
 
 		if !selectedattachment then return end
 		local attachdescription = ""

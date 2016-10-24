@@ -154,9 +154,16 @@ if SERVER then
 		local loadout = net.ReadTable()
 		local give40mm = false
 		ply:StripWeapons()
+		--This COULD be a table and a for statement... but meh...
+		ply:RemoveAmmo( "cw_kk_ins2_nade_m18", ply:GetAmmoCount( "cw_kk_ins2_nade_m18" ) )
+		ply:RemoveAmmo( "cw_kk_ins2_nade_m67", ply:GetAmmoCount( "cw_kk_ins2_nade_m67" ) )
+		ply:RemoveAmmo( "cw_kk_ins2_nade_m84", ply:GetAmmoCount( "cw_kk_ins2_nade_m84" ) )
+		ply:RemoveAmmo( "cw_kk_ins2_nade_c4",  ply:GetAmmoCount( "cw_kk_ins2_nade_c4" ) )
+		ply:RemoveAmmo( "cw_kk_ins2_nade_ied", ply:GetAmmoCount( "cw_kk_ins2_nade_ied" ) )
 		teamnumber = ply:Team()
 
 		if loadout then
+			--TO-DO: check for client consistency between what's given and ACTUAL unlocked attachments
 			if loadout[ "primary" ] then
 				ply:Give( loadout[ "primary" ] )
 				ply.oldprim = loadout[ "primary" ]

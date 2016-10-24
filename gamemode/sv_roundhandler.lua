@@ -34,7 +34,6 @@ function StartGame( mode )
         print( "There is already a game in progress..." )
         return 
     end
-    SetGlobalInt( "RoundWinner", 0 )
     SetGlobalString( "GameType", mode )
     SetGlobalBool( "GameInProgress", true )
     SetGlobalInt( "Round", 1 )
@@ -104,28 +103,33 @@ function RoundEnd( round, victor )
     if timer.Exists( "Time Countdown" ) then
         timer.Remove( "Time Countdown" )
     end
-    SetGlobalInt( "RoundWinner", victor )
+    
+    local winnername, winnercolor
     if victor == 1 then
         SetGlobalInt( "RedTeamWins", GetGlobalInt( "RedTeamWins" ) + 1 )
+        winnername = Team( 1 ):GetName()
+        winnercolor = Color( 100, 15, 15 )
     elseif victor == 2 then
         SetGlobalInt( "BlueTeamWins", GetGlobalInt( "BlueTeamWins" ) + 1 )
+        winnername = Team( 2 ):GetName()
+        winnercolor = Color( 30, 80, 180 )
     end
-    hook.Call( "RoundEnd", nil, round, victor )
+    ULib.tsayColor( nil, true, winnercolor, winnername, Color( 255, 255, 255 ), " has won round " .. round .. "." )
 
     if GameWon() then --Might need to add "winner" parameter
-        --To-do include a mapvote
         print( "Game has been won" )
         SetGlobalString( "Gametype", "none" )
         SetGlobalBool( "GameInProgress", false )
         SetGlobalBool( "RoundInProgress", false )
         SetGlobalInt( "RoundTime", 0 ) 
-        hook.Call( "GameEnd" )
+        hook.Call( "GameEnd", victor )
     else
         print( "Nobody's won the game yet." )
         timer.Simple( 15, function()
             StartRound( round + 1 )
             SetGlobalBool( "RoundInProgress", false )
         end )
+        hook.Call( "RoundEnd", nil, round, victor )
     end
 end 
 

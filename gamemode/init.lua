@@ -364,8 +364,8 @@ function GM:PlayerSpawn( ply )
 	end
 
 	ply:SetJumpPower( 170 ) -- CTDM value was 170
-	ply:SetWalkSpeed( 180 ) --CTDM value was 180
-	ply:SetRunSpeed( 300 ) --CTDM value was 300
+	ply:SetWalkSpeed( 150 ) --CTDM value was 180
+	ply:SetRunSpeed( 270 ) --CTDM value was 300
 
 	ply:SetNoCollideWithTeammates( false )
 

@@ -160,6 +160,7 @@ if SERVER then
 			if loadout[ "primary" ] then
 				ply:Give( loadout[ "primary" ] )
 				ply.oldprim = loadout[ "primary" ]
+
 			end
 			if loadout[ "secondary" ] then
 				ply:Give( loadout[ "secondary" ] )
@@ -171,6 +172,7 @@ if SERVER then
 			end
 			if loadout[ "role" ] then
 				ply.oldrole = loadout[ "role" ]
+				ply:SetNWString( "role", ply.oldrole )
 			end
 			if loadout[ "pattachments" ] and loadout[ "primary" ] then
 				timer.Simple( 0.2, function()
@@ -249,6 +251,9 @@ if SERVER then
 		end
 		if ply.oldeq then
 			ply:Give( ply.oldeq )
+		end
+		if ply.oldrole then
+			ply:SetNWString( "role", ply.oldrole )
 		end
 		if ply.oldpatt and ply.oldprim then
 			timer.Simple( 0.2, function()

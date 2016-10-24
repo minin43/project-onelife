@@ -5,7 +5,7 @@ GM.Website = "egncommunity.com"
 
 possibleteams = {
 	{ "Task Force 141", "U.S. Army Rangers", "Marines" },
-	{ "Spetsnaz", "Militia", "OpFor" }--, "Any more?" }
+	{ "Spetsnaz", "Militia", "OpFor" }
 }
 
 team.SetUp( 1, table.Random( possibleteams[ 2 ] ), Color( 255, 0, 0 ) )
@@ -15,8 +15,10 @@ team.SetUp( 3, "Solo", Color( 0, 255, 0 ) )
 if SERVER then
     
 	resource.AddWorkshop( "349050451" ) --CW2.0 Base
-	resource.AddWorkshop( "492765756" ) --Weapon attach Fix
-	
+	resource.AddWorkshop( "748212309" ) --Hand fix
+	resource.AddWorkshop( "657241323" ) --KK's INS2 pack
+	resource.AddWorkshop( "748863203" ) --gm_devruins
+	--resource.AddWorkshop( "492765756" ) --Weapon attach Fix
 	--resource.AddWorkshop( "639078265" ) --UT3/Insurgency Sounds
 	--resource.AddWorkshop( "575652408" ) --Player Expression Mod
 	

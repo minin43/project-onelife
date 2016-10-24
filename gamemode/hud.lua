@@ -119,7 +119,7 @@ local pulse = 0
 
 hook.Add( "HUDPaint", "hud_main", function()
 
-	local fade = (math.Clamp(LocalPlayer():Health()/LocalPlayer():GetMaxHealth(), 0.2, 0.5)-0.2)/0.3
+	--[[local fade = (math.Clamp(LocalPlayer():Health()/LocalPlayer():GetMaxHealth(), 0.2, 0.5)-0.2)/0.3
 	local fade2 = 1 - math.Clamp(LocalPlayer():Health()/LocalPlayer():GetMaxHealth(), 0, 0.5)/0.5
 	
 	surface.SetMaterial(blood_overlay)
@@ -136,7 +136,7 @@ hook.Add( "HUDPaint", "hud_main", function()
 		end
 		surface.SetDrawColor(255,255,255,pulse*fade2)
 		surface.DrawTexturedRect( -10, -10, ScrW()+20, ScrH()+20)
-	end
+	end]]
 
 	if LP():Alive() and LP():Team() ~= 0 then
 		if LP():Health() < (LP():GetMaxHealth() * 0.3) and LP():Health() > (LP():GetMaxHealth() * 0.2) then

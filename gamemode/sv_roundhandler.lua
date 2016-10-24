@@ -1,10 +1,11 @@
 modes = {
+    --//ROUNDS = ROUNDS NEEDED FOR GAME VICTORY, ROUNTIME = TOTAL ALOTTMENT OF TIME GIVEN EVERY ROUND, 
     [ "lts" ] = { --Last Team Standing, your basic one-life team-deathmatch
-        [ "Rounds" ] = 3,
+        [ "Rounds" ] = 11,
         [ "RoundTime" ] = 180,
     },
     [ "cache" ] = { --Destroy Red's weapon cache, attack/defense based mode
-        [ "Rounds" ] = 5,
+        [ "Rounds" ] = 3,
         [ "RoundTime" ] = 240,
     },
     [ "oma" ] = { --One Man Army, Last Team Standing but every man for themself
@@ -13,7 +14,7 @@ modes = {
         TeamThree = true,
     },
     [ "hot" ] = { --HotPoint, whoever captures the single point uncontested wins
-        [ "Rounds" ] = 5,
+        [ "Rounds" ] = 3,
         [ "RoundTime" ] = 240,
     },
     [ "dicks" ] = {
@@ -41,10 +42,11 @@ function StartGame( mode )
     SetGlobalInt( "BlueTeamWins", 0 )
     SetGlobalBool( "TeamThree", modes[ mode ][ "TeamThree" ] )
     StartRound( 1 )
+    hook.Call( "GameStart", nil, mode )
 end
 
 function StartRound( round )
-    SetGlobalInt( "RoundTime", modes[ GetGlobalString( GameType ) ][ "RoundTime" ] )
+    SetGlobalInt( "RoundTime", modes[ GetGlobalString( "GameType" ) ][ "RoundTime" ] )
     SetGlobalInt( "Round", round )
     RoundPrep( round )
 end
@@ -52,7 +54,7 @@ end
 --Round preperation stuff
 function RoundPrep( round ) 
     print( "We are starting round: ", round)
-    if !allteamsvalid() then print( "Not all teams are valid, preventing round preperation." ) return end
+    if !allteamsvalid() then print( "Not all teams are valid, preventing round preperation." ) SetGlobalBool( "GameInProgress", false ) return end
     game.CleanUpMap()
     print( "Round preperation starting, cleaning up map..." )
 
@@ -65,8 +67,6 @@ function RoundPrep( round )
         v:Spawn()
 	    v:Freeze( true )
         GiveOldLoadout( v )
-        --v.CanCustomizeLoadout = true This doesn't auto-work across server/client, we'll have to send out a message, hook, or set a global variable saying to close and disallow customization
-        --v:ConCommand( "pol_menu" ) don't force this, only force the previous loadout
         print( "Spawning and locking: ", v )
     end
     
@@ -74,7 +74,7 @@ function RoundPrep( round )
         print( "30 second timer finished, starting round/game.")
         RoundBegin( round )
     end)
-    --hook.Call
+    hook.Call( "RoundPrepStart", nil, round )
 end 
 
 --Game starting, player movement freed
@@ -94,10 +94,9 @@ function RoundBegin( round )
     SetGlobalBool( "RoundInProgress", true )
     for k, v in pairs( player.GetAll() ) do
 	    v:Freeze( false )
-        --v.CanCustomizeLoadout = false
         print( "Unlocking: ", v )
     end
-    --hook.Call
+    hook.Call( "RoundStart", nil, round )
 end
 
 --Game finishes, restart round if needed and deliver rewards
@@ -111,16 +110,16 @@ function RoundEnd( round, victor )
     elseif victor == 2 then
         SetGlobalInt( "BlueTeamWins", GetGlobalInt( "BlueTeamWins" ) + 1 )
     end
-    --hook.Call
+    hook.Call( "RoundEnd", nil, round, victor )
 
     if GameWon() then --Might need to add "winner" parameter
         --To-do include a mapvote
         print( "Game has been won" )
         SetGlobalString( "Gametype", "none" )
         SetGlobalBool( "GameInProgress", false )
+        SetGlobalBool( "RoundInProgress", false )
         SetGlobalInt( "RoundTime", 0 ) 
-        --hook.Call( "GameWinner",  )
-        return
+        hook.Call( "GameEnd" )
     else
         print( "Nobody's won the game yet." )
         timer.Simple( 15, function()
@@ -131,7 +130,8 @@ function RoundEnd( round, victor )
 end 
 
 function GameWon()
-    if GetGlobalInt( "RedTeamWins" ) > ( modes[ GetGlobalString( GameType ) ][ "Rounds" ] / 2 ) or GetGlobalInt( "BlueTeamWins" ) > ( modes[ GetGlobalString( GameType ) ][ "Rounds" ] / 2 ) then
+    print( "Debug", GetGlobalInt( "RedTeamWins" ), GetGlobalInt( "BlueTeamWins" ), modes[ GetGlobalString( "GameType" ) ][ "Rounds" ] )
+    if GetGlobalInt( "RedTeamWins" ) >= ( modes[ GetGlobalString( "GameType" ) ][ "Rounds" ] ) or GetGlobalInt( "BlueTeamWins" ) >= ( modes[ GetGlobalString( "GameType" ) ][ "Rounds" ] ) then
         return true
     end
     return false

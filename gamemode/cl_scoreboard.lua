@@ -10,29 +10,41 @@ surface.CreateFont( "Exo 2 Small", {
 	weight = 400
 } )
 
+surface.CreateFont( "Exo 2 Content", {
+	font = "Exo 2",
+	size = 18,
+	antialias = true
+} )
+
+surface.CreateFont( "Exo 2 Content Blur", {
+	font = "Exo 2",
+	size = 18,
+	blursize = 1
+} )
+
 local gradient = surface.GetTextureID( "gui/gradient" )
-local voice = Material( "sound.png" )
-local novoice = Material( "sound_none.png" )
-local voicemuted = Material( "sound_mute.png" )
+local voice = Material( "icon16/sound.png" )
+local novoice = Material( "icon16/sound_none.png" )
+local voicemuted = Material( "icon16/sound_mute.png" )
 
 local levelgroups = {
-	{ 1, "Private", "materials/ranks/private.png"},
-	{ 2, "Private First Class", "materials/ranks/privatefirstclass.png"},
-	{ 3, "Corporal", "materials/ranks/corporal.png"},
-	{ 4, "Specialist", "materials/ranks/specialist.png"},
-	{ 5, "Sergeant", "materials/ranks/sergeant.png"},
-	{ 6, "Staff Sergeant", "materials/ranks/staffsergeant.png"},
-	{ 7, "Sergeant First Class", "materials/ranks/sergeantfirstclass.png"},
-	{ 8, "Master Sergeant", "materials/ranks/mastersergeant.png"},
+	{ 1, "Private", "ranks/private.png"},
+	{ 2, "Private First Class", "ranks/privatefirstclass.png"},
+	{ 3, "Corporal", "ranks/corporal.png"},
+	{ 4, "Specialist", "ranks/specialist.png"},
+	{ 5, "Sergeant", "ranks/sergeant.png"},
+	{ 6, "Staff Sergeant", "ranks/staffsergeant.png"},
+	{ 7, "Sergeant First Class", "ranks/sergeantfirstclass.png"},
+	{ 8, "Master Sergeant", "ranks/mastersergeant.png"},
     --//Here starts ranks that give nothing new
-	{ 9, "First Sergeant", "materials/ranks/firstsergeant.png"},
-	{ 10, "Sergeant Major", "materials/ranks/sergeantmajor.png"},
-	{ 11, "Second Lieutenant", "materials/ranks/secondlieutenant.png"},
-	{ 12, "First Lieutenant", "materials/ranks/firstlieutenant.png"},
-	{ 13, "Captain", "materials/ranks/captain.png"},
-	{ 14, "Major", "materials/ranks/major.png"},
-	{ 15, "Lieutenant Colonel", "materials/ranks/lieutenantcolonel.png"},
-	{ 16, "Colonel", "materials/ranks/colonel.png"}
+	{ 9, "First Sergeant", "ranks/firstsergeant.png"},
+	{ 10, "Sergeant Major", "ranks/sergeantmajor.png"},
+	{ 11, "Second Lieutenant", "ranks/secondlieutenant.png"},
+	{ 12, "First Lieutenant", "ranks/firstlieutenant.png"},
+	{ 13, "Captain", "ranks/captain.png"},
+	{ 14, "Major", "ranks/major.png"},
+	{ 15, "Lieutenant Colonel", "ranks/lieutenantcolonel.png"},
+	{ 16, "Colonel", "ranks/colonel.png"}
 }
 
 local icongroups = {
@@ -67,7 +79,7 @@ local colors = {
 	--//This is for team colors
 	[ 0 ] = Color( 255, 255, 255 ),
 	[ 1 ] = Color( 100, 15, 15 ),
-	[ 2 ] = Color( 33, 150, 243, 100 ),
+	[ 2 ] = Color( 30, 80, 180 ),
 	[ 3 ] = Color( 15, 160, 15 )
 }
 
@@ -76,9 +88,10 @@ local colors = {
 --//No K/D/A bullshit because that only promotes toxicity; score only. I can maybe provide a career K/D on the loadout customization screen...
 local teamheaders = {
 	"Score",
-	"Role",
+	"            Role", --this is an incredibly janky as duct-tape-y fix...
 	"Ping"
 }
+table.Reverse( teamheaders )
 
 local enemyheaders = {
 	"Ping"
@@ -106,8 +119,8 @@ function CreateScoreboard()
 		surface.DrawRect( 0, 0, myteam:GetWide(), 56 )
 		draw.SimpleText( team.GetName( LocalPlayer():Team() ), "Exo 2 Regular", 66, 56 / 2, Color( 255, 255, 255 ), TEXT_ALIGN_LEFT, TEXT_ALIGN_CENTER )
 		local width, height = 0, 0
-		for k, v in next, teamheaders do
-			draw.SimpleText( v, "Exo 2 Small", myteam:GetWide() - width - ( 29 * ( k - 1 ) ) - 24 - 42, 56 / 2, white, TEXT_ALIGN_RIGHT, TEXT_ALIGN_CENTER )
+		for k, v in pairs( table.Reverse( teamheaders ) ) do
+			draw.SimpleText( v, "Exo 2 Small", myteam:GetWide() - width - ( 45 * ( k - 1 ) ) - 48, 56 / 2, white, TEXT_ALIGN_RIGHT, TEXT_ALIGN_CENTER )
 			local _width, _height = surface.GetTextSize( v )
 			width = width + _width
 		end
@@ -115,12 +128,21 @@ function CreateScoreboard()
 		surface.SetDrawColor( 0, 0, 0, 164 )
 		surface.DrawTexturedRectRotated( myteam:GetWide() / 2, 56 + 4, 8, myteam:GetWide(), 270 )
 	end
+	myteam.Think = function()
+		if input.IsMouseDown( MOUSE_RIGHT ) then
+			myteam:MakePopup()
+			--if !TeamThree() then
+				enemyteam:MakePopup()
+			--end
+		end
+	end
 
-	dlist = vgui.Create( "DPanelList", myteam )
-	dlist:SetPos( 1, 56 )
-	dlist:SetSize( myteam:GetWide() - 2, myteam:GetTall() - 56 )	
-	dlist:EnableVerticalScrollbar( true )
-	dlist:SetSpacing( 2 )
+	dlist = vgui.Create( "DScrollPanel", myteam )
+	dlist:SetPos( 1, 57 )
+	dlist:SetSize( myteam:GetWide() - 2, myteam:GetTall() - 54 )	
+	--dlist:SetPadding( 2 )
+	--dlist:EnableVerticalScrollbar( true )
+	--dlist:SetSpacing( 2 )
 
 	--if !TeamThree() then
 		local pos = Vector( myteam:GetPos() )
@@ -144,7 +166,7 @@ function CreateScoreboard()
 			draw.SimpleText( team.GetName( enemyteamnumber ), "Exo 2 Regular", 66, 56 / 2, Color( 255, 255, 255 ), TEXT_ALIGN_LEFT, TEXT_ALIGN_CENTER )
 			local width, height = 0, 0
 			for k, v in next, enemyheaders do
-				draw.SimpleText( v, "Exo 2 Small", enemyteam:GetWide() - width - ( 29 * ( k - 1 ) ) - 24 - 42, 56 / 2, white, TEXT_ALIGN_RIGHT, TEXT_ALIGN_CENTER )
+				draw.SimpleText( v, "Exo 2 Small", enemyteam:GetWide() - width - ( 45 * ( k - 1 ) ) - 48, 56 / 2, white, TEXT_ALIGN_RIGHT, TEXT_ALIGN_CENTER )
 				local _width, _height = surface.GetTextSize( v )
 				width = width + _width
 			end
@@ -156,62 +178,137 @@ function CreateScoreboard()
 		local pos = Vector( enemyteam:GetPos() )
 		enemyteam:SetPos( pos.x + 295, pos.y ) --Offsets the frame by a half + 5 pixel buffer
 		
-		enemyteam.Think = function()
+		--[[enemyteam.Think = function()
 			if input.IsMouseDown( MOUSE_RIGHT ) then
 				enemyteam:MakePopup()
 				myteam:MakePopup()
 			end
-		end
+		end]]
 		
 		dlist2 = vgui.Create( "DPanelList", enemyteam )
 		dlist2:SetPos( 1, 56 )
-		dlist2:SetSize( enemyteam:GetWide() - 2, enemyteam:GetTall() - 45 )	
-		dlist2:EnableVerticalScrollbar( true )
-		dlist2:SetSpacing( 2 )
+		dlist2:SetSize( enemyteam:GetWide() - 2, enemyteam:GetTall() - 54 )	
+		--dlist2:EnableVerticalScrollbar( true )
+		--dlist2:SetSpacing( 2 )
 	--end
 
-	for k, v in pairs( team.GetAll() ) do
-		for k2, v2 in pairs( team.GetSortedPlayers( v ) ) do
-			local playerrow = vgui.Create( "DPanel" )
-			playerrow:SetSize( 578, 30 )
-			--//Every other panel gets highlighted
-			playerrow.Paint = function()
-				if k % 2 == 0 then
-					surface.SetDrawColor( 0, 0, 0, 64 )
-					surface.DrawRect( 0, 0, playerrow:GetSize() )
-				end
-			end
+	for k, v in pairs( team.GetAllTeams() ) do
+		for k2, v2 in pairs( team.GetSortedPlayers( k ) ) do
+			local playerbase = vgui.Create( "DPanel" )
+			playerbase:SetSize( 580, 30 )
+			playerbase:SetPos( 0, playerbase:GetTall() * ( k2 - 1 ) + 2)
 
 			--//This sets the color to be used based on the player's ULX group
 			local namecolor = Color( 255, 255, 255 )
-			local group = v:GetUserGroup()
-			for k2, v2 in pairs( colors ) do
-				if isstring( k2 ) and group == k2 then
-					namecolor = v2
+			local group = v2:GetUserGroup()
+			for k3, v3 in pairs( colors ) do
+				if isstring( k3 ) and group == k3 then
+					namecolor = v3
 					break
 				end
 			end
 
-			local levelrank = levelgroups[ 1 ][ 3 ]
-			for k2, v2 in pairs( levelgroups ) do
-				if tonumber( v:GetNWString( "level" ) ) == v2[ 1 ] then
-					levelrank = Material( v2[ 3 ] )
+			local levelrank = Material( levelgroups[ 1 ][ 3 ] )
+			for k3, v3 in pairs( levelgroups ) do
+				if tonumber( v2:GetNWString( "level" ) ) == v3[ 1 ] then
+					levelrank = Material( v3[ 3 ] )
 					break
 				end
 			end
 
 			local ulxrank = "icon16/status_online.png"
-			for k2, v2 in pairs( icongroups ) do
-				if v:SteamID() == v2[ 1 ] then
-					ulxrank = Material( v2[ 3 ] )
+			for k3, v3 in pairs( icongroups ) do
+				if v2:SteamID() == v3[ 1 ] then
+					ulxrank = Material( v3[ 3 ] )
 					break
-				elseif group == v2[ 1 ] then
-					ulxrank = Material( v2[ 3 ] )
+				elseif group == v3[ 1 ] then
+					ulxrank = Material( v3[ 3 ] )
 					break
 				end
 			end
 
-			--warherb
+			playerbase.Paint = function()
+				if v2:Team() == LocalPlayer():Team() then
+					headertouse = table.Reverse( teamheaders )
+				else
+					headertouse = table.Reverse( enemyheaders )
+				end
+
+				if v2:Alive() and ( v2:Team() == LocalPlayer():Team() ) then
+					surface.SetDrawColor( colors[ v2:Team() ] )
+				else
+					surface.SetDrawColor( 0, 0, 0, 64 )
+				end
+				surface.SetTexture( gradient )
+				--surface.SetDrawColor( 0, 0, 0, 164 )
+				surface.DrawTexturedRectRotated( 0, 0, playerbase:GetSize(), myteam:GetWide(), 0 )
+				surface.DrawTexturedRectRotated( 0, 0, playerbase:GetSize(), myteam:GetWide(), 0 )
+				surface.DrawTexturedRectRotated( 0, 0, playerbase:GetSize(), myteam:GetWide(), 0 )
+				--surface.DrawRect( 0, 0, playerbase:GetSize() )
+				surface.SetDrawColor( Color( 255, 255, 255, 5 ) )
+				surface.DrawRect( 0, 0, playerbase:GetSize() )
+
+				if ulxrank then
+					surface.SetDrawColor( Color( 255, 255, 522, 255 ) )
+					surface.SetMaterial( ulxrank )
+					surface.DrawTexturedRect( 7, 6, 16, 16 )
+				end
+
+				if levelrank then
+					surface.SetDrawColor( Color( 255, 255, 255, 255 ) )
+					surface.SetMaterial( levelrank )
+					surface.DrawTexturedRect( 30, 6, 16, 16 )
+				end
+
+				draw.SimpleText( v2:Nick(), "Exo 2 Content Blur", 39 + 16 + 2, playerbase:GetTall() / 2 + 1 - 1, Color( 0, 0, 0, 255 ), TEXT_ALIGN_LEFT, TEXT_ALIGN_CENTER )
+				draw.SimpleText( v2:Nick(), "Exo 2 Content", 39 + 16, playerbase:GetTall() / 2 - 1, namecolor, TEXT_ALIGN_LEFT, TEXT_ALIGN_CENTER )
+
+				local width, height = 0, 0
+				local text
+				for k3, v3 in pairs( headertouse ) do
+					if v3 == "Score" then
+						text = v2:Score() or 0
+					elseif v3 == "Role" then
+						text = v2:GetNWString( "role" ) or "None"
+					elseif v3 == "Ping" then
+						text = v2:Ping() or 0
+					end
+					draw.SimpleText( text, "Exo 2 Small", playerbase:GetWide() - width - ( 45 * ( k3 - 1 ) ) - 48, playerbase:GetTall() / 2, Color( 255, 255, 255 ), TEXT_ALIGN_RIGHT, TEXT_ALIGN_CENTER )
+					local _width, _height = surface.GetTextSize( v3 )
+					width = width + _width
+				end
+			end
+
+			if v2 != LocalPlayer() and v2:Team() == LocalPlayer():Team() then
+				--voice, novoice, voicemuted
+				local muteicon = playerbase:Add( "DCheckBox" )
+				muteicon:SetPos( 545, 7 )
+				muteicon:SetSize( 16, 16 )
+				muteicon.DoClick = function()
+					if v2:IsMuted() then
+						v2:SetMuted( false )
+					elseif !v2:IsMuted() then
+						v2:SetMuted( true )
+					end
+				end
+				muteicon.Paint = function()
+					if v2:IsMuted() then
+						surface.SetMaterial( voicemuted )
+					elseif v2:IsSpeaking() then
+						surface.SetMaterial( voice )
+					else
+						surface.SetMaterial( novoice )
+					end
+					surface.SetDrawColor( Color( 255, 255, 255, 255 ) )
+					surface.DrawTexturedRect( 0, 0, muteicon:GetSize() )
+				end
+			end
+			
+			if v2:Team() == LocalPlayer():Team() then
+				dlist:AddItem( playerbase )
+			else
+				dlist2:AddItem( playerbase )
+			end
 		end
 	end
 end

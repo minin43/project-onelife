@@ -137,6 +137,7 @@ function LoadoutMenu()
 				DrawSheet( k )
 				surface.PlaySound( "buttons/button22.wav" )
 				selectedrole = v[ teamnumber ]
+				if playerinfo then playerinfo:Close() end
 			end
 		end
 	end
@@ -168,6 +169,12 @@ function LoadoutMenu()
 		net.SendToServer()
 	end
 
+	--[[local playerinfo = vgui.Create( "DPanel", main )
+	playerinfo:SetSize( main:GetWide(), main:GetTall() - 30 )
+	playerinfo:SetPos( 0, 30 )
+	playerinfo.Paint = function()
+
+	end]]
 end
 
 --This code is in a seperate function to keep things looking cleaner and not having all of the sheets being created inside an OnClick function, because that would look shitty
@@ -575,10 +582,10 @@ function DrawSheet( num )
 				if !page[ v[ teamnumber ] ] then return end
 				surface.SetDrawColor( TeamColor )
         		surface.DrawOutlinedRect( 0, 0, information:GetWide(), information:GetTall() )
-				draw.DrawText( "Role: " .. v[ teamnumber ], "Exo 2 Large", 2, 2, Color( 200, 200, 200 ) ) --I need to look at all the different ways I can draw text, this way is shitty
-				draw.DrawText( v[ 4 ], "Exo 2 Regular", 2, 30, Color( 150, 150, 150 ) ) --I need to look at all the different ways I can draw text, this way is shitty
+				draw.DrawText( "Role: " .. v[ teamnumber ], "Exo 2 Large", 2, 2, Color( 200, 200, 200 ) )
+				draw.DrawText( v[ 4 ], "Exo 2 Regular", 2, 30, Color( 150, 150, 150 ) )
 				draw.DrawText( "Level: " .. lvl, "Exo 2 Regular", 2, 55, Color( 200, 200, 200 ) )
-				draw.DrawText( "Money: " .. money, "Exo 2 Regular", 2, 70, Color( 200, 200, 200 ) )
+				draw.DrawText( "Money: " .. money, "Exo 2 Regular", 2, 80, Color( 200, 200, 200 ) )
 			end
 		end
 	end
@@ -677,6 +684,7 @@ function CustomizeWeapon( wep, weptype )
 		list[ v ]:SetSize( customizemain:GetWide() / #attachmenttypes + 1, customizemain:GetTall() / 3 )
 		list[ v ]:SetPos( customizemain:GetWide() / #attachmenttypes * ( k - 1 ), customizemain:GetTall() / 3 )
 		list[ v ].Paint = function()
+			if !list[ v ] or !customizemain then return end
 			surface.SetDrawColor( TeamColor )
         	surface.DrawOutlinedRect( 0, 0, list[ v ]:GetWide(), list[ v ]:GetTall() )
 		end

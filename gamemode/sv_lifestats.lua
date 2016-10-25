@@ -61,8 +61,9 @@ end )
 
 net.Receive( "RequestLifestats", function( len, ply )
     net.Start( "RequestLifestatsCallback" )
-        net.WriteString( tonumber( ply:GetPData( "g_time" ) ) ) --time
-        net.WriteString( tonumber( ply:GetPData( "g_kills" ) ) ) --kills
-        net.WriteString( tonumber( ply:GetPData( "g_deaths" ) ) ) --deaths
-        net.WriteString( tonumber( ply:GetPData( "g_headshots" ) ) ) --headshots    net.Send( ply )
+        net.WriteString( tostring( ply:GetPData( "g_time" ) ) ) --time
+        net.WriteString( tostring( ply:GetPData( "g_kills" ) ) ) --kills
+        net.WriteString( tostring( ply:GetPData( "g_deaths" ) ) ) --deaths
+        net.WriteString( tostring( ply:GetPData( "g_headshots" ) ) ) --headshots    
+	net.Send( ply )
 end )

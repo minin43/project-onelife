@@ -155,11 +155,11 @@ if SERVER then
 		local give40mm = false
 		ply:StripWeapons()
 		--This COULD be a table and a for statement... but meh...
-		ply:RemoveAmmo( "cw_kk_ins2_nade_m18", ply:GetAmmoCount( "cw_kk_ins2_nade_m18" ) )
-		ply:RemoveAmmo( "cw_kk_ins2_nade_m67", ply:GetAmmoCount( "cw_kk_ins2_nade_m67" ) )
-		ply:RemoveAmmo( "cw_kk_ins2_nade_m84", ply:GetAmmoCount( "cw_kk_ins2_nade_m84" ) )
-		ply:RemoveAmmo( "cw_kk_ins2_nade_c4",  ply:GetAmmoCount( "cw_kk_ins2_nade_c4" ) )
-		ply:RemoveAmmo( "cw_kk_ins2_nade_ied", ply:GetAmmoCount( "cw_kk_ins2_nade_ied" ) )
+		ply:RemoveAmmo( ply:GetAmmoCount( "cw_kk_ins2_nade_m18" ), "cw_kk_ins2_nade_m18" )
+		ply:RemoveAmmo( ply:GetAmmoCount( "cw_kk_ins2_nade_m67" ), "cw_kk_ins2_nade_m67" )
+		ply:RemoveAmmo( ply:GetAmmoCount( "cw_kk_ins2_nade_m84" ), "cw_kk_ins2_nade_m84" )
+		ply:RemoveAmmo( ply:GetAmmoCount( "cw_kk_ins2_nade_c4" ),  "cw_kk_ins2_nade_c4" )
+		ply:RemoveAmmo( ply:GetAmmoCount( "cw_kk_ins2_nade_ied" ), "cw_kk_ins2_nade_ied" )
 		teamnumber = ply:Team()
 
 		if loadout then
@@ -182,7 +182,7 @@ if SERVER then
 				ply:SetNWString( "role", ply.oldrole )
 			end
 			if loadout[ "pattachments" ] and loadout[ "primary" ] then
-				timer.Simple( 0.2, function()
+				timer.Simple( 0.3, function()
 					for k, v in pairs( loadout[ "pattachments" ] ) do
 						ply:GetWeapon( loadout[ "primary" ] ):attachSpecificAttachment( v )
 						if v == "kk_ins2_gl_gp25" or v == "kk_ins2_gl_m203" then 
@@ -193,7 +193,7 @@ if SERVER then
 				ply.oldpatt = loadout[ "pattachments" ]
 			end
 			if loadout[ "sattachments" ] and loadout[ "secondary" ] then
-				timer.Simple( 0.2, function()
+				timer.Simple( 0.3, function()
 					for k, v in pairs( loadout[ "sattachments" ] ) do
 						ply:GetWeapon( loadout[ "secondary" ] ):attachSpecificAttachment( v, k, false )
 					end
@@ -263,14 +263,16 @@ if SERVER then
 			ply:SetNWString( "role", ply.oldrole )
 		end
 		if ply.oldpatt and ply.oldprim then
-			timer.Simple( 0.2, function()
+			print( "The player has attachments to equip..." )
+			timer.Simple( 0.3, function()
 				for k, v in pairs( ply.oldpatt ) do
+					print( v )
 					ply:GetWeapon( ply.oldprim ):attachSpecificAttachment( v )
 				end
 			end )
 		end
 		if ply.oldsatt and ply.oldsec then
-			timer.Simple( 0.2, function()
+			timer.Simple( 0.3, function()
 				for k, v in pairs( ply.oldsatt ) do
 					ply:GetWeapon( ply.oldsec ):attachSpecificAttachment( v )
 				end

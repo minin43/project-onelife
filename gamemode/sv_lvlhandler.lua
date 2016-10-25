@@ -93,7 +93,7 @@ net.Receive( "RequestLevel", function( len, ply )
 	net.Send( ply )
 end )
 
-	
+
 hook.Add( "PlayerInitialSpawn", "lvl.SendInitialLevel", function( ply )
 	timer.Simple( 5, function()
 		if not ply:GetPData( "level" ) then

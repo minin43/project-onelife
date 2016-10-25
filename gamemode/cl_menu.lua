@@ -43,11 +43,13 @@ net.Receive( "RequestMoneyCallback", function()
 	money = tonumber( net.ReadString() )
 end )
 
-local lvl = 0
+local lvl = 1
 net.Start( "RequestLevel" )
 net.SendToServer()
 net.Receive( "RequestLevelCallback", function( len, ply )
+	print( "Requesting level..." )
 	lvl = tonumber( net.ReadString() )
+	print( "You are level: ", lvl)
 end )
 
 -- http://lua-users.org/wiki/FormattingNumbers
@@ -87,6 +89,14 @@ function LoadoutMenu()
         TeamColor = Color( 15, 160, 15 )
 	end
 
+	net.Start( "RequestLevel" )
+	net.SendToServer()
+	net.Receive( "RequestLevelCallback", function( len, ply )
+		print( "Requesting level..." )
+		lvl = tonumber( net.ReadString() )
+		print( "You are level: ", lvl)
+	end )
+
 	PrecacheModels()
 
     main = vgui.Create( "DFrame" )
@@ -117,7 +127,7 @@ function LoadoutMenu()
 				main = nil
 			end
 		end
-	end
+	end )
 
 	local tabs = vgui.Create( "DPanel", main )
 	tabs:SetPos( 0, 0 )
@@ -145,7 +155,8 @@ function LoadoutMenu()
 				DrawSheet( k )
 				surface.PlaySound( "buttons/button22.wav" )
 				selectedrole = v[ teamnumber ]
-				if playerinfo then playerinfo:Close() end
+				print( playerinfo )
+				if playerinfo and playerinfo:IsValid() then playerinfo:Close() playerinfo = nil end
 			end
 		end
 	end
@@ -178,13 +189,13 @@ function LoadoutMenu()
 		net.SendToServer()
 	end
 
-	local playerinfo = vgui.Create( "DPanel", main )
-	playerinfo:SetSize( main:GetWide(), ( main:GetTall() - 30 ) / 3 )
-	playerinfo:SetPos( 0, playerinfo:GetTall() )
+	--[[playerinfo = vgui.Create( "DPanel", main )
+	playerinfo:SetSize( main:GetWide() / 2, ( main:GetTall() - 30 ) / 3 )
+	playerinfo:SetPos( main:GetWide() / 2 - ( playerinfo:GetWide() / 2 ), playerinfo:GetTall() )
 	playerinfo.Paint = function()
 		surface.SetDrawColor( TeamColor )
-		surface.DrawLine( playerinfo:GetWide() / 3, 0, playerinfo:GetWide() * ( 2 / 3 ), 0 )
-		surface.DrawLine( playerinfo:GetWide() / 3, playerinfo:GetTall(), playerinfo:GetWide() * ( 2 / 3 ), playerinfo:GetTall() )
+		surface.DrawLine( playerinfo:GetWide() / 4, 0, playerinfo:GetWide() * ( 3 / 4 ), 0 )
+		surface.DrawLine( playerinfo:GetWide() / 4, playerinfo:GetTall() - 1, playerinfo:GetWide() * ( 3 / 4 ), playerinfo:GetTall() - 1 )
 
 		local avataroffset = 136 --avatar size + 8
 		draw.SimpleText( LocalPlayer():Nick(), "Exo 2 Large", avataroffset, 0, Color( 255, 255, 255 ) )
@@ -201,12 +212,16 @@ function LoadoutMenu()
 	net.Start( "RequestLifestats" )
 	net.SendToServer()
 	net.Receive( "RequestLifestatsCallback", function()
+		local tp = tonumber( net.ReadString() ) or 0
+		local k = tonumber( net.ReadString() ) or 0
+		local d = tonumber( net.ReadString() ) or 0
+		local h = tonumber( net.ReadString() ) or 0
 		local stats = {
-			[ "Time played" ] = tonumber( net.ReadString() )
-			[ "Kills" ] = tonumber( net.ReadString() )
-			[ "Deaths" ] = tonumber( net.ReadString() )
-			[ "Headshots" ] = tonumber( net.ReadString() )
-			[ "K/D" ] = math.Round( stats[ "Kills" ] / stats[ "Deaths" ], 3 )
+			{ "Kills: ", k },
+			{ "Deaths: ", d },
+			{ "K/D ratio: ", math.Round( k / d, 3 ) },
+			{ "Headshots: ", h },
+			{ "Time played (in minutes): ", tp }
 		}
 		--Let's think of some more...
 
@@ -214,13 +229,14 @@ function LoadoutMenu()
 		lifestats:SetSize( playerinfo:GetWide(), playerinfo:GetTall() - avatar:GetTall() )
 		lifestats:SetPos( 0, avatar:GetTall() )
 		lifestats.Paint = function()
-			local counter
+			if !playerinfo then return end
+			local counter = 0
 			for k, v in pairs( stats ) do
-				draw.SimpleText( k .. v, "Exo 2 Regular", 2, ( 20 * counter ) + 2, Color( 255, 255, 255 ) )
+				draw.SimpleText( v[ 1 ] .. v[ 2 ], "Exo 2 Regular", 2, ( 20 * counter ) + 2, Color( 255, 255, 255 ) )
 				counter = counter + 1
 			end
 		end
-	end )
+	end )]]
 end
 
 --This code is in a seperate function to keep things looking cleaner and not having all of the sheets being created inside an OnClick function, because that would look shitty

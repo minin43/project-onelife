@@ -88,7 +88,7 @@ local colors = {
 --//No K/D/A bullshit because that only promotes toxicity; score only. I can maybe provide a career K/D on the loadout customization screen...
 local teamheaders = {
 	"Score",
-	"            Role", --this is an incredibly janky as duct-tape-y fix...
+	"            Role", --this is an incredibly janky-ass duct-tape-y fix...
 	"Ping"
 }
 table.Reverse( teamheaders )
@@ -196,7 +196,7 @@ function CreateScoreboard()
 		for k2, v2 in pairs( team.GetSortedPlayers( k ) ) do
 			local playerbase = vgui.Create( "DPanel" )
 			playerbase:SetSize( 580, 30 )
-			playerbase:SetPos( 0, playerbase:GetTall() * ( k2 - 1 ) + 2)
+			playerbase:SetPos( 0, playerbase:GetTall() * ( k2 - 1 ) )
 
 			--//This sets the color to be used based on the player's ULX group
 			local namecolor = Color( 255, 255, 255 )

@@ -31,13 +31,21 @@ include( "sv_weaponstats.lua" )
 
 --[[for k, v in pairs( file.Find( "onelife/gamemode/perks/*.lua", "LUA" ) ) do
 	include( "/perks/" .. v )
-end]]
+end
 for k, v in pairs( player.GetAll() ) do
 	util.AddNetworkString( "InitialUnlock" )
 	local list = util.JSONToTable( file.Read( "onelife/users/" .. id( v:SteamID() ) .. ".txt", "DATA" ) )
 	net.Start( "InitialUnlock" )
 	    net.WriteTable( list[ 2 ] )
 	net.Send( v )
+end]]
+
+function Team( teamnum )
+	for k, v in pairs( team.GetAllTeams() ) do
+		if k == teamnum then
+			return v
+		end
+	end
 end
 
 local _Ply = FindMetaTable( "Player" )
@@ -328,6 +336,17 @@ end )
 
 
 function GM:PlayerSpawn( ply )
+	if !GetGlobalBool( "GameInProgress" ) then
+		if file.Exists( "onelife/nextmode/mode.txt", "DATA" ) then
+			print( "Enough plays have joined, starting mode: ", file.Read( "onelife/nextmode/mode.txt", "DATA" ) )
+			StartGame( file.Read( "onelife/nextmode/mode.txt", "DATA" ) )
+		else
+			print( "No mode specified, starting Last Team Standing...")
+			StartGame( "lts" )
+		end
+		return false
+	end
+
 	util.AddNetworkString( "InitialUnlock" )
 	local list = util.JSONToTable( file.Read( "onelife/users/" .. id( ply:SteamID() ) .. ".txt", "DATA" ) )
 	net.Start( "InitialUnlock" )
@@ -366,13 +385,13 @@ function GM:PlayerSpawn( ply )
 	end
 
 	ply:SetJumpPower( 170 ) -- CTDM value was 170
-	ply:SetWalkSpeed( 150 ) --CTDM value was 180
-	ply:SetRunSpeed( 270 ) --CTDM value was 300
+	ply:SetWalkSpeed( 140 ) --CTDM value was 180
+	ply:SetRunSpeed( 260 ) --CTDM value was 300
 
 	ply:SetNoCollideWithTeammates( false )
 
 	--//Found in sh_loadoutmenu//--
-	GiveOldLoadout( ply )
+	--GiveOldLoadout( ply )
 
 end
 

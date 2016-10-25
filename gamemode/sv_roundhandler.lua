@@ -53,7 +53,15 @@ end
 --Round preperation stuff
 function RoundPrep( round ) 
     print( "We are starting round: ", round)
-    if !allteamsvalid() then print( "Not all teams are valid, preventing round preperation." ) SetGlobalBool( "GameInProgress", false ) return end
+    if !allteamsvalid() then 
+        print( "Not all teams are valid, preventing round preperation." ) 
+        SetGlobalBool( "GameInProgress", false ) 
+        SetGlobalString( "Gametype", "none" )
+        SetGlobalBool( "GameInProgress", false )
+        SetGlobalBool( "RoundInProgress", false )
+        SetGlobalInt( "RoundTime", 0 ) 
+        return 
+    end
     game.CleanUpMap()
     print( "Round preperation starting, cleaning up map..." )
 
@@ -65,6 +73,7 @@ function RoundPrep( round )
     for k, v in pairs( player.GetAll() ) do
         v:Spawn()
 	    v:Freeze( true )
+        --//Found in sh_loadoutmenu//--
         GiveOldLoadout( v )
         print( "Spawning and locking: ", v )
     end
@@ -99,19 +108,19 @@ function RoundBegin( round )
 end
 
 --Game finishes, restart round if needed and deliver rewards
-function RoundEnd( round, victor )
+function RoundEnd( round, roundvictor )
     if timer.Exists( "Time Countdown" ) then
         timer.Remove( "Time Countdown" )
     end
     
     local winnername, winnercolor
-    if victor == 1 then
+    if roundvictor == 1 then
         SetGlobalInt( "RedTeamWins", GetGlobalInt( "RedTeamWins" ) + 1 )
-        winnername = Team( 1 ):GetName()
+        winnername = Team( 1 )[ "Name" ]
         winnercolor = Color( 100, 15, 15 )
-    elseif victor == 2 then
+    elseif roundvictor == 2 then
         SetGlobalInt( "BlueTeamWins", GetGlobalInt( "BlueTeamWins" ) + 1 )
-        winnername = Team( 2 ):GetName()
+        winnername = Team( 2 )[ "Name" ]
         winnercolor = Color( 30, 80, 180 )
     end
     ULib.tsayColor( nil, true, winnercolor, winnername, Color( 255, 255, 255 ), " has won round " .. round .. "." )
@@ -122,14 +131,16 @@ function RoundEnd( round, victor )
         SetGlobalBool( "GameInProgress", false )
         SetGlobalBool( "RoundInProgress", false )
         SetGlobalInt( "RoundTime", 0 ) 
-        hook.Call( "GameEnd", victor )
+        hook.Call( "GameEnd", nil, roundvictor )
     else
         print( "Nobody's won the game yet." )
         timer.Simple( 15, function()
             StartRound( round + 1 )
             SetGlobalBool( "RoundInProgress", false )
         end )
-        hook.Call( "RoundEnd", nil, round, victor )
+        local leadingteam
+        if GetGlobalInt( "RedTeamWins" ) > GetGlobalInt( "BlueTeamWins" ) then leadingteam = 1 elseif GetGlobalInt( "BlueTeamWins" ) > GetGlobalInt( "RedTeamWins" ) then leadingteam = 2 else leadingteam = 0 end
+        hook.Call( "RoundEnd", nil, round, roundvictor, leadingteam )
     end
 end 
 

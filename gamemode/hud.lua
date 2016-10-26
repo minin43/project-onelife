@@ -205,6 +205,79 @@ hook.Add( "PostPlayerDraw", "hud_icon", function( ply )
 	end
 end )
 
+surface.CreateFont( "Vote", { font = "Exo 2", size = 15 } )
+surface.CreateFont( "Vote Larger", { font = "Exo 2", size = 20 } )
+surface.CreateFont( "Vote Huge", { font = "Exo 2", size = 30 } )
+--//Voting shit
+net.Receive( "StartGMVote", function()
+	local gametypes = net.ReadTable()
+	local selectedoption
+
+	local mainframe = vgui.Create( "DFrame" )
+	mainframe:SetSize( 200, ( 140 + ( 40 * ( math.Clamp( #gametypes - 4, 0, #gametypes ) ) ) ) ) --All text height = 22 title, 24 for each option name, 
+	mainframe:SetPos( -201, 100 )
+	mainframe:SetTitle( "" )
+	mainframe:SetVisible( true )
+	mainframe:SetDraggable( false )
+	mainframe:ShowCloseButton( false )
+	mainframe:MakePopup()
+	mainframe:SetMouseInputEnabled( false )
+	mainframe.Paint = function()
+		draw.RoundedBox( 1, 0, 0, mainframe:GetWide(), mainframe:GetTall(), Color( 10, 10, 10, 230 ) )
+		draw.DrawText( "Vote for a game type...", "Vote Larger", 2, 2 )
+		for k, v in pairs( gametypes ) do
+			draw.DrawText( k .. ". " .. v[ 2 ], "Vote", 4, 39 * ( k - 1 ) + 2 + 22 )
+			draw.DrawText( v[ 3 ], "Vote", 8, 39 * ( k - 1 ) + 15 + 2 + 22 )
+		end
+		if selectedoption then
+			surface.SetDrawColor( 255, 255, 255 )
+			surface.DrawOutlinedRect( 0, 39 * ( selectedoption - 1 ) + 2 + 22, mainframe:GetWide(), 39 * ( selectedoption - 1 ) + 2 + 22 + 15 )
+		end
+	end
+	local keyenums = { KEY_1, KEY_2, KEY_3, KEY_4, KEY_5, KEY_6, KEY_7, KEY_8, KEY_9 }
+	mainframe.Think = function()
+		if selectedoption then 
+			mainframe:SetKeyboardInputEnabled( false )
+			return 
+		end
+		for k, v in pairs( keyenums ) do
+			if input.IsKeyDown( v ) then
+				selectedoption = k
+				net.Start( "EndVoteCallback" )
+					net.WriteString( tostring( selectedoption ) )
+				net.SendToServer()
+				print( "You selected option: ", selectedoption )
+				return
+			end
+		end
+	end
+	mainframe:MoveTo( 1, 100, 2 )
+
+	net.Receive( "EndVote", function()
+		local winner = net.ReadString()
+
+		local winnerframe = vgui.Create( "DFrame" )
+		winnerframe:SetSize( 200, 100 )
+		winnerframe:SetPos( -201, 100 )
+		winnerframe:SetTitle( "" )
+		winnerframe:SetVisible( true )
+		winnerframe:SetDraggable( false )
+		winnerframe:ShowCloseButton( false )
+		winnerframe:MakePopup()
+		winnerframe:SetMouseInputEnabled( false )
+		winnerframe:SetKeyboardInputEnabled( false )
+		winnerframe.Paint = function()
+			draw.RoundedBox( 1, 0, 0, winnerframe:GetWide(), winnerframe:GetTall(), Color( 10, 10, 10, 230 ) )
+			draw.DrawText( "The winning mode is: ", "Vote Larger", 4, 4 )
+			draw.DrawText( winner, "Vote Huge", 12, 28 )
+		end
+		mainframe:MoveTo( -201, 100, 2 )
+		timer.Simple( 2.1, function()
+			winnerframe:MoveTo( 1, 100, 2 )
+		end )
+	end )
+end )
+
 --Use these for the soon-to-be-implemented bombs
 --[[usermessage.Hook( "enemyflagcaptured", function( um )
 end )
@@ -226,7 +299,7 @@ surface.CreateFont( "wsmall", {
  antialias = true
 } )
 
-local data
+--[[local data
 hook.Add( "PostDrawOpaqueRenderables", "DrawWeaponHints", function()
 	local ent = LocalPlayer():GetEyeTrace().Entity
 	if ent then
@@ -348,12 +421,12 @@ hook.Add( "PostDrawOpaqueRenderables", "DrawWeaponHints", function()
 			
 		end
 	end
-end )
+end )]]
 
---[[First person death
+--First person death
  hook.Add( "CalcView", "CalcView:GmodDeathView", function( player, origin, angles, fov )
-    if( IsValid(player:GetRagdollEntity()) and *insert code about spectating someone here* ) then 
+    if IsValid( player:GetRagdollEntity() ) then --and *insert code about spectating someone here* ) then 
 		local CameraPos = player:GetRagdollEntity():GetAttachment( player:GetRagdollEntity():LookupAttachment( "eyes" ) )  
 		return { origin = CameraPos.Pos, angles = CameraPos.Ang, fov = 90 }
 	end
-end)]]
+end)

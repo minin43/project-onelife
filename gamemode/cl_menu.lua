@@ -36,22 +36,6 @@ surface.CreateFont( "Exo 2 Large", {
 	weight = 500
 } )
 
-local money = 0
-net.Start( "RequestMoney" )
-net.SendToServer()
-net.Receive( "RequestMoneyCallback", function()
-	money = tonumber( net.ReadString() )
-end )
-
-local lvl = 1
-net.Start( "RequestLevel" )
-net.SendToServer()
-net.Receive( "RequestLevelCallback", function( len, ply )
-	print( "Requesting level..." )
-	lvl = tonumber( net.ReadString() )
-	print( "You are level: ", lvl)
-end )
-
 -- http://lua-users.org/wiki/FormattingNumbers
 local function comma_value( amount )
 	local formatted = amount
@@ -70,6 +54,8 @@ function PrecacheModels()
 	end
 end
 
+local money = 0
+local lvl = 1
 function LoadoutMenu()
 	if GetGlobalBool( "RoundInProgress" ) == true then
         return
@@ -97,6 +83,12 @@ function LoadoutMenu()
 		print( "You are level: ", lvl)
 	end )
 
+	net.Start( "RequestMoney" )
+	net.SendToServer()
+	net.Receive( "RequestMoneyCallback", function()
+		money = tonumber( net.ReadString() )
+	end )
+
 	PrecacheModels()
 
     main = vgui.Create( "DFrame" )
@@ -119,7 +111,7 @@ function LoadoutMenu()
 		end
 	end
 
-	timer.Simple( 1, function()
+	--[[timer.Simple( 1, function()
 		function PlayerButtonDown( ply, button )
 			if input.GetKeyName( button ) == "c" and main then
 				print( ply, " pressed C, closing menu..." )
@@ -127,7 +119,7 @@ function LoadoutMenu()
 				main = nil
 			end
 		end
-	end )
+	end )]]
 
 	local tabs = vgui.Create( "DPanel", main )
 	tabs:SetPos( 0, 0 )

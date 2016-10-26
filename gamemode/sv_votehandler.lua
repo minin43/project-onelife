@@ -1,8 +1,7 @@
 util.AddNetworkString( "StartGMVote" )
 util.AddNetworkString( "EndVote" )
-util.AddNetworkString( "EndGMVoteCallback" )
+util.AddNetworkString( "EndVoteCallback" )
 util.AddNetworkString( "StartMapVote" )
-util.AddNetworkString( "EndMapVoteCallback" )
 
 --// Format: "gametype name as seen in roundhandler", "Full name", "Description"
 local availablegamemodes = {
@@ -25,28 +24,35 @@ hook.Add( "GameEnd", "EndGameVoting", function( winner )
         net.Send( v )
     end
 
-    --After 15 seconds, set a winning mode, save it in a file - based on any sent votes - and start the map vote
-    --After another 15 seconds, set a winning map and change to it
-    timer.Simple( 15, function()
+    --After 30 seconds, set a winning mode, save it in a file - based on any sent votes - and start the map vote
+    --After another 30 seconds, set a winning map and change to it
+    timer.Simple( 30, function()
         local winningmode = table.GetWinningKey( votes )
         SetWinner( "mode", winningmode )
+        print( "The winning gametype is: ", winningmode )
         for k, v in pairs( player.GetAll() ) do
-            net.Start( "EndVote" )
-                net.WriteString( winningmode )
-            net.Send( v )
+            for k2, v2 in pairs( availablegamemodes ) do
+                if winningmode == v2[ 1 ] then
+                    net.Start( "EndVote" )
+                        net.WriteString( v2[ 2 ] )
+                    net.Send( v )
+                end
+            end
 
-            net.Start( "StartMapVote" )
-                net.WriteTable( availablemaps )
-            net.Send( v )
+            timer.Simple( 5, function()
+                net.Start( "StartMapVote" )
+                    net.WriteTable( availablemaps )
+                net.Send( v )
+            end )
         end
 
-        timer.Simple( 15, function()
+        timer.Simple( 35, function()
             local winningmap = table.GetWinningKey( votes ) or availablemaps[ 1 ]
             print( "Switching map to: ", winningmap )
             SetWinner( "map", winningmap )
             for k, v in pairs( player.GetAll() ) do
                 net.Start( "EndVote" )
-                    net.WriteString( winningmode )
+                    net.WriteString( winningmap )
                 net.Send( v )
             end
         end)
@@ -56,19 +62,12 @@ hook.Add( "GameEnd", "EndGameVoting", function( winner )
         votes[ v[ 1 ] ] = 0
     end
 
-    net.Receive( "EndGMVoteCallback", function( len, ply )
+    net.Receive( "EndVoteCallback", function( len, ply )
         local playervote = net.ReadString()
         if votes[ playervote ] then
             votes[ playervote ] = votes[ playervote ] + 1
         end
     end)
-
-    net.Receive( "EndMapVoteCallback", function( len, ply )
-        local playervote = net.ReadString()
-        if votes[ playervote ] then
-            votes[ playervote ] = votes[ playervote ] + 1
-        end
-    end )
 end )
 
 function GetWinner( tab )

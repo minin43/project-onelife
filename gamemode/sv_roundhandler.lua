@@ -1,7 +1,7 @@
 modes = {
-    --//ROUNDS = ROUNDS NEEDED FOR GAME VICTORY, ROUNTIME = TOTAL ALOTTMENT OF TIME GIVEN EVERY ROUND, 
+    --//ROUNDS = ROUNDS NEEDED FOR GAME VICTORY, ROUNTIME = TOTAL ALOTTMENT OF TIME FOR A GIVEN ROUND, 
     [ "lts" ] = { --Last Team Standing, your basic one-life team-deathmatch
-        [ "Rounds" ] = 11,
+        [ "Rounds" ] = 1,
         [ "RoundTime" ] = 180,
     },
     [ "cache" ] = { --Destroy Red's weapon cache, attack/defense based mode
@@ -13,7 +13,7 @@ modes = {
         [ "RoundTime" ] = 180,
         TeamThree = true,
     },
-    [ "hot" ] = { --HotPoint, whoever captures the single point uncontested wins
+    [ "hot" ] = { --HotPoint, whichever team captures the single point wins
         [ "Rounds" ] = 3,
         [ "RoundTime" ] = 240,
     },

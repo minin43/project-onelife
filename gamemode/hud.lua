@@ -56,23 +56,48 @@ CreateClientConVar( "hud_showexp", 0, true, true )
 
 LP = LocalPlayer
 
-local hide = {
-	"CHudHealth",
-	"CHudBattery",
-	"CHudAmmo",
-	"CHudSecondaryAmmo",
-	"CHudDamageIndictator"
-}
-
+--//Hide the standard HL2 HUD elements
 function hidehud( name )
-	if( table.HasValue( hide, name ) ) then
+	if( table.HasValue( { "CHudHealth", "CHudBattery", "CHudAmmo", "CHudSecondaryAmmo", "CHudDamageIndictator" }, name ) ) then
 		return false
 	end
 	
 	return true
 end
-hook.Add( "HUDShouldDraw", "hidehud", hidehud )
 
+hook.Add( "RoundPrepStart", "RoundStartMusic", function( round )
+	--What's a good start time for the music? Some if it's 7 seconds, some of it's 15... maybe run it through a table?
+	timer.Simple( 15, function()
+		surface.PlaySound( "music/" .. team.GetName( LocalPlayer():Team() ) .. "_roundstart.ogg" )
+	end )
+	--//This could be thrown into the RoundStart hook - check and see which I should do
+	timer.Simple( 30, function()
+		surface.PlaySound( "dialogue/" .. team.GetName( LocalPlayer():Team() ) .. "_roundstart.ogg" )
+	end )
+end )
+
+hook.Add( "RoundEnd", "RoundEndMusic", function( victor, leader )
+	local result
+	if victor == LocalPlayer():Team() then result = "roundwon" else result = "roundlost" end
+	--This might need to be a general "next round" music piece
+	surface.PlaySound( "music/" .. team.GetName( LocalPlayer():Team() ) .. "_" .. result .. ".ogg" )
+	--The time might also need to be changed, and may also need to be run through a table
+	timer.Simple( 5, function()
+		surface.PlaySound( "dialogue/" .. team.GetName( LocalPlayer():Team() ) .. "_" .. result .. ".ogg" )
+	end )
+end )
+
+hook.Add( "GameEnd", "GameEndMusic", function( victor )
+	local result
+	if victor == LocalPlayer():Team() then result = "gamewon" else result = "gamelost" end
+	--This might need to be a general "next round" music piece
+	surface.PlaySound( "music/" .. team.GetName( LocalPlayer():Team() ) .. "_" .. result .. ".ogg" )
+	timer.Simple( 5, function()
+		surface.PlaySound( "dialogue/" .. team.GetName( LocalPlayer():Team() ) .. "_" .. result .. ".ogg" )
+	end )
+end )
+
+--[[
 usermessage.Hook( "startmusic", function()
 	if LocalPlayer():Team() == 1 then
 		surface.PlaySound( "mw2music/spawn/redspawn" .. math.random( 1, 2 ) .. ".ogg" )
@@ -110,7 +135,8 @@ usermessage.Hook( "endmusic", function()
 		end
 	end
 	print( GetGlobalInt( "RoundWinner" ) )
-end )
+end )]]
+
 
 --Stolen from Zet0r
 local blood_overlay = Material("hud/damageoverlay.png", "unlitgeneric smooth")
@@ -119,7 +145,23 @@ local pulse = 0
 
 hook.Add( "HUDPaint", "hud_main", function()
 
-	--[[local fade = (math.Clamp(LocalPlayer():Health()/LocalPlayer():GetMaxHealth(), 0.2, 0.5)-0.2)/0.3
+	timeleft = string.FormattedTime( tostring( GetGlobalInt( "RoundTime" ) ) )
+	surface.SetDrawColor( 0, 0, 0, 255 )
+	surface.DrawRect( ScrW() / 2 - 8, 4, ScrW() / 2 + 8, 16 )
+	draw.SimpleText( timeleft.m .. ":" .. timeleft.s, "Exo 2 Regular", ScrW() / 2, 6, Color( 255, 255, 255 ), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER )
+
+	if !LocalPlayer():Alive() then return end
+
+	surface.SetFont( "Exo 2 Regular" )
+	gminfo = "Project: OneLife | WORK IN PROGRESS | Build# 102616"
+	local num = surface.GetTextSize( info )
+	surface.SetDrawColor( 50, 50, 50, 200 )
+	surface.DrawRect( 30, 30, num + 2, 22 )
+	surface.SetTextColor( 255, 255, 255, 80 )
+	surface.SetTextPos( 32, 32 )
+	surface.DrawText( gminfo )
+
+	local fade = (math.Clamp(LocalPlayer():Health()/LocalPlayer():GetMaxHealth(), 0.2, 0.5)-0.2)/0.3
 	local fade2 = 1 - math.Clamp(LocalPlayer():Health()/LocalPlayer():GetMaxHealth(), 0, 0.5)/0.5
 	
 	surface.SetMaterial(blood_overlay)
@@ -136,7 +178,7 @@ hook.Add( "HUDPaint", "hud_main", function()
 		end
 		surface.SetDrawColor(255,255,255,pulse*fade2)
 		surface.DrawTexturedRect( -10, -10, ScrW()+20, ScrH()+20)
-	end]]
+	end
 
 	if LP():Alive() and LP():Team() ~= 0 then
 		if LP():Health() < (LP():GetMaxHealth() * 0.3) and LP():Health() > (LP():GetMaxHealth() * 0.2) then
@@ -147,8 +189,6 @@ hook.Add( "HUDPaint", "hud_main", function()
 			surface.PlaySound( "hud/Heartbeatfastest.ogg")
 		end
 	end
-	
-	--
 	
 end )
 
@@ -174,7 +214,7 @@ net.Receive( "tdm_deathnotice", function()
 	end
 end )
 
---I think this is the healthbar above teammate's head?
+--I think this is the healthbar above teammate's head? Set this as the upside-down triangle, colored to show health (green = 100, red = 0)
 hook.Add( "PostPlayerDraw", "hud_icon", function( ply ) 
 	if !IsValid( ply ) then return end
 	if ply == LocalPlayer() then return end
@@ -213,7 +253,7 @@ net.Receive( "StartGMVote", function()
 	local gametypes = net.ReadTable()
 	local selectedoption
 
-	local mainframe = vgui.Create( "DFrame" )
+	mainframe = vgui.Create( "DFrame" )
 	mainframe:SetSize( 200, ( 140 + ( 40 * ( math.Clamp( #gametypes - 4, 0, #gametypes ) ) ) ) ) --All text height = 22 title, 24 for each option name, 
 	mainframe:SetPos( -201, 100 )
 	mainframe:SetTitle( "" )
@@ -253,10 +293,13 @@ net.Receive( "StartGMVote", function()
 	end
 	mainframe:MoveTo( 1, 100, 2 )
 
+	local dontuse
 	net.Receive( "EndVote", function()
+		if dontuse then return end
+		dontuse = true
 		local winner = net.ReadString()
 
-		local winnerframe = vgui.Create( "DFrame" )
+		winnerframe = vgui.Create( "DFrame" )
 		winnerframe:SetSize( 200, 100 )
 		winnerframe:SetPos( -201, 100 )
 		winnerframe:SetTitle( "" )
@@ -274,6 +317,74 @@ net.Receive( "StartGMVote", function()
 		mainframe:MoveTo( -201, 100, 2 )
 		timer.Simple( 2.1, function()
 			winnerframe:MoveTo( 1, 100, 2 )
+		end )
+	end )
+end )
+
+net.Receive( "StartMapVote", function()
+	local maps = net.ReadTable()
+	local selectedoption
+
+	mainframe2 = vgui.Create( "DFrame" )
+	mainframe2:SetSize( 200, ( 140 + ( 17 * ( math.Clamp( #maps - 4, 0, #maps ) ) ) ) ) 
+	mainframe2:SetPos( -201, 100 + winnerframe:GetTall() + 2 )
+	mainframe2:SetTitle( "" )
+	mainframe2:SetVisible( true )
+	mainframe2:SetDraggable( false )
+	mainframe2:ShowCloseButton( false )
+	mainframe2:MakePopup()
+	mainframe2:SetMouseInputEnabled( false )
+	mainframe2.Paint = function()
+		draw.RoundedBox( 1, 0, 0, mainframe2:GetWide(), mainframe2:GetTall(), Color( 10, 10, 10, 230 ) )
+		draw.DrawText( "Vote for a map...", "Vote Larger", 2, 2 )
+		for k, v in pairs( maps ) do
+			draw.DrawText( k .. ". " .. v, "Vote", 4, 17 * ( k - 1 ) + 2 + 22 )
+		end
+		if selectedoption then
+			surface.SetDrawColor( 255, 255, 255 )
+			surface.DrawOutlinedRect( 0, 17 * ( selectedoption - 1 ) + 2 + 22, mainframe2:GetWide(), 17 * ( selectedoption - 1 ) + 2 + 22 + 15 )
+		end
+	end
+	local keyenums = { KEY_1, KEY_2, KEY_3, KEY_4, KEY_5, KEY_6, KEY_7, KEY_8, KEY_9 }
+	mainframe2.Think = function()
+		if selectedoption then 
+			mainframe2:SetKeyboardInputEnabled( false )
+			return 
+		end
+		for k, v in pairs( keyenums ) do
+			if input.IsKeyDown( v ) then
+				selectedoption = k
+				net.Start( "EndVoteCallback" )
+					net.WriteString( tostring( selectedoption ) )
+				net.SendToServer()
+				print( "You selected option: ", selectedoption )
+				return
+			end
+		end
+	end
+	mainframe2:MoveTo( 1, 100 + winnerframe:GetTall() + 2, 2 )
+
+	net.Receive( "EndVote", function()
+		local winner = net.ReadString()
+
+		local winnerframe2 = vgui.Create( "DFrame" )
+		winnerframe2:SetSize( 200, 100 )
+		winnerframe2:SetPos( -201, 100 + winnerframe:GetTall() + 2 )
+		winnerframe2:SetTitle( "" )
+		winnerframe2:SetVisible( true )
+		winnerframe2:SetDraggable( false )
+		winnerframe2:ShowCloseButton( false )
+		winnerframe2:MakePopup()
+		winnerframe2:SetMouseInputEnabled( false )
+		winnerframe2:SetKeyboardInputEnabled( false )
+		winnerframe2.Paint = function()
+			draw.RoundedBox( 1, 0, 0, winnerframe2:GetWide(), winnerframe2:GetTall(), Color( 10, 10, 10, 230 ) )
+			draw.DrawText( "The winning mode is: ", "Vote Larger", 4, 4 )
+			draw.DrawText( winner, "Vote Huge", 12, 28 )
+		end
+		mainframe:MoveTo( -201, 100 + winnerframe:GetTall() + 2, 2 )
+		timer.Simple( 2.1, function()
+			winnerframe2:MoveTo( 1, 100 + winnerframe:GetTall() + 2, 2 )
 		end )
 	end )
 end )
@@ -299,131 +410,7 @@ surface.CreateFont( "wsmall", {
  antialias = true
 } )
 
---[[local data
-hook.Add( "PostDrawOpaqueRenderables", "DrawWeaponHints", function()
-	local ent = LocalPlayer():GetEyeTrace().Entity
-	if ent then
-		if IsValid( ent ) and ent:IsWeapon() and ent:GetPos():Distance( LocalPlayer():GetPos() ) <= 400 then
-			local data = data or weapons.Get( ent:GetClass() )
-			
-			function GetInfo( check, check2 )
-				if check then
-					return check
-				elseif check2 then
-					return check2
-				else
-					return 0
-				end
-			end
-			
-			local info = {
-				[ 1 ] = GetInfo( data.PrintName, data.ClassName ),
-				[ 2 ] = GetInfo( data.Damage, data.Primary.Damage ),
-				[ 3 ] = GetInfo( data.HipCone, data.Primary.Spray ),
-				[ 4 ] = GetInfo( data.AimCone, data.Primary.Cone ),
-				[ 5 ] = GetInfo( data.ReloadTime ),
-				[ 6 ] = GetInfo( data.Recoil, data.Primary.KickUp ),
-				[ 7 ] = GetInfo( ent.Primary.ClipSize )
-			}
-			
-			local ang = LocalPlayer():EyeAngles()
-			local pos = ent:GetPos() + ang:Up()
-		 
-			ang:RotateAroundAxis( ang:Forward(), 90 )
-			ang:RotateAroundAxis( ang:Right(), 90 )
-
-			cam.Start3D2D( pos, Angle( 0, ang.y, 90 ), 0.1 )
-				surface.SetDrawColor( Color( 0, 0, 0, 150 ) )
-				surface.DrawRect( -250, -70, 500, -390 )
-				local tc = {
-					x = -250,
-					y = -390 - 70
-				}
-				
-				draw.DrawText( info[ 1 ], "wlarge", 0, tc.y - 10, color_white, TEXT_ALIGN_CENTER )
-				surface.SetDrawColor( color_white )
-				surface.DrawLine( tc.x + 50, tc.y + 97, tc.x + 450, tc.y + 100 )
-				
-				local col0
-				local text0
-				if info[ 2 ] >= 40 then
-					col0 = Color( 0, 255, 0, 255 )
-				elseif info[ 2 ] <= 25 then
-					col0 = Color( 255, 0, 0, 255 )
-				else
-					col0 = Color( 255, 210, 0, 255 )
-				end
-				
-				draw.DrawText( "Damage", "wsmall", tc.x + 20, tc.y + 102, col0, TEXT_ALIGN_LEFT )
-				draw.DrawText( info[ 2 ], "wsmall", tc.x + 480, tc.y + 102, col0, TEXT_ALIGN_RIGHT )
-				
-				local col
-				local text
-				if info[ 4 ] >= 0.01 then
-					col = Color( 255, 0, 0, 255 )
-					text = "Poor"
-				elseif info[ 4 ] <= 0.001 then
-					col = Color( 0, 255, 0, 255 )
-					text = "Good"
-				else
-					col = Color( 255, 210, 0, 255 )
-					text = "Average"
-				end
-				draw.DrawText( "Accuracy", "wsmall", tc.x + 20, tc.y + 154, col, TEXT_ALIGN_LEFT )
-				draw.DrawText( text, "wsmall", tc.x + 480, tc.y + 154, col, TEXT_ALIGN_RIGHT )
-				
-				local col2
-				if info[ 5 ] then
-					text2 = info[ 5 ] .. "s"
-					if info[ 5 ] >= 3 then
-						col2 = Color( 255, 0, 0, 255 )
-					elseif info[ 5 ] < 2 then
-						col2 = Color( 0, 255, 0, 255 )
-					else
-						col2 = Color( 255, 210, 0, 255 )
-					end
-				elseif info[ 5 ] == nil then
-					col2 = color_white
-					text2 = "N/A"
-				end
-				
-				draw.DrawText( "Reload", "wsmall", tc.x + 20, tc.y + 206, col2, TEXT_ALIGN_LEFT )
-				draw.DrawText( text2, "wsmall", tc.x + 480, tc.y + 206, col2, TEXT_ALIGN_RIGHT )
-				
-				local col3
-				local text3
-				if info[ 6 ] >= 1.5 then
-					col3 = Color( 255, 0, 0, 255 )
-					text3 = "High"
-				elseif info[ 6 ] <= 0.7 then
-					col3 = Color( 0, 255, 0, 255 )
-					text3 = "Low"
-				else
-					col3 = Color( 255, 210, 0, 255 )
-					text3 = "Average"
-				end
-				draw.DrawText( "Recoil", "wsmall", tc.x + 20, tc.y + 258, col3, TEXT_ALIGN_LEFT )
-				draw.DrawText( text3, "wsmall", tc.x + 480, tc.y + 258, col3, TEXT_ALIGN_RIGHT )
-				
-				local col4
-				if info[ 7 ] > 30 then
-					col4 = Color( 0, 255, 0, 255 )
-				elseif info[ 7 ] <= 20 then
-					col4 = Color( 255, 0, 0, 255 )
-				else
-					col4 = Color( 255, 210, 0, 255 )
-				end
-				
-				draw.DrawText( "Clip Size", "wsmall", tc.x + 20, tc.y + 310, col4, TEXT_ALIGN_LEFT )
-				draw.DrawText( info[ 7 ], "wsmall", tc.x + 480, tc.y + 310, col4, TEXT_ALIGN_RIGHT )
-				
-			cam.End3D2D()
-			
-		end
-	end
-end )]]
-
---First person death
+--First person death, stolen from a workshop addon
  hook.Add( "CalcView", "CalcView:GmodDeathView", function( player, origin, angles, fov )
     if IsValid( player:GetRagdollEntity() ) then --and *insert code about spectating someone here* ) then 
 		local CameraPos = player:GetRagdollEntity():GetAttachment( player:GetRagdollEntity():LookupAttachment( "eyes" ) )  

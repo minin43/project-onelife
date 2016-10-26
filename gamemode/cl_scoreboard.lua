@@ -268,7 +268,7 @@ function CreateScoreboard()
 				for k3, v3 in pairs( headertouse ) do
 					if v3 == "Score" then
 						text = v2:Score() or 0
-					elseif v3 == "Role" then
+					elseif v3 == "            Role" then
 						text = v2:GetNWString( "role" ) or "None"
 					elseif v3 == "Ping" then
 						text = v2:Ping() or 0

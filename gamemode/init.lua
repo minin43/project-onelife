@@ -353,7 +353,7 @@ function GM:PlayerSpawn( ply )
 	    net.WriteTable( list[ 2 ] )
 	net.Send( ply )
 
-	if( ply:Team() == 0 ) then --or !ply:IsAlive() then
+	if( ply:Team() == 0 ) or !ply:IsAlive() then
 		ply:Spectate( OBS_MODE_IN_EYE )
 		SetupSpectator( ply )
 		return

@@ -11,7 +11,10 @@ local availablegamemodes = {
 
 --// Self-explanatory
 local availablemaps = {
-    "gm_devruins"
+    "gm_devruins",
+    "de_crash",
+    "de_keystone_beta",
+    "de_secretcamp"
 }
 
 local votes = { }
@@ -48,6 +51,7 @@ hook.Add( "GameEnd", "EndGameVoting", function( winner )
 
         timer.Simple( 35, function()
             local winningmap = table.GetWinningKey( votes ) or availablemaps[ 1 ]
+            PrintTable( votes )
             print( "Switching map to: ", winningmap )
             SetWinner( "map", winningmap )
             for k, v in pairs( player.GetAll() ) do
@@ -63,7 +67,9 @@ hook.Add( "GameEnd", "EndGameVoting", function( winner )
     end
 
     net.Receive( "EndVoteCallback", function( len, ply )
+        print( "EndVoteCallback received")
         local playervote = net.ReadString()
+        print( ply:Nick() .. " voted for: ", playervote )
         if votes[ playervote ] then
             votes[ playervote ] = votes[ playervote ] + 1
         end

@@ -1,20 +1,20 @@
 modes = {
     --//ROUNDS = ROUNDS NEEDED FOR GAME VICTORY, ROUNTIME = TOTAL ALOTTMENT OF TIME FOR A GIVEN ROUND, 
     [ "lts" ] = { --Last Team Standing, your basic one-life team-deathmatch
-        [ "Rounds" ] = 1,
+        [ "Rounds" ] = 7,
         [ "RoundTime" ] = 180,
     },
     [ "cache" ] = { --Destroy Red's weapon cache, attack/defense based mode
-        [ "Rounds" ] = 3,
+        [ "Rounds" ] = 5,
         [ "RoundTime" ] = 240,
     },
     [ "oma" ] = { --One Man Army, Last Team Standing but every man for themself
-        [ "Rounds" ] = 3,
+        [ "Rounds" ] = 5,
         [ "RoundTime" ] = 180,
         TeamThree = true,
     },
     [ "hot" ] = { --HotPoint, whichever team captures the single point wins
-        [ "Rounds" ] = 3,
+        [ "Rounds" ] = 5,
         [ "RoundTime" ] = 240,
     },
     [ "dicks" ] = {
@@ -133,10 +133,10 @@ function RoundEnd( round, roundvictor )
         SetGlobalInt( "RoundTime", 0 ) 
         hook.Call( "GameEnd", nil, roundvictor )
     else
+        SetGlobalBool( "RoundInProgress", false )
         print( "Nobody's won the game yet." )
         timer.Simple( 15, function()
             StartRound( round + 1 )
-            SetGlobalBool( "RoundInProgress", false )
         end )
         local leadingteam
         if GetGlobalInt( "RedTeamWins" ) > GetGlobalInt( "BlueTeamWins" ) then leadingteam = 1 elseif GetGlobalInt( "BlueTeamWins" ) > GetGlobalInt( "RedTeamWins" ) then leadingteam = 2 else leadingteam = 0 end

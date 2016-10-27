@@ -57,43 +57,54 @@ CreateClientConVar( "hud_showexp", 0, true, true )
 LP = LocalPlayer
 
 --//Hide the standard HL2 HUD elements
+local hide = {
+	"CHudHealth",
+	"CHudBattery",
+	"CHudAmmo",
+	"CHudSecondaryAmmo",
+	"CHudDamageIndictator"
+}
 function hidehud( name )
-	if( table.HasValue( { "CHudHealth", "CHudBattery", "CHudAmmo", "CHudSecondaryAmmo", "CHudDamageIndictator" }, name ) ) then
+	if( table.HasValue( hide, name ) ) then
 		return false
 	end
 	
 	return true
 end
+hook.Add( "HUDShouldDraw", "hidehud", hidehud )
 
 hook.Add( "RoundPrepStart", "RoundStartMusic", function( round )
+	print( "RoundPrepStart called" )
 	--What's a good start time for the music? Some if it's 7 seconds, some of it's 15... maybe run it through a table?
 	timer.Simple( 15, function()
-		surface.PlaySound( "music/" .. team.GetName( LocalPlayer():Team() ) .. "_roundstart.ogg" )
+		surface.PlaySound( "music/" .. team.GetName( LocalPlayer():Team() ) .. "_roundstart.mp3" )
 	end )
 	--//This could be thrown into the RoundStart hook - check and see which I should do
 	timer.Simple( 30, function()
-		surface.PlaySound( "dialogue/" .. team.GetName( LocalPlayer():Team() ) .. "_roundstart.ogg" )
+		surface.PlaySound( "dialogue/" .. team.GetName( LocalPlayer():Team() ) .. "_roundstart.mp3" )
 	end )
 end )
 
 hook.Add( "RoundEnd", "RoundEndMusic", function( victor, leader )
+	print( "RoundEnd called" )
 	local result
 	if victor == LocalPlayer():Team() then result = "roundwon" else result = "roundlost" end
 	--This might need to be a general "next round" music piece
-	surface.PlaySound( "music/" .. team.GetName( LocalPlayer():Team() ) .. "_" .. result .. ".ogg" )
+	surface.PlaySound( "music/" .. team.GetName( LocalPlayer():Team() ) .. "_" .. result .. ".mp3" )
 	--The time might also need to be changed, and may also need to be run through a table
 	timer.Simple( 5, function()
-		surface.PlaySound( "dialogue/" .. team.GetName( LocalPlayer():Team() ) .. "_" .. result .. ".ogg" )
+		surface.PlaySound( "dialogue/" .. team.GetName( LocalPlayer():Team() ) .. "_" .. result .. ".mp3" )
 	end )
 end )
 
 hook.Add( "GameEnd", "GameEndMusic", function( victor )
+	print( "GameEnd called" )
 	local result
 	if victor == LocalPlayer():Team() then result = "gamewon" else result = "gamelost" end
 	--This might need to be a general "next round" music piece
-	surface.PlaySound( "music/" .. team.GetName( LocalPlayer():Team() ) .. "_" .. result .. ".ogg" )
+	surface.PlaySound( "music/" .. team.GetName( LocalPlayer():Team() ) .. "_" .. result .. ".mp3" )
 	timer.Simple( 5, function()
-		surface.PlaySound( "dialogue/" .. team.GetName( LocalPlayer():Team() ) .. "_" .. result .. ".ogg" )
+		surface.PlaySound( "dialogue/" .. team.GetName( LocalPlayer():Team() ) .. "_" .. result .. ".mp3" )
 	end )
 end )
 
@@ -146,25 +157,25 @@ local pulse = 0
 hook.Add( "HUDPaint", "hud_main", function()
 
 	timeleft = string.FormattedTime( tostring( GetGlobalInt( "RoundTime" ) ) )
-	surface.SetDrawColor( 0, 0, 0, 255 )
-	surface.DrawRect( ScrW() / 2 - 8, 4, ScrW() / 2 + 8, 16 )
-	draw.SimpleText( timeleft.m .. ":" .. timeleft.s, "Exo 2 Regular", ScrW() / 2, 6, Color( 255, 255, 255 ), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER )
+	surface.SetDrawColor( 0, 0, 0, 200 )
+	surface.DrawRect( ScrW() / 2 - 24, 2, 48, 21 )
+	draw.SimpleText( timeleft.m .. ":" .. timeleft.s, "Exo 2 Regular", ScrW() / 2, 12, Color( 255, 255, 255 ), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER )
 
 	if !LocalPlayer():Alive() then return end
 
 	surface.SetFont( "Exo 2 Regular" )
 	gminfo = "Project: OneLife | WORK IN PROGRESS | Build# 102616"
-	local num = surface.GetTextSize( info )
+	local num = surface.GetTextSize( gminfo )
 	surface.SetDrawColor( 50, 50, 50, 200 )
-	surface.DrawRect( 30, 30, num + 2, 22 )
-	surface.SetTextColor( 255, 255, 255, 80 )
+	surface.DrawRect( 30, 30, num + 4, 22 )
+	surface.SetTextColor( 255, 255, 255 )
 	surface.SetTextPos( 32, 32 )
 	surface.DrawText( gminfo )
 
 	local fade = (math.Clamp(LocalPlayer():Health()/LocalPlayer():GetMaxHealth(), 0.2, 0.5)-0.2)/0.3
 	local fade2 = 1 - math.Clamp(LocalPlayer():Health()/LocalPlayer():GetMaxHealth(), 0, 0.5)/0.5
 	
-	surface.SetMaterial(blood_overlay)
+	--[[surface.SetMaterial(blood_overlay)
 	surface.SetDrawColor(255,255,255,255-fade*255)
 	surface.DrawTexturedRect( -10, -10, ScrW()+20, ScrH()+20)
 		
@@ -178,7 +189,7 @@ hook.Add( "HUDPaint", "hud_main", function()
 		end
 		surface.SetDrawColor(255,255,255,pulse*fade2)
 		surface.DrawTexturedRect( -10, -10, ScrW()+20, ScrH()+20)
-	end
+	end]]
 
 	if LP():Alive() and LP():Team() ~= 0 then
 		if LP():Health() < (LP():GetMaxHealth() * 0.3) and LP():Health() > (LP():GetMaxHealth() * 0.2) then
@@ -286,7 +297,7 @@ net.Receive( "StartGMVote", function()
 				net.Start( "EndVoteCallback" )
 					net.WriteString( tostring( selectedoption ) )
 				net.SendToServer()
-				print( "You selected option: ", selectedoption )
+				print( "You selected option: ", gametypes[ selectedoption ][ 2 ] )
 				return
 			end
 		end
@@ -312,7 +323,7 @@ net.Receive( "StartGMVote", function()
 		winnerframe.Paint = function()
 			draw.RoundedBox( 1, 0, 0, winnerframe:GetWide(), winnerframe:GetTall(), Color( 10, 10, 10, 230 ) )
 			draw.DrawText( "The winning mode is: ", "Vote Larger", 4, 4 )
-			draw.DrawText( winner, "Vote Huge", 12, 28 )
+			draw.DrawText( winner, "Vote Larger", 12, 28 )
 		end
 		mainframe:MoveTo( -201, 100, 2 )
 		timer.Simple( 2.1, function()
@@ -342,7 +353,7 @@ net.Receive( "StartMapVote", function()
 		end
 		if selectedoption then
 			surface.SetDrawColor( 255, 255, 255 )
-			surface.DrawOutlinedRect( 0, 17 * ( selectedoption - 1 ) + 2 + 22, mainframe2:GetWide(), 17 * ( selectedoption - 1 ) + 2 + 22 + 15 )
+			surface.DrawOutlinedRect( 0, 17 * ( selectedoption - 1 ) + 2 + 22, mainframe2:GetWide(), 17 * ( selectedoption - 1 ) + 15 )
 		end
 	end
 	local keyenums = { KEY_1, KEY_2, KEY_3, KEY_4, KEY_5, KEY_6, KEY_7, KEY_8, KEY_9 }
@@ -355,9 +366,9 @@ net.Receive( "StartMapVote", function()
 			if input.IsKeyDown( v ) then
 				selectedoption = k
 				net.Start( "EndVoteCallback" )
-					net.WriteString( tostring( selectedoption ) )
+					net.WriteString( tostring( maps[ selectedoption ] ) )
 				net.SendToServer()
-				print( "You selected option: ", selectedoption )
+				print( "You selected option: ", maps[ selectedoption ] )
 				return
 			end
 		end
@@ -379,10 +390,10 @@ net.Receive( "StartMapVote", function()
 		winnerframe2:SetKeyboardInputEnabled( false )
 		winnerframe2.Paint = function()
 			draw.RoundedBox( 1, 0, 0, winnerframe2:GetWide(), winnerframe2:GetTall(), Color( 10, 10, 10, 230 ) )
-			draw.DrawText( "The winning mode is: ", "Vote Larger", 4, 4 )
+			draw.DrawText( "The winning map is: ", "Vote Larger", 4, 4 )
 			draw.DrawText( winner, "Vote Huge", 12, 28 )
 		end
-		mainframe:MoveTo( -201, 100 + winnerframe:GetTall() + 2, 2 )
+		mainframe2:MoveTo( -201, 100 + winnerframe:GetTall() + 2, 2 )
 		timer.Simple( 2.1, function()
 			winnerframe2:MoveTo( 1, 100 + winnerframe:GetTall() + 2, 2 )
 		end )

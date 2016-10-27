@@ -242,7 +242,7 @@ hook.Add( "PlayerSpawn", "OverrideSpawnLocations", function( ply )
 	end
 end )
 
-concommand.Add( "tdm_placespawns", function( ply )
+concommand.Add( "pol_placespawns", function( ply )
 	if ply:Alive() and IsValid( ply ) then
 		if ply:IsSuperAdmin() then
 			StartPlacement( ply )

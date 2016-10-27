@@ -353,7 +353,7 @@ function GM:PlayerSpawn( ply )
 	    net.WriteTable( list[ 2 ] )
 	net.Send( ply )
 
-	if( ply:Team() == 0 ) or !ply:IsAlive() then
+	if( ply:Team() == 0 ) then --or !GetGlobalBool( "RoundInProgress" ) then
 		ply:Spectate( OBS_MODE_IN_EYE )
 		SetupSpectator( ply )
 		return
@@ -452,3 +452,5 @@ function GM:GetFallDamage( ply, speed )
 	speed = speed - 540
 	return ( speed * ( 100 / ( 1024 - 580 ) ) )
 end
+
+CustomizableWeaponry.canOpenInteractionMenu = false

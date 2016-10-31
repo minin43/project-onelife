@@ -38,7 +38,7 @@ wep_att[ "cw_kk_ins2_aks74u" ] = {
     [ "kk_ins2_aimpoint" ] =    { "Sight", 150, unlocked, 3 },
     [ "kk_ins2_elcan" ] =       { "Sight", 200, unlocked, 4 },
     [ "kk_ins2_po4" ] =         { "Sight", 200, unlocked, 5 },
-    [ "kk_ins2_pbs1" ] =        { "Barrel", 150, unlocked, 6 },
+    [ "kk_ins2_pbs5" ] =        { "Barrel", 150, unlocked, 6 },
     [ "kk_ins2_vertgrip" ] =    { "Under", 150, unlocked, 7 },
     [ "kk_ins2_lam" ] =         { "Lasers", 100, unlocked, 8 },
     [ "kk_ins2_flashlight" ] =  { "Lasers", 150, unlocked, 9 },
@@ -425,7 +425,9 @@ if CLIENT then
         local unlocks = net.ReadTable() or { }
         for k, v in pairs( unlocks ) do
             for k2, v2 in pairs( v ) do
-                wep_att[ k ][ v2 ][ "unlocked" ] = true
+                if wep_att[ k ][ v2 ] then
+                    wep_att[ k ][ v2 ][ "unlocked" ] = true
+                end
             end
         end
     end )

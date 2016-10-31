@@ -145,110 +145,53 @@ end
 
 --//Should I edit CW2.0's pickup function as as to disallow multiple weapon pickups, or rewrite it here?
 if SERVER then  	
-	--//This gives the player their new weapons/attachments when the hit "Redeploy" in the menu
+	--//This saves the player's' loadout (weapons/attachments) when they hit the "Save Loadout" button in the menu
 	util.AddNetworkString( "SetLoadout" )
 	net.Receive( "SetLoadout", function( len, ply )
-		--if !ply:IsAlive() then return end
-		--ply.oldprim, ply.oldsec, ply.oldeq, ply.oldpatt, ply.oldsatt
-
 		local loadout = net.ReadTable()
-		local give40mm = false
-		ply:StripWeapons()
+
+		if loadout then
+			--TO-DO: check for client consistency between what the server's given and ply's ACTUAL unlocked attachments
+			if loadout[ "primary" ] then
+				ply.oldprim = loadout[ "primary" ]
+			end
+			if loadout[ "secondary" ] then
+				ply.oldsec = loadout[ "secondary" ]
+			end
+			if loadout[ "equipment" ] then
+				ply.oldeq = loadout[ "equipment" ]
+			end
+			if loadout[ "role" ] then
+				ply.oldrole = loadout[ "role" ]
+			end
+			if loadout[ "pattachments" ] and loadout[ "primary" ] then
+				ply.oldpatt = loadout[ "pattachments" ]
+			end
+			if loadout[ "sattachments" ] and loadout[ "secondary" ] then
+				ply.oldsatt = loadout[ "sattachments" ]
+			end
+		end
+		GiveLoadout( ply )
+	end )
+
+	function GiveLoadout( ply )
+		if GetGlobalBool( "RoundInProgress" ) or !GetGlobalBool( "GameInProgress" ) then return end
+
 		--This COULD be a table and a for statement... but meh...
+		print( "Removing ", ply:GetAmmoCount( "cw_kk_ins2_nade_m18" ), " ammo from cw_kk_ins2_nade_m18." )
+		print( "Removing ", ply:GetAmmoCount( "cw_kk_ins2_nade_m67" ), " ammo from cw_kk_ins2_nade_m67." )
+		print( "Removing ", ply:GetAmmoCount( "cw_kk_ins2_nade_m84" ), " ammo from cw_kk_ins2_nade_m84." )
+		print( "Removing ", ply:GetAmmoCount( "cw_kk_ins2_nade_c4" ), " ammo from cw_kk_ins2_nade_c4." )
+		print( "Removing ", ply:GetAmmoCount( "cw_kk_ins2_nade_ied" ), " ammo from cw_kk_ins2_nade_ied." )
+
 		ply:RemoveAmmo( ply:GetAmmoCount( "cw_kk_ins2_nade_m18" ), "cw_kk_ins2_nade_m18" )
 		ply:RemoveAmmo( ply:GetAmmoCount( "cw_kk_ins2_nade_m67" ), "cw_kk_ins2_nade_m67" )
 		ply:RemoveAmmo( ply:GetAmmoCount( "cw_kk_ins2_nade_m84" ), "cw_kk_ins2_nade_m84" )
 		ply:RemoveAmmo( ply:GetAmmoCount( "cw_kk_ins2_nade_c4" ),  "cw_kk_ins2_nade_c4" )
 		ply:RemoveAmmo( ply:GetAmmoCount( "cw_kk_ins2_nade_ied" ), "cw_kk_ins2_nade_ied" )
-		teamnumber = ply:Team()
 
-		if loadout then
-			--TO-DO: check for client consistency between what's given and ACTUAL unlocked attachments
-			if loadout[ "primary" ] then
-				ply:Give( loadout[ "primary" ] )
-				ply.oldprim = loadout[ "primary" ]
-
-			end
-			if loadout[ "secondary" ] then
-				ply:Give( loadout[ "secondary" ] )
-				ply.oldsec = loadout[ "secondary" ]
-			end
-			if loadout[ "equipment" ] then
-				ply:Give( loadout[ "equipment" ] )
-				ply.oldeq = loadout[ "equipment" ]
-			end
-			if loadout[ "role" ] then
-				ply.oldrole = loadout[ "role" ]
-				ply:SetNWString( "role", ply.oldrole )
-			end
-			if loadout[ "pattachments" ] and loadout[ "primary" ] then
-				timer.Simple( 0.3, function()
-					for k, v in pairs( loadout[ "pattachments" ] ) do
-						ply:GetWeapon( loadout[ "primary" ] ):attachSpecificAttachment( v )
-						if v == "kk_ins2_gl_gp25" or v == "kk_ins2_gl_m203" then 
-							give40mm = true 
-						end
-					end
-				end )
-				ply.oldpatt = loadout[ "pattachments" ]
-			end
-			if loadout[ "sattachments" ] and loadout[ "secondary" ] then
-				timer.Simple( 0.3, function()
-					for k, v in pairs( loadout[ "sattachments" ] ) do
-						ply:GetWeapon( loadout[ "secondary" ] ):attachSpecificAttachment( v, k, false )
-					end
-				end )
-				ply.oldsatt = loadout[ "sattachments" ]
-			end
-		end
-
-		if teamnumber == 1 then
-			ply:Give( "cw_kk_ins2_mel_gurkha" )
-		elseif teamnumber == 2 then
-			ply:Give( "cw_kk_ins2_mel_bayonet" )
-		else
-			randomtable = { "cw_kk_ins2_mel_gurkha", "cw_kk_ins2_mel_bayonet" }
-			ply:Give( table.Random( randomtable ) )
-		end
-		
-		--//Give ammo here
-		local ammoneeded = {
-			[ "cw_kk_ins2_nade_m18" ] = 2,
-			[ "cw_kk_ins2_nade_m67" ] = 2,
-			[ "cw_kk_ins2_nade_f1" ] = 2,
-			[ "cw_kk_ins2_rpg" ] = 1,
-			[ "cw_kk_ins2_nade_m84" ] = 2,
-			[ "cw_kk_ins2_gp25" ] = 3,
-			[ "cw_kk_ins2_p2a1" ] = 2,
-			[ "cw_kk_ins2_nade_c4" ] = 1,
-			[ "cw_kk_ins2_at4" ] = 1,
-			[ "cw_kk_ins2_nade_ied" ] = 1
-		}
-		local previouslyremoved = { }
-		timer.Simple( 0.25, function()
-			if ply:IsPlayer() then
-				for k, v in pairs( ply:GetWeapons() ) do
-					local x = v:GetPrimaryAmmoType()
-					local y = v:Clip1()
-					if !table.HasValue( previouslyremoved, x ) then
-						ply:RemoveAmmo( ply:GetAmmoCount( x ), x )
-						table.insert( previouslyremoved, x )
-					end
-					if ammoneeded[ v:GetClass() ] then
-						ply:GiveAmmo( ammoneeded[ v:GetClass() ], x, true )
-					else
-						ply:GiveAmmo( ( y * 5 ), x, true )
-					end
-				end	
-				ply:RemoveAmmo( ply:GetAmmoCount( "40MM" ), "40MM" )
-				if give40mm then
-					ply:GiveAmmo( 2, "40MM", true )
-				end
-			end
-		end )
-	end )
-
-	function GiveOldLoadout( ply )
+		local attachmentequipdelay = 0.3
+		local give40mm = false
 		ply:StripWeapons()
 		if ply.oldprim then
 			ply:Give( ply.oldprim )
@@ -263,16 +206,17 @@ if SERVER then
 			ply:SetNWString( "role", ply.oldrole )
 		end
 		if ply.oldpatt and ply.oldprim then
-			print( "The player has attachments to equip..." )
-			timer.Simple( 0.3, function()
+			timer.Simple( attachmentequipdelay, function()
 				for k, v in pairs( ply.oldpatt ) do
-					print( v )
 					ply:GetWeapon( ply.oldprim ):attachSpecificAttachment( v )
+					if v == "kk_ins2_gl_gp25" or v == "kk_ins2_gl_m203" then 
+						give40mm = true 
+					end
 				end
 			end )
 		end
 		if ply.oldsatt and ply.oldsec then
-			timer.Simple( 0.3, function()
+			timer.Simple( attachmentequipdelay, function()
 				for k, v in pairs( ply.oldsatt ) do
 					ply:GetWeapon( ply.oldsec ):attachSpecificAttachment( v )
 				end
@@ -284,25 +228,26 @@ if SERVER then
 		elseif teamnumber == 2 then
 			ply:Give( "cw_kk_ins2_mel_bayonet" )
 		else
-			randomtable = { "cw_kk_ins2_mel_gurkha", "cw_kk_ins2_mel_bayonet" }
-			ply:Give( table.Random( randomtable ) )
+			ply:Give( table.Random( { "cw_kk_ins2_mel_gurkha", "cw_kk_ins2_mel_bayonet" } ) )
 		end
 
 		--//Give ammo here
 		local ammoneeded = {
+			--//This is how many the player gets
 			[ "cw_kk_ins2_nade_m18" ] = 2,
 			[ "cw_kk_ins2_nade_m67" ] = 2,
 			[ "cw_kk_ins2_nade_f1" ] = 2,
-			[ "cw_kk_ins2_rpg" ] = 1,
 			[ "cw_kk_ins2_nade_m84" ] = 2,
+			[ "cw_kk_ins2_nade_c4" ] = 1,
+			[ "cw_kk_ins2_nade_ied" ] = 1,
+			--//This is how many EXTRA the player gets (so 1 + whatever's down below)
+			[ "cw_kk_ins2_rpg" ] = 1,
 			[ "cw_kk_ins2_gp25" ] = 3,
 			[ "cw_kk_ins2_p2a1" ] = 2,
-			[ "cw_kk_ins2_nade_c4" ] = 1,
-			[ "cw_kk_ins2_at4" ] = 1,
-			[ "cw_kk_ins2_nade_ied" ] = 1
+			[ "cw_kk_ins2_at4" ] = 1
 		}
 		local previouslyremoved = { }
-		timer.Simple( 0.25, function()
+		timer.Simple( attachmentequipdelay - 0.05, function()
 			if ply:IsPlayer() then
 				for k, v in pairs( ply:GetWeapons() ) do
 					local x = v:GetPrimaryAmmoType()
@@ -391,6 +336,23 @@ function CheckWeapons( ply )
 	end
 end]]
 
+util.AddNetworkString( "RequestLoadout" )
+util.AddNetworkString( "RequestLoadoutCallback" )
+
+net.Receive( "RequestLoadout", function( len, ply )
+	net.Start( "RequestLoadoutCallback" )
+		local loadout = {
+			[ "primary" ] = ply.oldprim,
+			[ "secondary" ] = ply.oldsec,
+			[ "equipment" ] = ply.oldeq,
+			[ "role" ] = ply.oldrole,
+			[ "pattachments" ] = ply.oldpatt,
+			[ "sattachments" ] = ply.oldsatt
+		}
+		net.WriteTable( loadout )
+	net.Send( ply )
+end )
+
 hook.Add( "PlayerButtonDown", "DropWeapons", function( ply, bind ) 
 	if bind == KEY_Q then
 		if not ply.CanCustomizeLoadout then
@@ -410,9 +372,9 @@ hook.Add( "PlayerDeath", "clearthings", function( ply )
 		--Normally, you'd want to check to ensure it's a CW2.0 weapon we're using CW2.0's weapon drop function for, but the function does it itself
 		CustomizableWeaponry:dropWeapon( ply, v ) 
 	end
-	ply.curprimary = nil
+	--[[ply.curprimary = nil
 	ply.cursecondary = nil
-	ply.curequipment = nil
+	ply.curequipment = nil]]
 end )
 
 return true

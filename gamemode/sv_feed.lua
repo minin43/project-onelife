@@ -127,3 +127,59 @@ hook.Add("PlayerHurt", "CalculateAssists", function(victim, attacker, x, dmg)
 		end
 	end
 end)
+
+--[[util.AddNetworkString( "KillFeed" )
+
+NOTICETYPES = {
+    KILL = "kill",
+    OBJ = "objective",
+    RND = "round",
+    MOD = "modifier",
+    LOGAN = "logan"
+}
+
+SCORECOUNTS = {
+    KILL = 20,
+    HEADSHOT = 10,
+    
+    ROUND_WON = 10,
+    ROUND_LOST = 5,
+    ROUND_TIED = 5
+
+    GAME_WON = 100,
+    GAME_TIED = 50,
+    GAME_LOST = 25
+}
+
+function AddNotice( ply, text, score, type )
+    --//ply is player getting the points, text is the text client shows in the box, score is the point amount ply receives, type is the modifier to text
+    net.Start( "KillFeed" )
+        net.WriteString( text )
+        net.WriteString( tostring( score ) )
+        net.WriteString( type )
+    net.Send( ply )
+    AddRewards( ply, score )
+end
+
+function AddRewards( ply, score )
+    lvl.AddEXP( ply, score )
+    AddMoney( ply, score )
+    ply:AddScore( score )
+end
+
+hook.Add( "PlayerDeath", "AddNotices", function( vic, inf, att )
+
+    --Standard validity checker
+    if !att:IsPlayer() || !att:IsValid() || !vic:IsValid() || att:GetActiveWeapon() == NULL || att:GetActiveWeapon() == NULL then
+        return
+    end
+    
+    --Standard kill notice
+    AddNotice( att, vic:Name(), SCORECOUNTS.KILL, NOTICETYPES.KILL )
+    
+    -- Headshot bonus
+    if vic:LastHitGroup() == HITGROUP_HEAD then
+        AddNotice( att, "HEADSHOT", SCORECOUNTS.HEADSHOT, NOTICETYPES.MOD )
+    end
+	
+end )]]

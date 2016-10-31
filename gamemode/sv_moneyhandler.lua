@@ -29,9 +29,11 @@ function AddMoney( ply, amt )
 	if ply and IsValid( ply ) then
 		local group = ply:GetNWString( "usergroup" )
 		local mult = 1
-		for k, v in next, lvl.VIPGroups do
-			if v[ 1 ] == group then
-				mult = v[ 2 ]
+		if amt > 0 then
+			for k, v in next, lvl.VIPGroups do
+				if v[ 1 ] == group then
+					mult = v[ 2 ]
+				end
 			end
 		end
 		ply:SetPData( "pol_money", GetMoney( ply ) + ( amt * mult) )
@@ -90,10 +92,3 @@ net.Receive( "BuyAttachment", function( len, ply )
 		net.Send( ply )
 	end )
 end )
-
---[[hook.Add( "PlayerDeath", "onelife_playerdeath_money", function( ply, _, att )
-	if ply:IsValid() and ply:IsPlayer() and att:IsValid() and att:IsPlayer() then
-		AddMoney( att, 100 )
-		att:AddScore( 100 )
-	end
-end )]]

@@ -56,6 +56,7 @@ end
 
 util.AddNetworkString( "tdm_loadout" )
 util.AddNetworkString( "tdm_deathnotice" )
+util.AddNetworkString( "SetTeam" )
 
 if not file.Exists( "onelife", "DATA" ) then
 	file.CreateDir( "onelife" )
@@ -112,6 +113,7 @@ function GM:ShowHelp( ply ) --F1
 end
 
 function GM:PlayerInitialSpawn( ply )
+	print( ply, " has spawned into the server!" )
 	if not file.Exists( "onelife/users/" .. id( ply:SteamID() ) .. ".txt", "DATA" ) then
 		file.Write( "onelife/users/" .. id( ply:SteamID() ) .. ".txt", util.TableToJSON( { ply:Name(), {} } ) )
 	else
@@ -124,6 +126,15 @@ function GM:PlayerInitialSpawn( ply )
 	if ply:IsBot() then
 		ply:SetTeam( 2 )
 		self.BaseClass:PlayerSpawn( ply )
+		if !GetGlobalBool( "GameInProgress" ) then
+			if file.Exists( "onelife/nextmode/mode.txt", "DATA" ) then
+				print( "Enough plays have joined, starting mode: ", file.Read( "onelife/nextmode/mode.txt", "DATA" ) )
+				StartGame( file.Read( "onelife/nextmode/mode.txt", "DATA" ) )
+			else
+				print( "No mode specified, starting Last Team Standing...")
+				StartGame( "lts" )
+			end
+		end
 		return
 	end
 
@@ -138,7 +149,10 @@ function GM:PlayerInitialSpawn( ply )
 	ply:ConCommand( "cw_laser_quality 1" )
 	ply:ConCommand( "cw_alternative_vm_pos 0" )
 
-	ply:SetTeam( team.BestAutoJoinTeam() )
+	net.Start( "SetTeam" )
+	net.Send( ply )
+
+	--ply:SetTeam( team.BestAutoJoinTeam() )
 	anyteammate = table.Random( team.GetPlayers( ply:Team() ) )
 	ply:SpectateEntity( anyteammate )
 	ply:Spectate( OBS_MODE_CHASE )
@@ -153,6 +167,7 @@ function GM:PlayerDisconnected( ply )
 	for k, v in pairs( player.GetAll() ) do
 		v:ChatPrint( "Player " .. ply:Nick() .. " has disconnected (" .. ply:SteamID() .. ")." )
 	end
+	DeadTeamCheck( ply )
 end
 
 --[[function GM:PlayerDeathThink( ply )
@@ -170,6 +185,7 @@ load = load or {} -- load[
 preload = preload or {} -- preload[
 
 function changeTeam( ply, cmd, args )
+
 	local t = tonumber( args[1] )
 	
 	if( t ~= 0 and t ~= 1 and t ~= 2 ) then
@@ -184,10 +200,21 @@ function changeTeam( ply, cmd, args )
 	
 	ply:Spectate( OBS_MODE_NONE )
 	ply:SetTeam( t )
+
+	if !GetGlobalBool( "GameInProgress" ) then
+		if file.Exists( "onelife/nextmode/mode.txt", "DATA" ) then
+			print( "Enough plays have joined, starting mode: ", file.Read( "onelife/nextmode/mode.txt", "DATA" ) )
+			StartGame( file.Read( "onelife/nextmode/mode.txt", "DATA" ) )
+		else
+			print( "No mode specified, starting Last Team Standing...")
+			StartGame( "lts" )
+		end
+		return
+	end
 end
 
 
-concommand.Add( "tdm_setteam", changeTeam )
+concommand.Add( "pol_setteam", changeTeam )
 
 local function GetValid()
 	local validEnts = {}
@@ -336,16 +363,7 @@ end )
 
 
 function GM:PlayerSpawn( ply )
-	if !GetGlobalBool( "GameInProgress" ) then
-		if file.Exists( "onelife/nextmode/mode.txt", "DATA" ) then
-			print( "Enough plays have joined, starting mode: ", file.Read( "onelife/nextmode/mode.txt", "DATA" ) )
-			StartGame( file.Read( "onelife/nextmode/mode.txt", "DATA" ) )
-		else
-			print( "No mode specified, starting Last Team Standing...")
-			StartGame( "lts" )
-		end
-		return false
-	end
+	print( ply:Nick(), " has spawned!" )
 
 	util.AddNetworkString( "InitialUnlock" )
 	local list = util.JSONToTable( file.Read( "onelife/users/" .. id( ply:SteamID() ) .. ".txt", "DATA" ) )
@@ -353,7 +371,8 @@ function GM:PlayerSpawn( ply )
 	    net.WriteTable( list[ 2 ] )
 	net.Send( ply )
 
-	if( ply:Team() == 0 ) then --or !GetGlobalBool( "RoundInProgress" ) then
+	if ply:Team() != 1 and ply:Team() != 2 and ply:Team() != 3 then --or !GetGlobalBool( "RoundInProgress" ) then
+		print( ply, " is on team: " .. ply:Team() .. ", disallowing spawn..." )
 		ply:Spectate( OBS_MODE_IN_EYE )
 		SetupSpectator( ply )
 		return
@@ -379,9 +398,9 @@ function GM:PlayerSpawn( ply )
 		}
 		
     if ply:Team() == 1 then
-		ply:SetModel(table.Random(redmodels))
+		ply:SetModel( table.Random( redmodels ) )
 	elseif ply:Team() == 2 then
-		ply:SetModel(table.Random(bluemodels))
+		ply:SetModel (table.Random( bluemodels ) )
 	end
 
 	ply:SetJumpPower( 170 ) -- CTDM value was 170

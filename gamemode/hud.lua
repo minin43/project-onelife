@@ -73,38 +73,72 @@ function hidehud( name )
 end
 hook.Add( "HUDShouldDraw", "hidehud", hidehud )
 
-hook.Add( "RoundPrepStart", "RoundStartMusic", function( round )
-	print( "RoundPrepStart called" )
-	--What's a good start time for the music? Some if it's 7 seconds, some of it's 15... maybe run it through a table?
-	timer.Simple( 15, function()
+local musictimes = {
+	[ "Militia_gamelost" ] = 9,
+	[ "Militia_gamewon" ] = 13,
+	[ "Militia_roundstart" ] = 12,
+
+	[ "Navy Seals_gamelost" ] = 17,
+	[ "Navy Seals_gamewon" ] = 11,
+	[ "Navy Seals_roundstart" ] = 13,
+	
+	[ "OpFor_gamelost" ] = 9,
+	[ "OpFor_gamewon" ] = 20,
+	[ "OpFor_roundstart" ] = 14,
+	
+	[ "Spetsnaz_gamelost" ] = 21,
+	[ "Spetsnaz_gamewon" ] = 13,
+	[ "Spetsnaz_roundstart" ] = 15,
+	
+	[ "Task Force 141_gamelost" ] = 22,
+	[ "Task Force 141_gamewon" ] = 10,
+	[ "Task Force 141_roundstart" ] = 12,
+	
+	[ "US Army Rangers_gamelost" ] = 16,
+	[ "US Army Rangers_gamewon" ] = 16,
+	[ "US Army Rangers_roundstart" ] = 15
+}
+
+local typeannouncement = {
+	--// [ "gametype" ] = "round start sound based on game type"
+	[ "lts" ] = "roundstart",
+	[ "moretocome" ] = "tdm"
+}
+
+net.Receive( "RoundPrepStart", function( len, ply )
+	local round = tonumber( net.ReadString() )
+	timer.Simple( 30 - musictimes[ team.GetName( LocalPlayer():Team() ) .. "_roundstart" ], function()
 		surface.PlaySound( "music/" .. team.GetName( LocalPlayer():Team() ) .. "_roundstart.mp3" )
 	end )
-	--//This could be thrown into the RoundStart hook - check and see which I should do
 	timer.Simple( 30, function()
-		surface.PlaySound( "dialogue/" .. team.GetName( LocalPlayer():Team() ) .. "_roundstart.mp3" )
+		surface.PlaySound( "dialogue/" .. team.GetName( LocalPlayer():Team() ) .. "_roundstart.wav" )
 	end )
 end )
 
-hook.Add( "RoundEnd", "RoundEndMusic", function( victor, leader )
-	print( "RoundEnd called" )
+net.Receive( "RoundEnd", function( len, ply )
+	local victor = tonumber( net.ReadString() )
+	local leader = tonumber( net.ReadString() )
 	local result
 	if victor == LocalPlayer():Team() then result = "roundwon" else result = "roundlost" end
-	--This might need to be a general "next round" music piece
-	surface.PlaySound( "music/" .. team.GetName( LocalPlayer():Team() ) .. "_" .. result .. ".mp3" )
-	--The time might also need to be changed, and may also need to be run through a table
-	timer.Simple( 5, function()
-		surface.PlaySound( "dialogue/" .. team.GetName( LocalPlayer():Team() ) .. "_" .. result .. ".mp3" )
+	timer.Simple( 2, function()
+		surface.PlaySound( "dialogue/" .. team.GetName( LocalPlayer():Team() ) .. "_" .. result .. ".wav" )
 	end )
 end )
 
-hook.Add( "GameEnd", "GameEndMusic", function( victor )
-	print( "GameEnd called" )
+net.Receive( "GameEnd", function( len, ply )
+	local victor = tonumber( net.ReadString() )
 	local result
 	if victor == LocalPlayer():Team() then result = "gamewon" else result = "gamelost" end
 	--This might need to be a general "next round" music piece
 	surface.PlaySound( "music/" .. team.GetName( LocalPlayer():Team() ) .. "_" .. result .. ".mp3" )
 	timer.Simple( 5, function()
-		surface.PlaySound( "dialogue/" .. team.GetName( LocalPlayer():Team() ) .. "_" .. result .. ".mp3" )
+		surface.PlaySound( "dialogue/" .. team.GetName( LocalPlayer():Team() ) .. "_" .. result .. math.random( 1, 3 ) .. ".wav" )
+	end )
+end )
+
+net.Receive( "LastAlive", function( len, ply )
+	timer.Simple( 2, function()
+		surface.PlaySound( "dialogue/" .. team.GetName( LocalPlayer():Team() ) .. "_" .. "lastalive" .. math.random( 1, 5 ) .. ".wav" )
 	end )
 end )
 
@@ -148,34 +182,146 @@ usermessage.Hook( "endmusic", function()
 	print( GetGlobalInt( "RoundWinner" ) )
 end )]]
 
+net.Receive( "SetTeam", function( len, ply )
+	--if LocalPlayer():Team() != 1 or LocalPlayer():Team() != 2 or LocalPlayer():Team() != 3 then
+	local hoverone, hovertwo
+
+	local teamset = vgui.Create( "DFrame" )
+	teamset:SetSize( ScrW(), 500 )
+	teamset:SetPos( 0, ScrH() / 5 )
+	teamset:SetTitle( "" )
+	teamset:SetVisible( true )
+	teamset:SetDraggable( false )
+	teamset:ShowCloseButton( false )
+	teamset:MakePopup()
+	teamset.Paint = function()
+		if !teamset then return end
+		surface.SetDrawColor( 0, 0, 0, 200 )
+		surface.DrawRect( 0, 0, teamset:GetWide(), teamset:GetTall() )
+	end
+
+	local teamone = vgui.Create( "DButton", teamset )
+	teamone:SetSize( teamset:GetWide() / 3, teamset:GetTall() )
+	teamone:SetPos( 0, 0 )
+	teamone:SetText( "" )
+	teamone.Paint = function()
+		if !teamset then return end
+		surface.SetDrawColor( 100, 15, 15, 100 )
+		surface.DrawRect( 0, 0, teamone:GetWide(), teamone:GetTall() )
+		draw.DrawText( "Click to join:", "Exo 2 Large", teamone:GetWide() / 2, teamone:GetTall() / 7 - 10, Color( 255, 255, 255, 255 ), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER )
+		draw.DrawText( team.GetName( 1 ), "Exo 2 Large", teamone:GetWide() / 2, teamone:GetTall() / 5, Color( 255, 255, 255, 255 ), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER )
+		surface.SetMaterial( Material( "hud/icons/icon_" .. team.GetName( 1 ) .. ".png" ) )
+		surface.SetDrawColor( 255, 255, 255, 255 )
+		--surface.DrawTexturedRect( teamone:GetWide() / 2 - 185, teamone:GetTall() / 2 - 125, 270, 250 )
+
+		if hoverone then
+
+		end
+	end
+	teamone.OnCursorEntered = function()
+		hoverone = true
+	end
+	teamone.OnCursorExited = function()
+		hoverone = false
+	end
+	teamone.DoClick = function()
+		surface.PlaySound( "buttons/button22.wav" )
+		RunConsoleCommand( "pol_setteam", 1 )
+		teamset:Close()
+		teamset = nil
+	end
+
+	local teamtwo = vgui.Create( "DButton", teamset )
+	teamtwo:SetSize( teamset:GetWide() / 3, teamset:GetTall() )
+	teamtwo:SetPos( teamset:GetWide() / 3 * 2, 0 )
+	teamtwo:SetText( "" )
+	teamtwo.Paint = function()
+		if !teamset then return end
+		surface.SetDrawColor( 33, 150, 243, 100 )
+		surface.DrawRect( 0, 0, teamtwo:GetWide(), teamtwo:GetTall() )
+		draw.DrawText( "Click to join:", "Exo 2 Large", teamtwo:GetWide() / 2, teamtwo:GetTall() / 7 - 10, Color( 255, 255, 255, 255 ), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER )
+		draw.DrawText( team.GetName( 2 ), "Exo 2 Large", teamtwo:GetWide() / 2, teamtwo:GetTall() / 5, Color( 255, 255, 255, 255 ), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER )
+		surface.SetMaterial( Material( "hud/icons/icon_" .. team.GetName( 2 ) .. ".png" ) )
+		surface.SetDrawColor( 255, 255, 255, 255 )
+		--surface.DrawTexturedRect( 0, 0, teamtwo:GetWide() / 2, teamtwo:GetTall() / 2 )
+	end
+	teamtwo.OnCursorEntered = function()
+		hoverone = true
+	end
+	teamtwo.OnCursorExited = function()
+		hoverone = false
+	end
+	teamtwo.DoClick = function()
+		surface.PlaySound( "buttons/button22.wav" )
+		RunConsoleCommand( "pol_setteam", 2 )
+		teamset:Close()
+		teamset = nil
+	end
+
+end )
 
 --Stolen from Zet0r
 local blood_overlay = Material("hud/damageoverlay.png", "unlitgeneric smooth")
 local bloodpulse = true
 local pulse = 0
 
+local badtimes = { [ 0 ] = "00", "01", "02", "03", "04", "05", "06", "07", "08", "09" }
+local usedseconds
+
+--//DermaDefault vs Exo 2
 hook.Add( "HUDPaint", "hud_main", function()
 
+	local teamnumber = LocalPlayer():Team()
+	local MyTeamColor, EnemyTeamColor, MyTeamScore, EnemyTeamScore
+	if teamnumber == 0 then --???
+		MyTeamColor = Color( 255, 255, 255 )
+		EnemyTeamColor = Color( 255, 255, 255 )
+	elseif teamnumber == 1 then --red
+		MyTeamColor = Color( 100, 15, 15, 100 )
+		EnemyTeamColor = Color( 33, 150, 243, 100 )
+		MyTeamScore = GetGlobalInt( "RedTeamWins" )
+		EnemyTeamScore = GetGlobalInt( "BlueTeamWins" ) 
+	elseif teamnumber == 2 then --blue
+		MyTeamColor = Color( 33, 150, 243, 100 )
+		EnemyTeamColor = Color( 100, 15, 15, 100 )
+		MyTeamScore = GetGlobalInt( "BlueTeamWins" )
+		EnemyTeamScore = GetGlobalInt( "RedTeamWins" )
+    elseif teamnumber == 3 then --black/FFA
+        MyTeamColor = Color( 15, 160, 15 )
+		EnemyTeamColor = Color( 15, 160, 15 )
+		--MyTeamScore = GetGlobalInt( "PersonalWins" ) EnemyTeamScore = GetGlobalInt( "TopEnemyWins" )
+	end
+
+	--//Center Time Rectangle
 	timeleft = string.FormattedTime( tostring( GetGlobalInt( "RoundTime" ) ) )
 	surface.SetDrawColor( 0, 0, 0, 200 )
 	surface.DrawRect( ScrW() / 2 - 24, 2, 48, 21 )
-	draw.SimpleText( timeleft.m .. ":" .. timeleft.s, "Exo 2 Regular", ScrW() / 2, 12, Color( 255, 255, 255 ), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER )
+	if badtimes[ timeleft.s ] then usedseconds = badtimes[ timeleft.s ] else usedseconds = timeleft.s end
+	draw.SimpleText( timeleft.m .. ":" .. usedseconds, "DermaDefaultBold", ScrW() / 2, 12, Color( 255, 255, 255 ), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER )
+	--//My Team's Score Rectangle
+	surface.SetDrawColor( MyTeamColor )
+	surface.DrawRect( ScrW() / 2 - 48, 2, 24, 21 )
+	draw.SimpleText( MyTeamScore, "DermaDefaultBold", ScrW() / 2 - 36, 12,  Color( 255, 255, 255 ), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER )
+	--//Enemy's Score Rectangle
+	surface.SetDrawColor( EnemyTeamColor )
+	surface.DrawRect( ScrW() / 2 + 24, 2, 24, 21 )
+	draw.SimpleText( EnemyTeamScore, "DermaDefaultBold", ScrW() / 2 + 36, 12,  Color( 255, 255, 255 ), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER )
 
-	if !LocalPlayer():Alive() then return end
-
-	surface.SetFont( "Exo 2 Regular" )
-	gminfo = "Project: OneLife | WORK IN PROGRESS | Build# 102616"
+	surface.SetFont( "DermaDefaultBold" )
+	gminfo = "Project: OneLife | WORK IN PROGRESS | Build# 102816"
 	local num = surface.GetTextSize( gminfo )
 	surface.SetDrawColor( 50, 50, 50, 200 )
-	surface.DrawRect( 30, 30, num + 4, 22 )
+	surface.DrawRect( 30, 30, num + 4, 20 )
 	surface.SetTextColor( 255, 255, 255 )
 	surface.SetTextPos( 32, 32 )
 	surface.DrawText( gminfo )
 
+	if !LocalPlayer():Alive() then return end
+
 	local fade = (math.Clamp(LocalPlayer():Health()/LocalPlayer():GetMaxHealth(), 0.2, 0.5)-0.2)/0.3
 	local fade2 = 1 - math.Clamp(LocalPlayer():Health()/LocalPlayer():GetMaxHealth(), 0, 0.5)/0.5
 	
-	--[[surface.SetMaterial(blood_overlay)
+	surface.SetMaterial(blood_overlay)
 	surface.SetDrawColor(255,255,255,255-fade*255)
 	surface.DrawTexturedRect( -10, -10, ScrW()+20, ScrH()+20)
 		
@@ -189,7 +335,7 @@ hook.Add( "HUDPaint", "hud_main", function()
 		end
 		surface.SetDrawColor(255,255,255,pulse*fade2)
 		surface.DrawTexturedRect( -10, -10, ScrW()+20, ScrH()+20)
-	end]]
+	end
 
 	if LP():Alive() and LP():Team() ~= 0 then
 		if LP():Health() < (LP():GetMaxHealth() * 0.3) and LP():Health() > (LP():GetMaxHealth() * 0.2) then
@@ -271,8 +417,8 @@ net.Receive( "StartGMVote", function()
 	mainframe:SetVisible( true )
 	mainframe:SetDraggable( false )
 	mainframe:ShowCloseButton( false )
-	mainframe:MakePopup()
-	mainframe:SetMouseInputEnabled( false )
+	--mainframe:MakePopup()
+	--mainframe:SetMouseInputEnabled( false )
 	mainframe.Paint = function()
 		draw.RoundedBox( 1, 0, 0, mainframe:GetWide(), mainframe:GetTall(), Color( 10, 10, 10, 230 ) )
 		draw.DrawText( "Vote for a game type...", "Vote Larger", 2, 2 )
@@ -282,13 +428,13 @@ net.Receive( "StartGMVote", function()
 		end
 		if selectedoption then
 			surface.SetDrawColor( 255, 255, 255 )
-			surface.DrawOutlinedRect( 0, 39 * ( selectedoption - 1 ) + 2 + 22, mainframe:GetWide(), 39 * ( selectedoption - 1 ) + 2 + 22 + 15 )
+			surface.DrawOutlinedRect( 0, 39 * ( selectedoption - 1 ) + 2 + 22, mainframe:GetWide(), 39 )
 		end
 	end
 	local keyenums = { KEY_1, KEY_2, KEY_3, KEY_4, KEY_5, KEY_6, KEY_7, KEY_8, KEY_9 }
 	mainframe.Think = function()
 		if selectedoption then 
-			mainframe:SetKeyboardInputEnabled( false )
+			--mainframe:SetKeyboardInputEnabled( false )
 			return 
 		end
 		for k, v in pairs( keyenums ) do
@@ -317,9 +463,9 @@ net.Receive( "StartGMVote", function()
 		winnerframe:SetVisible( true )
 		winnerframe:SetDraggable( false )
 		winnerframe:ShowCloseButton( false )
-		winnerframe:MakePopup()
-		winnerframe:SetMouseInputEnabled( false )
-		winnerframe:SetKeyboardInputEnabled( false )
+		--winnerframe:MakePopup()
+		--winnerframe:SetMouseInputEnabled( false )
+		--winnerframe:SetKeyboardInputEnabled( false )
 		winnerframe.Paint = function()
 			draw.RoundedBox( 1, 0, 0, winnerframe:GetWide(), winnerframe:GetTall(), Color( 10, 10, 10, 230 ) )
 			draw.DrawText( "The winning mode is: ", "Vote Larger", 4, 4 )
@@ -343,8 +489,8 @@ net.Receive( "StartMapVote", function()
 	mainframe2:SetVisible( true )
 	mainframe2:SetDraggable( false )
 	mainframe2:ShowCloseButton( false )
-	mainframe2:MakePopup()
-	mainframe2:SetMouseInputEnabled( false )
+	--mainframe2:MakePopup()
+	--mainframe2:SetMouseInputEnabled( false )
 	mainframe2.Paint = function()
 		draw.RoundedBox( 1, 0, 0, mainframe2:GetWide(), mainframe2:GetTall(), Color( 10, 10, 10, 230 ) )
 		draw.DrawText( "Vote for a map...", "Vote Larger", 2, 2 )
@@ -353,13 +499,13 @@ net.Receive( "StartMapVote", function()
 		end
 		if selectedoption then
 			surface.SetDrawColor( 255, 255, 255 )
-			surface.DrawOutlinedRect( 0, 17 * ( selectedoption - 1 ) + 2 + 22, mainframe2:GetWide(), 17 * ( selectedoption - 1 ) + 15 )
+			surface.DrawOutlinedRect( 0, 17 * ( selectedoption - 1 ) + 2 + 22, mainframe2:GetWide(), 15 )
 		end
 	end
 	local keyenums = { KEY_1, KEY_2, KEY_3, KEY_4, KEY_5, KEY_6, KEY_7, KEY_8, KEY_9 }
 	mainframe2.Think = function()
 		if selectedoption then 
-			mainframe2:SetKeyboardInputEnabled( false )
+			--mainframe2:SetKeyboardInputEnabled( false )
 			return 
 		end
 		for k, v in pairs( keyenums ) do
@@ -385,13 +531,13 @@ net.Receive( "StartMapVote", function()
 		winnerframe2:SetVisible( true )
 		winnerframe2:SetDraggable( false )
 		winnerframe2:ShowCloseButton( false )
-		winnerframe2:MakePopup()
-		winnerframe2:SetMouseInputEnabled( false )
-		winnerframe2:SetKeyboardInputEnabled( false )
+		--winnerframe2:MakePopup()
+		--winnerframe2:SetMouseInputEnabled( false )
+		--winnerframe2:SetKeyboardInputEnabled( false )
 		winnerframe2.Paint = function()
 			draw.RoundedBox( 1, 0, 0, winnerframe2:GetWide(), winnerframe2:GetTall(), Color( 10, 10, 10, 230 ) )
 			draw.DrawText( "The winning map is: ", "Vote Larger", 4, 4 )
-			draw.DrawText( winner, "Vote Huge", 12, 28 )
+			draw.DrawText( winner, "Vote Larger", 12, 28 )
 		end
 		mainframe2:MoveTo( -201, 100 + winnerframe:GetTall() + 2, 2 )
 		timer.Simple( 2.1, function()

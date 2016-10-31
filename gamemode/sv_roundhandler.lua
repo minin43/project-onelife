@@ -1,10 +1,10 @@
 modes = {
     --//ROUNDS = ROUNDS NEEDED FOR GAME VICTORY, ROUNTIME = TOTAL ALOTTMENT OF TIME FOR A GIVEN ROUND, 
     [ "lts" ] = { --Last Team Standing, your basic one-life team-deathmatch
-        [ "Rounds" ] = 7,
+        [ "Rounds" ] = 5,
         [ "RoundTime" ] = 180,
     },
-    [ "cache" ] = { --Destroy Red's weapon cache, attack/defense based mode
+    [ "cache" ] = { --Weapon Cache. destroy Red's weapon cache, attack/defense based mode
         [ "Rounds" ] = 5,
         [ "RoundTime" ] = 240,
     },
@@ -17,13 +17,20 @@ modes = {
         [ "Rounds" ] = 5,
         [ "RoundTime" ] = 240,
     },
-    [ "dicks" ] = {
-        --[]
+    [ "hq" ] = { --Headquarters, dual Weapon Cache, where you must both defend and attack
+        [ "Rounds" ] = 3,
+        [ "RoundTime" ] = 300,
     },
     [ "tits" ] = {
         --[]
     }
 }
+
+util.AddNetworkString( "GameStart" )
+util.AddNetworkString( "RoundPrepStart" )
+util.AddNetworkString( "RoundStart" )
+util.AddNetworkString( "RoundEnd" )
+util.AddNetworkString( "GameEnd" )
 
 function StartGame( mode )
     if !modes[ mode ] then
@@ -42,6 +49,9 @@ function StartGame( mode )
     SetGlobalBool( "TeamThree", modes[ mode ][ "TeamThree" ] )
     StartRound( 1 )
     hook.Call( "GameStart", nil, mode )
+    net.Start( "GameStart" )
+        net.WriteString( mode )
+    net.Broadcast()
 end
 
 function StartRound( round )
@@ -74,7 +84,7 @@ function RoundPrep( round )
         v:Spawn()
 	    v:Freeze( true )
         --//Found in sh_loadoutmenu//--
-        GiveOldLoadout( v )
+        GiveLoadout( v )
         print( "Spawning and locking: ", v )
     end
     
@@ -83,6 +93,9 @@ function RoundPrep( round )
         RoundBegin( round )
     end)
     hook.Call( "RoundPrepStart", nil, round )
+    net.Start( "RoundPrepStart" )
+        net.WriteString( tostring( round ) )
+    net.Broadcast()
 end 
 
 --Game starting, player movement freed
@@ -103,8 +116,12 @@ function RoundBegin( round )
     for k, v in pairs( player.GetAll() ) do
 	    v:Freeze( false )
         print( "Unlocking: ", v )
+        v.alreadysent = false
     end
     hook.Call( "RoundStart", nil, round )
+    net.Start( "RoundStart" )
+        net.WriteString( tostring( round ) )
+    net.Broadcast()
 end
 
 --Game finishes, restart round if needed and deliver rewards
@@ -118,10 +135,22 @@ function RoundEnd( round, roundvictor )
         SetGlobalInt( "RedTeamWins", GetGlobalInt( "RedTeamWins" ) + 1 )
         winnername = Team( 1 )[ "Name" ]
         winnercolor = Color( 100, 15, 15 )
+        for k, v in pairs( team.GetPlayers( 1 ) ) do
+            --AddNotice( v, "ROUND WON", SCORECOUNTS.ROUND_WON, NOTICETYPES.RND )
+        end
+        for k, v in pairs( team.GetPlayers( 2 ) ) do
+            --AddNotice( v, "ROUND LOST", SCORECOUNTS.ROUND_LOST, NOTICETYPES.RND )
+        end
     elseif roundvictor == 2 then
         SetGlobalInt( "BlueTeamWins", GetGlobalInt( "BlueTeamWins" ) + 1 )
         winnername = Team( 2 )[ "Name" ]
         winnercolor = Color( 30, 80, 180 )
+        for k, v in pairs( team.GetPlayers( 1 ) ) do
+            --AddNotice( v, "ROUND LOST", SCORECOUNTS.ROUND_LOST, NOTICETYPES.RND )
+        end
+        for k, v in pairs( team.GetPlayers( 2 ) ) do
+            --AddNotice( v, "ROUND WON", SCORECOUNTS.ROUND_WON, NOTICETYPES.RND )
+        end
     end
     ULib.tsayColor( nil, true, winnercolor, winnername, Color( 255, 255, 255 ), " has won round " .. round .. "." )
 
@@ -132,6 +161,17 @@ function RoundEnd( round, roundvictor )
         SetGlobalBool( "RoundInProgress", false )
         SetGlobalInt( "RoundTime", 0 ) 
         hook.Call( "GameEnd", nil, roundvictor )
+        net.Start( "GameEnd" )
+            net.WriteString( tostring( roundvictor ) )
+        net.Broadcast()
+        ULib.tsayColor( nil, true, winnercolor, winnername, Color( 255, 255, 255 ), " has won the game." )
+        for k, v in pairs( team.GetPlayers( roundvictor ) ) do
+            --AddNotice( v, "GAME WON", SCORECOUNTS.GAME_WON, NOTICETYPES.RND )
+        end
+        if roundvictor == 1 then losingteam = 2 elseif roundvictor == 2 then losingteam = 1 end
+        for k, v in pairs( team.GetPlayers( losingteam ) ) do
+            --AddNotice( v, "GAME LOST", SCORECOUNTS.GAME_LOST, NOTICETYPES.RND )
+        end
     else
         SetGlobalBool( "RoundInProgress", false )
         print( "Nobody's won the game yet." )
@@ -141,6 +181,10 @@ function RoundEnd( round, roundvictor )
         local leadingteam
         if GetGlobalInt( "RedTeamWins" ) > GetGlobalInt( "BlueTeamWins" ) then leadingteam = 1 elseif GetGlobalInt( "BlueTeamWins" ) > GetGlobalInt( "RedTeamWins" ) then leadingteam = 2 else leadingteam = 0 end
         hook.Call( "RoundEnd", nil, round, roundvictor, leadingteam )
+        net.Start( "RoundEnd" )
+            net.WriteString( tostring( roundvictor ) )
+            net.WriteString( tostring( leadingteam ) )
+        net.Broadcast()
     end
 end 
 

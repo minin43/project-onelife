@@ -37,24 +37,7 @@ surface.CreateFont( "NameBG", { font = "Exo 2", size = 24, blursize = 2 } )
 surface.CreateFont( "Level", { font = "Exo 2", size = 18 } )
 surface.CreateFont( "LevelBG", { font = "Exo 2", size = 18, blursize = 2 } )
 
-surface.CreateFont( "UT3", { font = "Unreal Tournament", size = 125, antialias = false, shadow = false, outline = true } )
-surface.CreateFont( "UT3-Back", { font = "Unreal Tournament", size = 128, antialias = false, shadow = false, outline = true } )
-surface.CreateFont( "UT3-Small", { font = "Unreal Tournament", size = 79, antialias = true } )
-
-local redicon = Material( "hud/redicon.png" )
-local redicon2 = Material( "hud/redicon2.png" )
-local blueicon = Material( "hud/blueicon.png" )
-local blueicon2 = Material( "hud/blueicon2.png" )
-
-CreateClientConVar( "hud_lag", 1, true, true )
-CreateClientConVar( "hud_halo", 1, true, true )
-CreateClientConVar( "hud_fade", 1, true, true )
-CreateClientConVar( "hud_indicator", 1, true, true )
-CreateClientConVar( "hud_showexp", 0, true, true )
-
 -- http://lua-users.org/wiki/FormattingNumbers
-
-LP = LocalPlayer
 
 --//Hide the standard HL2 HUD elements
 local hide = {
@@ -62,7 +45,8 @@ local hide = {
 	"CHudBattery",
 	"CHudAmmo",
 	"CHudSecondaryAmmo",
-	"CHudDamageIndictator"
+	"CHudDamageIndictator",
+	"CHudWeaponSelection"
 }
 function hidehud( name )
 	if( table.HasValue( hide, name ) ) then
@@ -100,9 +84,9 @@ local musictimes = {
 }
 
 local typeannouncement = {
-	--// [ "gametype" ] = "round start sound based on game type"
+	--// [ "gametype" ] = "round start dialogue based on game type"
 	[ "lts" ] = "roundstart",
-	[ "moretocome" ] = "tdm"
+	[ "objective-based" ] = "destroy/defend objective"
 }
 
 net.Receive( "RoundPrepStart", function( len, ply )
@@ -129,8 +113,6 @@ net.Receive( "GameEnd", function( len, ply )
 	local victor = tonumber( net.ReadString() )
 	local result
 	if victor == LocalPlayer():Team() then result = "gamewon" else result = "gamelost" end
-	--This might need to be a general "next round" music piece
-	surface.PlaySound( "music/" .. team.GetName( LocalPlayer():Team() ) .. "_" .. result .. ".mp3" )
 	timer.Simple( 5, function()
 		surface.PlaySound( "dialogue/" .. team.GetName( LocalPlayer():Team() ) .. "_" .. result .. math.random( 1, 3 ) .. ".wav" )
 	end )
@@ -142,74 +124,43 @@ net.Receive( "LastAlive", function( len, ply )
 	end )
 end )
 
---[[
-usermessage.Hook( "startmusic", function()
-	if LocalPlayer():Team() == 1 then
-		surface.PlaySound( "mw2music/spawn/redspawn" .. math.random( 1, 2 ) .. ".ogg" )
-		print( "Outcome sound: red spawn" )
-	elseif LocalPlayer():Team() == 2 then
-		surface.PlaySound( "mw2music/spawn/bluespawn" .. math.random( 1, 4 ) .. ".ogg" )
-		print( "Outcome sound: blue spawn" )
-	end
+net.Receive( "LowTime", function( len, ply )
+	surface.PlaySound( "dialogue/" .. team.GetName( LocalPlayer():Team() ) .. "_" .. "lowtime.wav" )
 end )
-
-usermessage.Hook( "endmusic", function()
-	if GetGlobalInt( "RoundWinner" ) == 1 then
-		if LocalPlayer():Team() == 1 then
-			surface.PlaySound( "mw2music/victory/redvictory" .. math.random( 1, 2 ) .. ".ogg" )
-			print( "Outcome sound: red victory" )
-		elseif LocalPlayer():Team() == 2 then
-			surface.PlaySound( "mw2music/defeat/bluedefeat" .. math.random( 1, 4 ) .. ".ogg" )
-			print( "Outcome sound: blue defeat" )
-		end
-	elseif GetGlobalInt( "RoundWinner" ) == 2 then
-		if LocalPlayer():Team() == 1 then
-			surface.PlaySound( "mw2music/defeat/reddefeat" .. math.random( 1, 2 ) .. ".ogg" )
-			print( "Outcome sound: red defeat" )
-		elseif LocalPlayer():Team() == 2 then
-			surface.PlaySound( "mw2music/victory/bluevictory" .. math.random( 1, 4 ) .. ".ogg" )
-			print( "Outcome sound: blue victory" )
-		end
-	elseif GetGlobalInt( "RoundWinner" ) == 3 then
-		if LocalPlayer():Team() == 1 then
-			surface.PlaySound( "mw2music/defeat/reddefeat" .. math.random( 1, 2 ) .. ".ogg" )
-			print( "Outcome sound: red defeat" )
-		elseif LocalPlayer():Team() == 2 then
-			surface.PlaySound( "mw2music/defeat/bluedefeat" .. math.random( 1, 4 ) .. ".ogg" )
-			print( "Outcome sound: blue defeat" )
-		end
-	end
-	print( GetGlobalInt( "RoundWinner" ) )
-end )]]
 
 net.Receive( "SetTeam", function( len, ply )
 	--if LocalPlayer():Team() != 1 or LocalPlayer():Team() != 2 or LocalPlayer():Team() != 3 then
 	local hoverone, hovertwo
 
 	local teamset = vgui.Create( "DFrame" )
-	teamset:SetSize( ScrW(), 500 )
+	teamset:SetSize( 400, 300 )
 	teamset:SetPos( 0, ScrH() / 5 )
 	teamset:SetTitle( "" )
 	teamset:SetVisible( true )
 	teamset:SetDraggable( false )
 	teamset:ShowCloseButton( false )
+	teamset:Center()
 	teamset:MakePopup()
 	teamset.Paint = function()
 		if !teamset then return end
-		surface.SetDrawColor( 0, 0, 0, 200 )
+		surface.SetDrawColor( 0, 0, 0, 225 )
 		surface.DrawRect( 0, 0, teamset:GetWide(), teamset:GetTall() )
+		draw.DrawText( "Select a team", "Exo 2 Regular", teamset:GetWide() / 2, teamset:GetTall() / 2, Color( 255, 255, 255 ), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER )
+		surface.SetDrawColor( 255, 255, 255 )
+		surface.DrawLine( teamset:GetWide() / 3 + 1, 10, teamset:GetWide() / 3 + 1, teamset:GetTall() - 10 )
+		surface.DrawLine( teamset:GetWide() / 3 * 2 - 1, 10, teamset:GetWide() / 3 * 2 - 1, teamset:GetTall() - 10 )
 	end
 
 	local teamone = vgui.Create( "DButton", teamset )
-	teamone:SetSize( teamset:GetWide() / 3, teamset:GetTall() )
-	teamone:SetPos( 0, 0 )
+	teamone:SetSize( teamset:GetWide() / 3 - 10, teamset:GetTall() - 10 )
+	teamone:SetPos( 5, 5 )
 	teamone:SetText( "" )
 	teamone.Paint = function()
 		if !teamset then return end
 		surface.SetDrawColor( 100, 15, 15, 100 )
 		surface.DrawRect( 0, 0, teamone:GetWide(), teamone:GetTall() )
-		draw.DrawText( "Click to join:", "Exo 2 Large", teamone:GetWide() / 2, teamone:GetTall() / 7 - 10, Color( 255, 255, 255, 255 ), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER )
-		draw.DrawText( team.GetName( 1 ), "Exo 2 Large", teamone:GetWide() / 2, teamone:GetTall() / 5, Color( 255, 255, 255, 255 ), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER )
+		draw.DrawText( "Click to join:", "Exo 2 Large", teamone:GetWide() / 2, 20, Color( 255, 255, 255, 255 ), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER )
+		draw.DrawText( team.GetName( 1 ) .. "(" .. #team.GetPlayers( 1 ) .. ")", "Exo 2 Large", teamone:GetWide() / 2, 45, Color( 255, 255, 255, 255 ), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER )
 		surface.SetMaterial( Material( "hud/icons/icon_" .. team.GetName( 1 ) .. ".png" ) )
 		surface.SetDrawColor( 255, 255, 255, 255 )
 		--surface.DrawTexturedRect( teamone:GetWide() / 2 - 185, teamone:GetTall() / 2 - 125, 270, 250 )
@@ -232,24 +183,28 @@ net.Receive( "SetTeam", function( len, ply )
 	end
 
 	local teamtwo = vgui.Create( "DButton", teamset )
-	teamtwo:SetSize( teamset:GetWide() / 3, teamset:GetTall() )
-	teamtwo:SetPos( teamset:GetWide() / 3 * 2, 0 )
+	teamtwo:SetSize( teamset:GetWide() / 3 - 10, teamset:GetTall() - 10 )
+	teamtwo:SetPos( teamset:GetWide() / 3 * 2 + 5, 5 )
 	teamtwo:SetText( "" )
 	teamtwo.Paint = function()
 		if !teamset then return end
 		surface.SetDrawColor( 33, 150, 243, 100 )
 		surface.DrawRect( 0, 0, teamtwo:GetWide(), teamtwo:GetTall() )
-		draw.DrawText( "Click to join:", "Exo 2 Large", teamtwo:GetWide() / 2, teamtwo:GetTall() / 7 - 10, Color( 255, 255, 255, 255 ), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER )
-		draw.DrawText( team.GetName( 2 ), "Exo 2 Large", teamtwo:GetWide() / 2, teamtwo:GetTall() / 5, Color( 255, 255, 255, 255 ), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER )
+		draw.DrawText( "Click to join:", "Exo 2 Large", teamtwo:GetWide() / 2, 20, Color( 255, 255, 255, 255 ), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER )
+		draw.DrawText( team.GetName( 2 ) .. "(" .. #team.GetPlayers( 2 ) .. ")", "Exo 2 Large", teamtwo:GetWide() / 2, 45, Color( 255, 255, 255, 255 ), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER )
 		surface.SetMaterial( Material( "hud/icons/icon_" .. team.GetName( 2 ) .. ".png" ) )
 		surface.SetDrawColor( 255, 255, 255, 255 )
 		--surface.DrawTexturedRect( 0, 0, teamtwo:GetWide() / 2, teamtwo:GetTall() / 2 )
+
+		if hovertwo then
+
+		end
 	end
 	teamtwo.OnCursorEntered = function()
-		hoverone = true
+		hovertwo = true
 	end
 	teamtwo.OnCursorExited = function()
-		hoverone = false
+		hovertwo = false
 	end
 	teamtwo.DoClick = function()
 		surface.PlaySound( "buttons/button22.wav" )
@@ -268,9 +223,10 @@ local pulse = 0
 local badtimes = { [ 0 ] = "00", "01", "02", "03", "04", "05", "06", "07", "08", "09" }
 local usedseconds
 
---//DermaDefault vs Exo 2
+--//DermaDefault? vs Exo 2
 hook.Add( "HUDPaint", "hud_main", function()
 
+	--//This all really aughta been a table...
 	local teamnumber = LocalPlayer():Team()
 	local MyTeamColor, EnemyTeamColor, MyTeamScore, EnemyTeamScore
 	if teamnumber == 0 then --???
@@ -292,23 +248,30 @@ hook.Add( "HUDPaint", "hud_main", function()
 		--MyTeamScore = GetGlobalInt( "PersonalWins" ) EnemyTeamScore = GetGlobalInt( "TopEnemyWins" )
 	end
 
-	--//Center Time Rectangle
+	--//Center Time
+	local lowtimecolor
+	if GetGlobalInt( "RoundTime" ) < 31 and GetGlobalInt( "RoundTime" ) % 2 == 0 then
+		lowtimecolor = Color( 255, 0, 0 )
+	else
+		lowtimecolor = Color( 255, 255, 255 )
+	end
 	timeleft = string.FormattedTime( tostring( GetGlobalInt( "RoundTime" ) ) )
 	surface.SetDrawColor( 0, 0, 0, 200 )
 	surface.DrawRect( ScrW() / 2 - 24, 2, 48, 21 )
 	if badtimes[ timeleft.s ] then usedseconds = badtimes[ timeleft.s ] else usedseconds = timeleft.s end
-	draw.SimpleText( timeleft.m .. ":" .. usedseconds, "DermaDefaultBold", ScrW() / 2, 12, Color( 255, 255, 255 ), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER )
-	--//My Team's Score Rectangle
+	draw.SimpleText( timeleft.m .. ":" .. usedseconds, "DermaDefaultBold", ScrW() / 2, 12, lowtimecolor, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER )
+	--//My Team's Score
 	surface.SetDrawColor( MyTeamColor )
 	surface.DrawRect( ScrW() / 2 - 48, 2, 24, 21 )
 	draw.SimpleText( MyTeamScore, "DermaDefaultBold", ScrW() / 2 - 36, 12,  Color( 255, 255, 255 ), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER )
-	--//Enemy's Score Rectangle
+	--//Enemy's Score
 	surface.SetDrawColor( EnemyTeamColor )
 	surface.DrawRect( ScrW() / 2 + 24, 2, 24, 21 )
 	draw.SimpleText( EnemyTeamScore, "DermaDefaultBold", ScrW() / 2 + 36, 12,  Color( 255, 255, 255 ), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER )
 
+	--//Gamemode information
 	surface.SetFont( "DermaDefaultBold" )
-	gminfo = "Project: OneLife | WORK IN PROGRESS | Build# 102816"
+	gminfo = "Project: OneLife | WORK IN PROGRESS | Build# 103116"
 	local num = surface.GetTextSize( gminfo )
 	surface.SetDrawColor( 50, 50, 50, 200 )
 	surface.DrawRect( 30, 30, num + 4, 20 )
@@ -318,37 +281,103 @@ hook.Add( "HUDPaint", "hud_main", function()
 
 	if !LocalPlayer():Alive() then return end
 
-	local fade = (math.Clamp(LocalPlayer():Health()/LocalPlayer():GetMaxHealth(), 0.2, 0.5)-0.2)/0.3
-	local fade2 = 1 - math.Clamp(LocalPlayer():Health()/LocalPlayer():GetMaxHealth(), 0, 0.5)/0.5
+	--//The Bloodied screen on low HP - thanks Zet0r
+	local fade = ( math.Clamp( LocalPlayer():Health() / LocalPlayer():GetMaxHealth(), 0.2, 0.5 ) - 0.2 ) / 0.3
+	local fade2 = 1 - math.Clamp( LocalPlayer():Health() / LocalPlayer():GetMaxHealth(), 0, 0.5 ) / 0.5
 	
-	surface.SetMaterial(blood_overlay)
-	surface.SetDrawColor(255,255,255,255-fade*255)
-	surface.DrawTexturedRect( -10, -10, ScrW()+20, ScrH()+20)
+	surface.SetMaterial( blood_overlay )
+	surface.SetDrawColor( 255, 255, 255, 255 - fade * 255 )
+	surface.DrawTexturedRect( -10, -10, ScrW() + 20, ScrH() + 20 )
 		
 	if fade2 > 0 then
 		if bloodpulse then
-			pulse = math.Approach(pulse, 255, math.Clamp(pulse, 1, 50)*FrameTime()*100)
+			pulse = math.Approach( pulse, 255, math.Clamp( pulse, 1, 50 ) * FrameTime() * 100 )
 			if pulse >= 255 then bloodpulse = false end
 		else
 			if pulse <= 0 then bloodpulse = true end
-			pulse = math.Approach(pulse, 0, -255*FrameTime())
+			pulse = math.Approach( pulse, 0, -255 * FrameTime() )
 		end
-		surface.SetDrawColor(255,255,255,pulse*fade2)
-		surface.DrawTexturedRect( -10, -10, ScrW()+20, ScrH()+20)
+		surface.SetDrawColor( 255, 255, 255, pulse * fade2 )
+		surface.DrawTexturedRect( -10, -10, ScrW() + 20, ScrH() + 20)
 	end
 
-	if LP():Alive() and LP():Team() ~= 0 then
-		if LP():Health() < (LP():GetMaxHealth() * 0.3) and LP():Health() > (LP():GetMaxHealth() * 0.2) then
+	--//The heartbeat that plays faster the closer you are to death
+	if LocalPlayer():Alive() and LocalPlayer():Team() ~= 0 then
+		if LocalPlayer():Health() < (LocalPlayer():GetMaxHealth() * 0.3) and LocalPlayer():Health() > (LocalPlayer():GetMaxHealth() * 0.2) then
 			surface.PlaySound( "hud/Heartbeat.ogg")
-		elseif LP():Health() <= (LP():GetMaxHealth() * 0.2) and LP():Health() > (LP():GetMaxHealth() * 0.1) then
+		elseif LocalPlayer():Health() <= (LocalPlayer():GetMaxHealth() * 0.2) and LocalPlayer():Health() > (LocalPlayer():GetMaxHealth() * 0.1) then
 			surface.PlaySound( "hud/Heartbeatfaster.ogg")
-		elseif LP():Health() <= (LP():GetMaxHealth() * 0.1) then
+		elseif LocalPlayer():Health() <= (LocalPlayer():GetMaxHealth() * 0.1) then
 			surface.PlaySound( "hud/Heartbeatfastest.ogg")
 		end
 	end
-	
+
+	boxwidth = 140
+	boxheight = 20 + 2
+	textfont = "Exo 2 Regular"
+	local wep1name, wep2name, wep3name, wep4name = " ", " ", " ", " "
+	for k, v in pairs( LocalPlayer():GetWeapons() ) do
+		if v:GetSlot() == 1 then
+			wep1name = v.PrintName or " "
+		elseif v:GetSlot() == 2 then
+			wep2name = v.PrintName or " "
+		elseif v:GetSlot() == 3 then
+			wep3name = v.PrintName or " "
+		elseif v:GetSlot() == 4 then
+			wep4name = v.PrintName or " "
+		end
+	end
+
+	surface.SetDrawColor( 0, 0, 0, 200 )
+	surface.DrawRect( ScrW() / 2 - ( boxwidth * 2) - 10 - 5, ScrH() - boxheight, boxwidth, boxheight )
+	surface.DrawRect( ScrW() / 2 - boxwidth - 5, ScrH() - boxheight, boxwidth, boxheight )
+	surface.DrawRect( ScrW() / 2 + 5, ScrH() - boxheight, boxwidth, boxheight )
+	surface.DrawRect( ScrW() / 2 + boxwidth + 10 + 5, ScrH() - boxheight, boxwidth, boxheight )
+	draw.DrawText( "1. " .. wep1name, textfont, ScrW() / 2 - boxwidth - ( boxwidth / 2 ) - 10 - 5, ScrH() - 22, Color( 255, 255, 255 ), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER )
+	draw.DrawText( "2. " .. wep2name, textfont, ScrW() / 2 - ( boxwidth / 2 ) - 5, ScrH() - 22, Color( 255, 255, 255 ), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER )
+	draw.DrawText( "3. " .. wep3name, textfont, ScrW() / 2 + ( boxwidth / 2 ) + 5, ScrH() - 22, Color( 255, 255, 255 ), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER )
+	draw.DrawText( "4. " .. wep4name, textfont, ScrW() / 2 + boxwidth + ( boxwidth / 2 ) + 10 + 5, ScrH() - 22, Color( 255, 255, 255 ), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER )
+
 end )
 
+--//This might not work well in a think function... but maybe it will?
+hook.Add( "Think", "WeaponSelection", function()
+	if input.IsKeyDown( KEY_1 ) then
+		for k, v in pairs( LocalPlayer():GetWeapons() ) do
+			if v:GetSlot() == 1 then
+				net.Start( "SetActiveWeapon" )
+					net.WriteString( v:GetClass() )
+				net.SendToServer()
+			end
+		end
+	elseif input.IsKeyDown( KEY_2 ) then
+		for k, v in pairs( LocalPlayer():GetWeapons() ) do
+			if v:GetSlot() == 2 then
+				net.Start( "SetActiveWeapon" )
+					net.WriteString( v:GetClass() )
+				net.SendToServer()
+			end
+		end
+	elseif input.IsKeyDown( KEY_3 ) then
+		for k, v in pairs( LocalPlayer():GetWeapons() ) do
+			if v:GetSlot() == 3 then
+				net.Start( "SetActiveWeapon" )
+					net.WriteString( v:GetClass() )
+				net.SendToServer()
+			end
+		end
+	elseif input.IsKeyDown( KEY_4 ) then
+		for k, v in pairs( LocalPlayer():GetWeapons() ) do
+			if v:GetSlot() == 4 then
+				net.Start( "SetActiveWeapon" )
+					net.WriteString( v:GetClass() )
+				net.SendToServer()
+			end
+		end
+	end
+end )
+
+--//Can be found in init.lua - move?
 net.Receive( "tdm_deathnotice", function()
 	local victim = net.ReadEntity()
 	local attacker = net.ReadEntity()
@@ -369,6 +398,30 @@ net.Receive( "tdm_deathnotice", function()
 	else
 		print( " ADDDEATHNOTICE HIT AN ERROR... Attacker: ", attacker, IsValid( attacker ), " Victim: ", victim, IsValid( victim ) )
 	end
+end )
+
+net.Receive( "SpectatePostDeath", function( len, ply )
+	local fadecolor
+	local fadeframe = vgui.Create( "DFrame" )
+	fadeframe:SetSize( ScrW(), ScrH() )
+	fadeframe:SetPos( 0, 0 )
+	fadeframe:SetTitle( "" )
+	fadeframe:SetVisible( true )
+	fadeframe:SetDraggable( false )
+	fadeframe:ShowCloseButton( false )
+	fadeframe.Paint = function()
+		surface.SetDrawColor( 255, 255, 255, fadecolor )
+		surface.DrawRect( 0, 0, ScrW(), ScrH() )
+	end
+	fadeframe.Think = function()
+		fadecolor = Lerp( FrameTime() * 20, 1, 255 )
+	end
+	
+	timer.Simple( 5, function()
+		net.Start( "SpectatePostDeathCallback" )
+		net.SendToServer()
+		fadeframe:Close()
+	end )
 end )
 
 --I think this is the healthbar above teammate's head? Set this as the upside-down triangle, colored to show health (green = 100, red = 0)

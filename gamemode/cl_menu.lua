@@ -226,6 +226,15 @@ function LoadoutMenu()
 		net.SendToServer()
 	end
 
+	spawn.Think = function()
+		hook.Add( "PlayerButtonDown", "CloseMenu", function( ply, button )
+			if input.GetKeyName( button ) == "c" and main then
+				print( "close the menu" )
+				spawn.DoClick()
+			end
+		end )
+	end
+
 	--[[playerinfo = vgui.Create( "DPanel", main )
 	playerinfo:SetSize( main:GetWide() / 2, ( main:GetTall() - 30 ) / 3 )
 	playerinfo:SetPos( main:GetWide() / 2 - ( playerinfo:GetWide() / 2 ), playerinfo:GetTall() )
@@ -380,6 +389,7 @@ function DrawSheet( num, noreset )
 				end
 				button[ v2[ "name" ] ].DoClick = function()
 					surface.PlaySound( "buttons/button22.wav" )
+					if selectedprimary and selectedprimary != v2[ "class" ] then table.Empty( pattach ) end
 					selectedprimary = v2["class"]
 				end
 			end
@@ -512,6 +522,7 @@ function DrawSheet( num, noreset )
 				end
 				button[ v2[ "name" ] ].DoClick = function()
 					surface.PlaySound( "buttons/button22.wav" )
+					if selectedsecondary and selectedsecondary != v2[ "class" ] then table.Empty( sattach ) end
 					selectedsecondary = v2["class"]
 				end
 			end

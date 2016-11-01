@@ -156,6 +156,7 @@ function GM:PlayerInitialSpawn( ply )
 	anyteammate = table.Random( team.GetPlayers( ply:Team() ) )
 	ply:SpectateEntity( anyteammate )
 	ply:Spectate( OBS_MODE_CHASE )
+	ply.InitialJoin = true
 	--ply:ConCommand( "tdm_spawnmenu" )
 end
 
@@ -371,14 +372,14 @@ function GM:PlayerSpawn( ply )
 	    net.WriteTable( list[ 2 ] )
 	net.Send( ply )
 
-	if ply:Team() != 1 and ply:Team() != 2 and ply:Team() != 3 then --or !GetGlobalBool( "RoundInProgress" ) then
-		print( ply, " is on team: " .. ply:Team() .. ", disallowing spawn..." )
+	ply:AllowFlashlight( false )
+
+	if ( ply:Team() != 1 and ply:Team() != 2 and ply:Team() != 3 ) or !GetGlobalBool( "GameInProgress" ) then --or !GetGlobalBool( "RoundInProgress" ) then
+		print( ply, " is not on a valid team, or the game hasn't been started. Disallowing spawn..." )
 		ply:Spectate( OBS_MODE_IN_EYE )
 		SetupSpectator( ply )
-		return
+		return false
 	end
-	
-	ply:AllowFlashlight( false )
 	
 	self.BaseClass:PlayerSpawn( ply )
 	
@@ -408,11 +409,14 @@ function GM:PlayerSpawn( ply )
 	ply:SetRunSpeed( 260 ) --CTDM value was 300
 
 	ply:SetNoCollideWithTeammates( false )
-
-	--//Found in sh_loadoutmenu//--
-	--GiveOldLoadout( ply )
-
 end
+
+util.AddNetworkString( "SpectatePostDeath" )
+util.AddNetworkString( "SpectatePostDeathCallback" )
+
+net.Receive( "SpectatePostDeathCallback", function( len, ply )
+	SetupSpectator( ply )
+end )
 
 function GM:PlayerDeath( vic, inf, att )
 	if( vic:IsValid() and att:IsValid() and att:IsPlayer() ) then
@@ -420,7 +424,12 @@ function GM:PlayerDeath( vic, inf, att )
 			net.WriteEntity( vic )
 			net.WriteEntity( att )
 		net.Broadcast()
-	end		
+	end	
+
+	timer.Simple( 3, function()
+		net.Start( "SpectatePostDeath" )
+		net.Send( vic )
+	end )
 end
 
 function GM:ScalePlayerDamage( ply, hitgroup, dmginfo )
@@ -471,5 +480,11 @@ function GM:GetFallDamage( ply, speed )
 	speed = speed - 540
 	return ( speed * ( 100 / ( 1024 - 580 ) ) )
 end
+
+util.AddNetworkString( "SetActiveWeapon" )
+net.Receive( "SetActiveWeapon", function( len, ply )
+	local wep = net.ReadString()
+	if ply:HasWeapon( wep ) then ply:SelectWeapon( wep ) end
+end )
 
 CustomizableWeaponry.canOpenInteractionMenu = false

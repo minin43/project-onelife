@@ -31,6 +31,7 @@ util.AddNetworkString( "RoundPrepStart" )
 util.AddNetworkString( "RoundStart" )
 util.AddNetworkString( "RoundEnd" )
 util.AddNetworkString( "GameEnd" )
+util.AddNetworkString( "LowTime" )
 
 function StartGame( mode )
     if !modes[ mode ] then
@@ -83,6 +84,10 @@ function RoundPrep( round )
     for k, v in pairs( player.GetAll() ) do
         v:Spawn()
 	    v:Freeze( true )
+        if v.InitialJoin then
+            v:SendLua( "LoadoutMenu()" )
+            v.InitialJoin = false
+        end
         --//Found in sh_loadoutmenu//--
         GiveLoadout( v )
         print( "Spawning and locking: ", v )
@@ -104,6 +109,11 @@ function RoundBegin( round )
     --Start the round's countdown timer
     timer.Create( "Time Countdown", 1, 0, function()
         SetGlobalInt( "RoundTime", GetGlobalInt( "RoundTime" ) - 1 )
+        if GetGlobalInt( "RoundTime" ) == 30 then
+            for k, v in pairs( player.GetAll() ) do
+                if v:Alive() then net.Start( "LowTime" ) net.Send( v ) end
+            end
+        end
         if GetGlobalInt( "RoundTime" ) == 0 then
             RoundEnd( round, 0 )
             SetGlobalInt( "RoundTime", -1 )

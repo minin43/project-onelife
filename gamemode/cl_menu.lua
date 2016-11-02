@@ -230,7 +230,7 @@ function LoadoutMenu()
 		hook.Add( "PlayerButtonDown", "CloseMenu", function( ply, button )
 			if input.GetKeyName( button ) == "c" and main then
 				print( "close the menu" )
-				spawn.DoClick()
+				--spawn.DoClick()
 			end
 		end )
 	end

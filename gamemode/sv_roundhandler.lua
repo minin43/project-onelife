@@ -114,12 +114,20 @@ function RoundBegin( round )
                 if v:Alive() then net.Start( "LowTime" ) net.Send( v ) end
             end
         end
-        if GetGlobalInt( "RoundTime" ) == 0 then
+
+        if GetGlobalInt( "RoundTime" ) < 31 then
+            for k, v in pairs( player.GetAll() ) do
+                if v:Alive() then v:SendLua( "surface.PlaySound( \"misc/timer_countdown.wav\" )" ) end
+            end
+        end
+
+        if GetGlobalInt( "RoundTime" ) < 1 then
             RoundEnd( round, 0 )
-            SetGlobalInt( "RoundTime", -1 )
+            SetGlobalInt( "RoundTime", 0 )
             timer.Remove( "Time Countdown" )
         end
     end )
+
     --Unlocks all player movements but disallows kit customization
     print( "Round has started..." )
     SetGlobalBool( "RoundInProgress", true )

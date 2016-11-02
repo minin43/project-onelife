@@ -4,7 +4,8 @@ GM.Email = "lobsterlogan43@yahoo.com"
 GM.Website = "egncommunity.com"
 
 possibleteams = {
-	{ "Task Force 141", "US Army Rangers", "Navy Seals" },
+	--{ "Task Force 141", "US Army Rangers", "Navy Seals" },
+	{ "Task Force 141" },
 	{ "Spetsnaz", "Militia", "OpFor" }
 
 }

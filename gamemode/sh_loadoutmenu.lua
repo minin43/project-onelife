@@ -141,6 +141,40 @@ function TeamThree()
 		end
 	end
 end
+
+function isPrimary( class )
+	for k, v in pairs( primaries ) do
+		for k2, v2 in pairs( v ) do
+			if class == v2[ "class" ] or class == v2[ "name" ] then
+				return true
+			end
+		end
+	end
+	return false
+end
+
+function isSecondary( class )
+	for k, v in pairs( secondaries ) do
+		for k2, v2 in pairs( v ) do
+			if class == v2[ "class" ] or class == v2[ "name" ] then
+				return true
+			end
+		end
+	end
+	return false
+end
+
+function isEquipment( class )
+	for k, v in pairs( equipment ) do
+		for k2, v2 in pairs( v ) do
+			if class == v2[ "class" ] or class == v2[ "name" ] then
+				return true
+			end
+		end
+	end
+	return false
+end
+
 --hook.Add( "to-do hook", "TeamThree", TeamThree() )
 
 --//Should I edit CW2.0's pickup function as as to disallow multiple weapon pickups, or rewrite it here?
@@ -270,40 +304,6 @@ if SERVER then
 		end )
 	end
 
-
---[[function isPrimary( class )
-	for k, v in pairs( primaries ) do
-		for k2, v2 in pairs( v ) do
-			if class == v2.class then
-				return true
-			end
-		end
-	end
-	return false
-end
-
-function isSecondary( class )
-	for k, v in pairs( secondaries ) do
-		for k2, v2 in pairs( v ) do
-			if class == v2.class then
-				return true
-			end
-		end
-	end
-	return false
-end
-
-function isEquipment( class )
-	for k, v in pairs( equipment ) do
-		for k2, v2 in pairs( v ) do
-			if class == v2.class then
-				return true
-			end
-		end
-	end
-	return false
-end
-
 function CheckWeapons( ply )
 	if v and v ~= NULL and IsValid( v ) and v:Alive() then
 		local tab = v:GetWeapons()
@@ -334,7 +334,7 @@ function CheckWeapons( ply )
 			end
 		end
 	end
-end]]
+end
 
 util.AddNetworkString( "RequestLoadout" )
 util.AddNetworkString( "RequestLoadoutCallback" )

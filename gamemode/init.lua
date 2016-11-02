@@ -378,7 +378,7 @@ function GM:PlayerSpawn( ply )
 		print( ply, " is not on a valid team, or the game hasn't been started. Disallowing spawn..." )
 		ply:Spectate( OBS_MODE_IN_EYE )
 		SetupSpectator( ply )
-		return false
+		return
 	end
 	
 	self.BaseClass:PlayerSpawn( ply )
@@ -483,8 +483,16 @@ end
 
 util.AddNetworkString( "SetActiveWeapon" )
 net.Receive( "SetActiveWeapon", function( len, ply )
-	local wep = net.ReadString()
+	local wep = net.ReadString() --this isn't actually the weapon, only it's class name - to prevent excessive net messages
 	if ply:HasWeapon( wep ) then ply:SelectWeapon( wep ) end
+	--print( ply, " is switching to weapon: ", wep )
 end )
+
+--[[local meta = FindMetaTable( "Player" )
+function meta:SelectWeapon( class )
+	if ( !self:HasWeapon( class ) ) then return end
+	self.DoWeaponSwitch = self:GetWeapon( class )
+	print( self, self.DoWeaponSwitch )
+end]]
 
 CustomizableWeaponry.canOpenInteractionMenu = false

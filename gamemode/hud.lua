@@ -46,7 +46,8 @@ local hide = {
 	"CHudAmmo",
 	"CHudSecondaryAmmo",
 	"CHudDamageIndictator",
-	"CHudWeaponSelection"
+	"CHudWeaponSelection",
+	"CHudZoom"
 }
 function hidehud( name )
 	if( table.HasValue( hide, name ) ) then
@@ -60,11 +61,11 @@ hook.Add( "HUDShouldDraw", "hidehud", hidehud )
 local musictimes = {
 	[ "Militia_gamelost" ] = 9,
 	[ "Militia_gamewon" ] = 13,
-	[ "Militia_roundstart" ] = 12,
+	[ "Militia_roundstart" ] = 1,
 
 	[ "Navy Seals_gamelost" ] = 17,
 	[ "Navy Seals_gamewon" ] = 11,
-	[ "Navy Seals_roundstart" ] = 13,
+	[ "Navy Seals_roundstart" ] = 12,
 	
 	[ "OpFor_gamelost" ] = 9,
 	[ "OpFor_gamewon" ] = 20,
@@ -72,15 +73,15 @@ local musictimes = {
 	
 	[ "Spetsnaz_gamelost" ] = 21,
 	[ "Spetsnaz_gamewon" ] = 13,
-	[ "Spetsnaz_roundstart" ] = 15,
+	[ "Spetsnaz_roundstart" ] = 14,
 	
 	[ "Task Force 141_gamelost" ] = 22,
 	[ "Task Force 141_gamewon" ] = 10,
-	[ "Task Force 141_roundstart" ] = 12,
+	[ "Task Force 141_roundstart" ] = 11,
 	
 	[ "US Army Rangers_gamelost" ] = 16,
 	[ "US Army Rangers_gamewon" ] = 16,
-	[ "US Army Rangers_roundstart" ] = 15
+	[ "US Army Rangers_roundstart" ] = 14
 }
 
 local typeannouncement = {
@@ -113,6 +114,7 @@ net.Receive( "GameEnd", function( len, ply )
 	local victor = tonumber( net.ReadString() )
 	local result
 	if victor == LocalPlayer():Team() then result = "gamewon" else result = "gamelost" end
+		surface.PlaySound( "music/" .. team.GetName( LocalPlayer():Team() ) .. "_" .. result .. ".mp3" )
 	timer.Simple( 5, function()
 		surface.PlaySound( "dialogue/" .. team.GetName( LocalPlayer():Team() ) .. "_" .. result .. math.random( 1, 3 ) .. ".wav" )
 	end )
@@ -131,10 +133,15 @@ end )
 net.Receive( "SetTeam", function( len, ply )
 	--if LocalPlayer():Team() != 1 or LocalPlayer():Team() != 2 or LocalPlayer():Team() != 3 then
 	local hoverone, hovertwo
+	surface.SetFont( "Exo 2 Large" )
+	local info1 = team.GetName( 1 ) .. " (" .. #team.GetPlayers( 1 ) .. ")"
+	local info1width, info1height = surface.GetTextSize( info1 )
+	local info2 = team.GetName( 2 ) .. " (" .. #team.GetPlayers( 2 ) .. ")"
+	local info2width, info2height = surface.GetTextSize( info2 )
 
 	local teamset = vgui.Create( "DFrame" )
-	teamset:SetSize( 400, 300 )
-	teamset:SetPos( 0, ScrH() / 5 )
+	teamset:SetSize( 400 + info1width + info2width, 300 )
+	--teamset:SetPos( 0, ScrH() / 5 )
 	teamset:SetTitle( "" )
 	teamset:SetVisible( true )
 	teamset:SetDraggable( false )
@@ -160,13 +167,14 @@ net.Receive( "SetTeam", function( len, ply )
 		surface.SetDrawColor( 100, 15, 15, 100 )
 		surface.DrawRect( 0, 0, teamone:GetWide(), teamone:GetTall() )
 		draw.DrawText( "Click to join:", "Exo 2 Large", teamone:GetWide() / 2, 20, Color( 255, 255, 255, 255 ), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER )
-		draw.DrawText( team.GetName( 1 ) .. "(" .. #team.GetPlayers( 1 ) .. ")", "Exo 2 Large", teamone:GetWide() / 2, 45, Color( 255, 255, 255, 255 ), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER )
+		draw.DrawText( team.GetName( 1 ) .. " (" .. #team.GetPlayers( 1 ) .. ")", "Exo 2 Large", teamone:GetWide() / 2, 55, Color( 255, 255, 255, 255 ), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER )
 		surface.SetMaterial( Material( "hud/icons/icon_" .. team.GetName( 1 ) .. ".png" ) )
 		surface.SetDrawColor( 255, 255, 255, 255 )
-		--surface.DrawTexturedRect( teamone:GetWide() / 2 - 185, teamone:GetTall() / 2 - 125, 270, 250 )
+		surface.DrawTexturedRect( teamone:GetWide() / 2 - 50, teamone:GetTall() / 2 - 30, 100, 100 )
 
 		if hoverone then
-
+			surface.SetDrawColor( 255, 255, 255, 150 )
+			surface.DrawRect( 0, 0, teamone:GetWide(), teamone:GetTall() )
 		end
 	end
 	teamone.OnCursorEntered = function()
@@ -191,13 +199,14 @@ net.Receive( "SetTeam", function( len, ply )
 		surface.SetDrawColor( 33, 150, 243, 100 )
 		surface.DrawRect( 0, 0, teamtwo:GetWide(), teamtwo:GetTall() )
 		draw.DrawText( "Click to join:", "Exo 2 Large", teamtwo:GetWide() / 2, 20, Color( 255, 255, 255, 255 ), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER )
-		draw.DrawText( team.GetName( 2 ) .. "(" .. #team.GetPlayers( 2 ) .. ")", "Exo 2 Large", teamtwo:GetWide() / 2, 45, Color( 255, 255, 255, 255 ), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER )
+		draw.DrawText( team.GetName( 2 ) .. " (" .. #team.GetPlayers( 2 ) .. ")", "Exo 2 Large", teamtwo:GetWide() / 2, 55, Color( 255, 255, 255, 255 ), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER )
 		surface.SetMaterial( Material( "hud/icons/icon_" .. team.GetName( 2 ) .. ".png" ) )
 		surface.SetDrawColor( 255, 255, 255, 255 )
-		--surface.DrawTexturedRect( 0, 0, teamtwo:GetWide() / 2, teamtwo:GetTall() / 2 )
+		surface.DrawTexturedRect( teamtwo:GetWide() / 2 - 50, teamtwo:GetTall() / 2 - 30, 100, 100 )
 
 		if hovertwo then
-
+			surface.SetDrawColor( 255, 255, 255, 150 )
+			surface.DrawRect( 0, 0, teamtwo:GetWide(), teamtwo:GetTall() )
 		end
 	end
 	teamtwo.OnCursorEntered = function()
@@ -312,19 +321,20 @@ hook.Add( "HUDPaint", "hud_main", function()
 		end
 	end
 
-	boxwidth = 140
+	boxwidth = 160
 	boxheight = 20 + 2
 	textfont = "Exo 2 Regular"
+	--activewep = LocalPlayer():GetActiveWeapon()
 	local wep1name, wep2name, wep3name, wep4name = " ", " ", " ", " "
 	for k, v in pairs( LocalPlayer():GetWeapons() ) do
 		if v:GetSlot() == 1 then
-			wep1name = v.PrintName or " "
+			wep1name = "1. " .. v.PrintName
 		elseif v:GetSlot() == 2 then
-			wep2name = v.PrintName or " "
+			wep2name = "2. " .. v.PrintName
 		elseif v:GetSlot() == 3 then
-			wep3name = v.PrintName or " "
+			wep3name = "3. " .. v.PrintName
 		elseif v:GetSlot() == 4 then
-			wep4name = v.PrintName or " "
+			wep4name = "4. " .. v.PrintName
 		end
 	end
 
@@ -333,10 +343,10 @@ hook.Add( "HUDPaint", "hud_main", function()
 	surface.DrawRect( ScrW() / 2 - boxwidth - 5, ScrH() - boxheight, boxwidth, boxheight )
 	surface.DrawRect( ScrW() / 2 + 5, ScrH() - boxheight, boxwidth, boxheight )
 	surface.DrawRect( ScrW() / 2 + boxwidth + 10 + 5, ScrH() - boxheight, boxwidth, boxheight )
-	draw.DrawText( "1. " .. wep1name, textfont, ScrW() / 2 - boxwidth - ( boxwidth / 2 ) - 10 - 5, ScrH() - 22, Color( 255, 255, 255 ), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER )
-	draw.DrawText( "2. " .. wep2name, textfont, ScrW() / 2 - ( boxwidth / 2 ) - 5, ScrH() - 22, Color( 255, 255, 255 ), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER )
-	draw.DrawText( "3. " .. wep3name, textfont, ScrW() / 2 + ( boxwidth / 2 ) + 5, ScrH() - 22, Color( 255, 255, 255 ), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER )
-	draw.DrawText( "4. " .. wep4name, textfont, ScrW() / 2 + boxwidth + ( boxwidth / 2 ) + 10 + 5, ScrH() - 22, Color( 255, 255, 255 ), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER )
+	draw.DrawText( wep1name, textfont, ScrW() / 2 - boxwidth - ( boxwidth / 2 ) - 10 - 5, ScrH() - 22, Color( 255, 255, 255 ), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER )
+	draw.DrawText( wep2name, textfont, ScrW() / 2 - ( boxwidth / 2 ) - 5, ScrH() - 22, Color( 255, 255, 255 ), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER )
+	draw.DrawText( wep3name, textfont, ScrW() / 2 + ( boxwidth / 2 ) + 5, ScrH() - 22, Color( 255, 255, 255 ), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER )
+	draw.DrawText( wep4name, textfont, ScrW() / 2 + boxwidth + ( boxwidth / 2 ) + 10 + 5, ScrH() - 22, Color( 255, 255, 255 ), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER )
 
 end )
 
@@ -344,36 +354,46 @@ end )
 hook.Add( "Think", "WeaponSelection", function()
 	if input.IsKeyDown( KEY_1 ) then
 		for k, v in pairs( LocalPlayer():GetWeapons() ) do
-			if v:GetSlot() == 1 then
-				net.Start( "SetActiveWeapon" )
-					net.WriteString( v:GetClass() )
-				net.SendToServer()
+			if v:GetSlot() == 1 and !mainframe and !mainframe2 then
+				LocalPlayer():SelectWeapon( v:GetClass() )
 			end
 		end
 	elseif input.IsKeyDown( KEY_2 ) then
 		for k, v in pairs( LocalPlayer():GetWeapons() ) do
-			if v:GetSlot() == 2 then
-				net.Start( "SetActiveWeapon" )
-					net.WriteString( v:GetClass() )
-				net.SendToServer()
+			if v:GetSlot() == 2 and !mainframe and !mainframe2 then
+				LocalPlayer():SelectWeapon( v:GetClass() )
 			end
 		end
 	elseif input.IsKeyDown( KEY_3 ) then
 		for k, v in pairs( LocalPlayer():GetWeapons() ) do
-			if v:GetSlot() == 3 then
-				net.Start( "SetActiveWeapon" )
-					net.WriteString( v:GetClass() )
-				net.SendToServer()
+			if v:GetSlot() == 3 and !mainframe and !mainframe2 then
+				LocalPlayer():SelectWeapon( v:GetClass() )
 			end
 		end
 	elseif input.IsKeyDown( KEY_4 ) then
 		for k, v in pairs( LocalPlayer():GetWeapons() ) do
-			if v:GetSlot() == 4 then
-				net.Start( "SetActiveWeapon" )
-					net.WriteString( v:GetClass() )
-				net.SendToServer()
+			if v:GetSlot() == 4 and !mainframe and !mainframe2 then
+				LocalPlayer():SelectWeapon( v:GetClass() )
 			end
 		end
+	end
+	
+end )
+
+--//Thank you Gmod wiki for having all the best solutions
+local meta = FindMetaTable( "Player" )
+function meta:SelectWeapon( class )
+	if ( !self:HasWeapon( class ) ) then return end
+	self.DoWeaponSwitch = self:GetWeapon( class )
+end
+
+hook.Add( "CreateMove", "WeaponSwitch", function( cmd )
+	if ( !IsValid( LocalPlayer().DoWeaponSwitch ) ) then return end
+
+	cmd:SelectWeapon( LocalPlayer().DoWeaponSwitch )
+
+	if ( LocalPlayer():GetActiveWeapon() == LocalPlayer().DoWeaponSwitch ) then
+		LocalPlayer().DoWeaponSwitch = nil
 	end
 end )
 

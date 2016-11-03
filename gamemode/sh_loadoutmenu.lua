@@ -304,7 +304,17 @@ if SERVER then
 		end )
 	end
 
-function CheckWeapons( ply )
+	function CheckRole( ply )
+		local role = ply.oldrole
+		for k, v in pairs( roles )
+			if v[ ply:Team() ] == role then
+				return k
+			end
+		end
+		return 0
+	end
+
+--[[function CheckWeapons( ply )
 	if v and v ~= NULL and IsValid( v ) and v:Alive() then
 		local tab = v:GetWeapons()
 		if tab then
@@ -334,7 +344,7 @@ function CheckWeapons( ply )
 			end
 		end
 	end
-end
+end]]
 
 util.AddNetworkString( "RequestLoadout" )
 util.AddNetworkString( "RequestLoadoutCallback" )

@@ -352,30 +352,42 @@ end )
 
 --//This might not work well in a think function... but maybe it will?
 hook.Add( "Think", "WeaponSelection", function()
-	if input.IsKeyDown( KEY_1 ) then
+	local heldweapons = { 
+		[ 0 ] = heldweapons[ 4 ], 
+		[ 1 ] = LocalPlayer():GetWeapons()[ 1 ] or heldweapons[ 2 ],
+		[ 2 ] = LocalPlayer():GetWeapons()[ 2 ] or heldweapons[ 3 ], 
+		[ 3 ] = LocalPlayer():GetWeapons()[ 3 ] or false,
+		[ 4 ] = LocalPlayer():GetWeapons()[ 4 ] or heldweapons[ 3 ],
+		[ 5 ] = heldweapons[ 1 ]
+	}
+	if input.IsKeyDown( KEY_1 ) and !mainframe and !mainframe2 then
 		for k, v in pairs( LocalPlayer():GetWeapons() ) do
-			if v:GetSlot() == 1 and !mainframe and !mainframe2 then
+			if v:GetSlot() == 1 then
 				LocalPlayer():SelectWeapon( v:GetClass() )
 			end
 		end
-	elseif input.IsKeyDown( KEY_2 ) then
+	elseif input.IsKeyDown( KEY_2 ) and !mainframe and !mainframe2 then
 		for k, v in pairs( LocalPlayer():GetWeapons() ) do
-			if v:GetSlot() == 2 and !mainframe and !mainframe2 then
+			if v:GetSlot() == 2 then
 				LocalPlayer():SelectWeapon( v:GetClass() )
 			end
 		end
-	elseif input.IsKeyDown( KEY_3 ) then
+	elseif input.IsKeyDown( KEY_3 ) and !mainframe and !mainframe2 then
 		for k, v in pairs( LocalPlayer():GetWeapons() ) do
-			if v:GetSlot() == 3 and !mainframe and !mainframe2 then
+			if v:GetSlot() == 3 then
 				LocalPlayer():SelectWeapon( v:GetClass() )
 			end
 		end
-	elseif input.IsKeyDown( KEY_4 ) then
+	elseif input.IsKeyDown( KEY_4 ) and !mainframe and !mainframe2 then
 		for k, v in pairs( LocalPlayer():GetWeapons() ) do
-			if v:GetSlot() == 4 and !mainframe and !mainframe2 then
+			if v:GetSlot() == 4 then
 				LocalPlayer():SelectWeapon( v:GetClass() )
 			end
 		end
+	elseif input.IsMouseDown( MOUSE_WHEEL_UP ) and heldweapons[ LocalPlayer():GetActiveWeapon():GetSlot() + 1 ] and !mainframe and !mainframe2 then
+		LocalPlayer():SelectWeapon( heldweapons[ LocalPlayer():GetActiveWeapon():GetSlot() + 1 ] )
+	elseif input.IsMouseDown( MOUSE_WHEEL_DOWN ) and heldweapons[ LocalPlayer():GetActiveWeapon():GetSlot() - 1 ] and !mainframe and !mainframe2 then
+		LocalPlayer():SelectWeapon( heldweapons[ LocalPlayer():GetActiveWeapon():GetSlot() - 1 ] )
 	end
 	
 end )

@@ -211,7 +211,7 @@ if SERVER then
 	function GiveLoadout( ply )
 		if GetGlobalBool( "RoundInProgress" ) or !GetGlobalBool( "GameInProgress" ) then return end
 
-		--This COULD be a table and a for statement... but meh...
+		--[[This COULD be a table and a for statement... but meh...
 		print( "Removing ", ply:GetAmmoCount( "cw_kk_ins2_nade_m18" ), " ammo from cw_kk_ins2_nade_m18." )
 		print( "Removing ", ply:GetAmmoCount( "cw_kk_ins2_nade_m67" ), " ammo from cw_kk_ins2_nade_m67." )
 		print( "Removing ", ply:GetAmmoCount( "cw_kk_ins2_nade_m84" ), " ammo from cw_kk_ins2_nade_m84." )
@@ -222,7 +222,7 @@ if SERVER then
 		ply:RemoveAmmo( ply:GetAmmoCount( "cw_kk_ins2_nade_m67" ), "cw_kk_ins2_nade_m67" )
 		ply:RemoveAmmo( ply:GetAmmoCount( "cw_kk_ins2_nade_m84" ), "cw_kk_ins2_nade_m84" )
 		ply:RemoveAmmo( ply:GetAmmoCount( "cw_kk_ins2_nade_c4" ),  "cw_kk_ins2_nade_c4" )
-		ply:RemoveAmmo( ply:GetAmmoCount( "cw_kk_ins2_nade_ied" ), "cw_kk_ins2_nade_ied" )
+		ply:RemoveAmmo( ply:GetAmmoCount( "cw_kk_ins2_nade_ied" ), "cw_kk_ins2_nade_ied" )]]
 
 		local attachmentequipdelay = 0.3
 		local give40mm = false
@@ -305,7 +305,7 @@ if SERVER then
 	end
 
 	function CheckRole( ply )
-		local role = ply.oldrole
+		local role = ply:GetNWString( "role" )
 		for k, v in pairs( roles ) do
 			if v[ ply:Team() ] == role then
 				return k

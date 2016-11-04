@@ -32,22 +32,6 @@ local roleplayermodels = {
     }
 }
 
-function SetArmor( ply, type )
-    local armorspeed = {
-    --//[ armor type ] = { walkspeed = 140, runspeed = 260, jumpstrength = 170 }
-        [ "light" ] = { 140, 280, 190 },
-        [ "standard" ] = { 140, 260, 170 },
-        [ "heavy" ] = { 140, 245, 170 },
-        [ "superheavy" ] = { 120, 235, 150 }
-    }
-    if ply and armorspeed[ type ] then
-        ply:SetWalkSpeed( armorspeed[ type ][ 1 ] )
-        ply:SetRunSpeed( armorspeed[ type ][ 2 ] )
-        ply:SetJumpPower( armorspeed[ type ][ 3 ] )
-        ply.Armor = type
-    end
-end
-
 hook.Add( "ScalePlayerDamage", "DamageReductions", function( ply, hitgroup, dmginfo )
 	if CheckRole( ply ) != 0 and ply.Armor and !dmginfo:IsFallDamage() and IsValid( ply ) then
         local damagescaling = {
@@ -80,7 +64,7 @@ end )
 
 hook.Add( "PlayerSpawn", "SetRoleModifiers", function( ply )
     timer.Simple( 0.1, function()
-        local myrole = CheckRole( ply )
+        local myrole = CheckRole( ply ) --this returns a number, not a string
         if !myrole or myrole == 0 then return end
         local healthscaling = {
         --//[ armor type ] = { maxhealth/starting health }
@@ -89,6 +73,7 @@ hook.Add( "PlayerSpawn", "SetRoleModifiers", function( ply )
             [ "heavy" ] = 100,
             [ "superheavy" ] = 110
         }
+
         local roletoarmor = { "standard", "light", "superheavy", "light", "superheavy", "light", "heavy", "standard" }
         local armorspeed = {
         --//[ armor type ] = { walkspeed = 140, runspeed = 260, jumpstrength = 170 }
@@ -98,10 +83,11 @@ hook.Add( "PlayerSpawn", "SetRoleModifiers", function( ply )
             [ "superheavy" ] = { 120, 235, 150 }
         }
 
-        ply.role = roles[ myrole ][ ply:Team() ]
+        --ply.role = roles[ myrole ][ ply:Team() ]
 
         if roletoarmor[ myrole ] then
             ply.Armor = roletoarmor[ myrole ]
+            ply:SetNWStrong( "armor", ply.Armor )
             ply:SetWalkSpeed( armorspeed[ ply.Armor ][ 1 ] )
             ply:SetRunSpeed( armorspeed[ ply.Armor ][ 2 ] )
             ply:SetJumpPower( armorspeed[ ply.Armor ][ 3 ] )
@@ -113,5 +99,6 @@ hook.Add( "PlayerSpawn", "SetRoleModifiers", function( ply )
         end
         
         --ply:SetModel( roleplayermodels[ ply:Team() ][ ply.role ] )
+        print( ply:Nick(), " is spawning with: ", ply.Armor, " armor, ", ply:Health(), " starting health, and ", ply:GetWalkSpeed, "/", ply:GetRunSpeed, "/", ply:GetJumpPower, " Walkspeed/Runspeed/Jumppower" )
     end )
 end )

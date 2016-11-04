@@ -322,6 +322,8 @@ hook.Add( "HUDPaint", "hud_main", function()
 		end
 	end
 
+	--Start drawing the armor icon depending on LocalPlayer():GetNWString( "armor" )
+
 	boxwidth = 160
 	boxheight = 20 + 2
 	textfont = "Exo 2 Regular"
@@ -365,30 +367,36 @@ hook.Add( "Think", "WeaponSelection", function()
 		for k, v in pairs( LocalPlayer():GetWeapons() ) do
 			if v:GetSlot() == 1 then
 				LocalPlayer():SelectWeapon( v:GetClass() )
+				print( "KEY_1 pressed" )
 			end
 		end
 	elseif input.IsKeyDown( KEY_2 ) and !mainframe and !mainframe2 then
 		for k, v in pairs( LocalPlayer():GetWeapons() ) do
 			if v:GetSlot() == 2 then
 				LocalPlayer():SelectWeapon( v:GetClass() )
+				print( "KEY_2 pressed" )
 			end
 		end
 	elseif input.IsKeyDown( KEY_3 ) and !mainframe and !mainframe2 then
 		for k, v in pairs( LocalPlayer():GetWeapons() ) do
 			if v:GetSlot() == 3 then
 				LocalPlayer():SelectWeapon( v:GetClass() )
+				print( "KEY_3 pressed" )
 			end
 		end
 	elseif input.IsKeyDown( KEY_4 ) and !mainframe and !mainframe2 then
 		for k, v in pairs( LocalPlayer():GetWeapons() ) do
 			if v:GetSlot() == 4 then
 				LocalPlayer():SelectWeapon( v:GetClass() )
+				print( "KEY_4 pressed" )
 			end
 		end
 	elseif input.IsMouseDown( MOUSE_WHEEL_UP ) and heldweapons[ LocalPlayer():GetActiveWeapon():GetSlot() + 1 ] and !mainframe and !mainframe2 then
 		LocalPlayer():SelectWeapon( heldweapons[ LocalPlayer():GetActiveWeapon():GetSlot() + 1 ] )
+		print( "MOUSE_WHEEL_UP pressed" )
 	elseif input.IsMouseDown( MOUSE_WHEEL_DOWN ) and heldweapons[ LocalPlayer():GetActiveWeapon():GetSlot() - 1 ] and !mainframe and !mainframe2 then
 		LocalPlayer():SelectWeapon( heldweapons[ LocalPlayer():GetActiveWeapon():GetSlot() - 1 ] )
+		print( "MOUSE_WHEEL_DOWN pressed" )
 	end
 	
 end )

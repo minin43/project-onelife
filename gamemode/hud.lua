@@ -1,3 +1,4 @@
+print( "hud initialization..." )
 local draw = draw
 local hook = hook
 local math = math
@@ -173,7 +174,7 @@ net.Receive( "SetTeam", function( len, ply )
 		surface.DrawTexturedRect( teamone:GetWide() / 2 - 50, teamone:GetTall() / 2 - 30, 100, 100 )
 
 		if hoverone then
-			surface.SetDrawColor( 255, 255, 255, 150 )
+			surface.SetDrawColor( 200, 200, 200, 150 )
 			surface.DrawRect( 0, 0, teamone:GetWide(), teamone:GetTall() )
 		end
 	end
@@ -205,7 +206,7 @@ net.Receive( "SetTeam", function( len, ply )
 		surface.DrawTexturedRect( teamtwo:GetWide() / 2 - 50, teamtwo:GetTall() / 2 - 30, 100, 100 )
 
 		if hovertwo then
-			surface.SetDrawColor( 255, 255, 255, 150 )
+			surface.SetDrawColor( 200, 200, 200, 150 )
 			surface.DrawRect( 0, 0, teamtwo:GetWide(), teamtwo:GetTall() )
 		end
 	end
@@ -239,16 +240,16 @@ hook.Add( "HUDPaint", "hud_main", function()
 	local teamnumber = LocalPlayer():Team()
 	local MyTeamColor, EnemyTeamColor, MyTeamScore, EnemyTeamScore
 	if teamnumber == 0 then --???
-		MyTeamColor = Color( 255, 255, 255 )
-		EnemyTeamColor = Color( 255, 255, 255 )
+		MyTeamColor = Color( 0, 0, 0 )
+		EnemyTeamColor = Color( 0, 0, 0 )
 	elseif teamnumber == 1 then --red
-		MyTeamColor = Color( 100, 15, 15, 100 )
-		EnemyTeamColor = Color( 33, 150, 243, 100 )
+		MyTeamColor = Color( 100, 15, 15, 200 )
+		EnemyTeamColor = Color( 33, 150, 243, 200 )
 		MyTeamScore = GetGlobalInt( "RedTeamWins" )
 		EnemyTeamScore = GetGlobalInt( "BlueTeamWins" ) 
 	elseif teamnumber == 2 then --blue
-		MyTeamColor = Color( 33, 150, 243, 100 )
-		EnemyTeamColor = Color( 100, 15, 15, 100 )
+		MyTeamColor = Color( 33, 150, 243, 200 )
+		EnemyTeamColor = Color( 100, 15, 15, 200 )
 		MyTeamScore = GetGlobalInt( "BlueTeamWins" )
 		EnemyTeamScore = GetGlobalInt( "RedTeamWins" )
     elseif teamnumber == 3 then --black/FFA
@@ -352,14 +353,14 @@ end )
 
 --//This might not work well in a think function... but maybe it will?
 hook.Add( "Think", "WeaponSelection", function()
-	local heldweapons = { 
-		[ 0 ] = heldweapons[ 4 ], 
-		[ 1 ] = LocalPlayer():GetWeapons()[ 1 ] or heldweapons[ 2 ],
-		[ 2 ] = LocalPlayer():GetWeapons()[ 2 ] or heldweapons[ 3 ], 
-		[ 3 ] = LocalPlayer():GetWeapons()[ 3 ] or false,
-		[ 4 ] = LocalPlayer():GetWeapons()[ 4 ] or heldweapons[ 3 ],
-		[ 5 ] = heldweapons[ 1 ]
-	}
+	local heldweapons = { }
+	heldweapons[ 0 ] = heldweapons[ 4 ]
+	heldweapons[ 1 ] = LocalPlayer():GetWeapons()[ 1 ] or heldweapons[ 2 ]
+	heldweapons[ 2 ] = LocalPlayer():GetWeapons()[ 2 ] or heldweapons[ 3 ]
+	heldweapons[ 3 ] = LocalPlayer():GetWeapons()[ 3 ] or false
+	heldweapons[ 4 ] = LocalPlayer():GetWeapons()[ 4 ] or heldweapons[ 3 ]
+	heldweapons[ 5 ] = heldweapons[ 1 ]
+
 	if input.IsKeyDown( KEY_1 ) and !mainframe and !mainframe2 then
 		for k, v in pairs( LocalPlayer():GetWeapons() ) do
 			if v:GetSlot() == 1 then

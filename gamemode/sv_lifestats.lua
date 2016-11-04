@@ -1,3 +1,4 @@
+print( "sv_lifestats initialization..." )
 util.AddNetworkString( "RequestLifestats" )
 util.AddNetworkString( "RequestLifestatsCallback" )
 

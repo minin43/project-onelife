@@ -1,3 +1,4 @@
+print( "cl_flags initialization..." )
 flags = {}
 status = {}
 local ang1 = Angle( 0, 0, 0 )

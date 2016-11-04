@@ -1,3 +1,6 @@
+function weapons.OnLoaded()
+--// "weapons.OnLoaded is an internal function, which means you can call it but you shouldn't." WAH.
+print( "sh_weaponstats initialization..." )
 --[[if weapons.Get( "cw_kk_ins2_ak74" ) then
     local wep = weapons.GetStored( "cw_kk_ins2_ak74" )
 	--wep.PrintName = ""
@@ -138,6 +141,7 @@ end]]
 
 if weapons.Get( "cw_kk_ins2_mosin" ) then
     local wep = weapons.GetStored( "cw_kk_ins2_mosin" )
+    print( "Starting edit of weapon: cw_kk_ins2_mosin" )
 	--wep.PrintName = ""
     wep.SpeedDec = 40 --Gun Weight
     wep.Slot = 3 --The weapon slot to be used
@@ -483,6 +487,7 @@ end]]
 
 if weapons.Get( "cw_kk_ins2_m40a1" ) then
     local wep = weapons.GetStored( "cw_kk_ins2_m40a1" )
+    print( "Starting edit of weapon: cw_kk_ins2_m40a1" )
 	--wep.PrintName = ""
     wep.SpeedDec = 40 --Gun Weight
     wep.Slot = 3 --The weapon slot to be used
@@ -825,3 +830,5 @@ if weapons.Get( "cw_kk_ins2_at4" ) then
     wep.ReloadTimes[ base_reload ] = { 0, 0 } --Time acceleration, time in seconds when ammo is in the clip
     wep.ReloadTimes[ base_reloadempty ] = { 0, 0 } --Time acceleration, time in seconds with an empty magazine
 end]]
+
+end

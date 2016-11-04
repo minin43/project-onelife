@@ -1,3 +1,4 @@
+print( "sv_lvlhandler initialization..." )
 util.AddNetworkString( "SendUpdate" )
 util.AddNetworkString( "RequestLevel" )
 util.AddNetworkString( "RequestLevelCallback" )

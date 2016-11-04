@@ -1,3 +1,4 @@
+print( "sv_playerhandler initialization..." )
 util.AddNetworkString( "LastAlive" )
 
 hook.Add( "PostPlayerDeath", "fullteameliminationchecker", function( vic, info, att )

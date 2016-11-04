@@ -1,3 +1,4 @@
+print( "sv_moneyhandler initialization..." )
 util.AddNetworkString( "SendInitialMoney" )
 util.AddNetworkString( "SendMoneyUpdate" )
 util.AddNetworkString( "RequestMoney" )

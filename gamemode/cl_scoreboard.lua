@@ -1,3 +1,4 @@
+print( "cl_scoreboard initialization..." )
 surface.CreateFont( "Exo 2 Regular", {
 	font = "Exo 2",
 	size = 40,

@@ -1,3 +1,4 @@
+print( "sv_feed initialization..." )
 util.AddNetworkString("KillFeed")
 
 SetGlobalInt("ctdm_global_xp_multiplier", 1)

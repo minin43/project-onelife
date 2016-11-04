@@ -48,6 +48,7 @@ NOTICETYPES = {
     SPECIAL = 16
 }
 
+print( "cl_feed initialization..." )
 Feed = {}
     
 local Feed = {}

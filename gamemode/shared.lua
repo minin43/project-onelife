@@ -1,3 +1,4 @@
+print( "shared initialization..." )
 GM.Name = "Project: OneLife"
 GM.Author = "Logan"
 GM.Email = "lobsterlogan43@yahoo.com"

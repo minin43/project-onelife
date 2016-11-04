@@ -1,3 +1,4 @@
+print( "cl_customspawns initialization..." )
 local lp = LocalPlayer
 local curS = {}
 local nl = Vector( 0, 0, 0 )

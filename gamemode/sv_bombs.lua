@@ -1,3 +1,4 @@
+print( "sv_bombs initialization..." )
 bombspawn = bombspawn or {}
 
 -- Pasting this in console gets everyone's current location: lua_run for k, v in pairs(player.GetAll()) do print(v, v:GetPos())end useful for getting good spawn positions

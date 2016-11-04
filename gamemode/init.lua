@@ -1,3 +1,4 @@
+print( "init initialization..." )
 AddCSLuaFile( "cl_init.lua" ) -- Test comment
 AddCSLuaFile( "hud.lua" )
 AddCSLuaFile( "shared.lua" )

@@ -1,3 +1,4 @@
+print( "sh_attachmenthandler initialization..." )
 wep_att = wep_att or { }
 
 --wep_att[ classname ] = { [ attachmentname ] = { attachmenttype, price } }

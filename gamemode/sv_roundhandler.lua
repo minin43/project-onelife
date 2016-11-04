@@ -1,3 +1,4 @@
+print( "sv_rounderhandler initialization..." )
 modes = {
     --//ROUNDS = ROUNDS NEEDED FOR GAME VICTORY, ROUNTIME = TOTAL ALOTTMENT OF TIME FOR A GIVEN ROUND, 
     [ "lts" ] = { --Last Team Standing, your basic one-life team-deathmatch

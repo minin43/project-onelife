@@ -1,3 +1,4 @@
+print( "sv_votehandler initialization..." )
 util.AddNetworkString( "StartGMVote" )
 util.AddNetworkString( "EndVote" )
 util.AddNetworkString( "EndVoteCallback" )

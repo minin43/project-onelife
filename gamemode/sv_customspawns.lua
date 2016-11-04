@@ -1,3 +1,4 @@
+print( "sv_customspawns initialization..." )
 if not file.Exists( "onelife/spawns", "DATA" ) then
 	file.CreateDir( "onelife/spawns" )
 end

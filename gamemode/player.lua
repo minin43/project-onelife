@@ -1,3 +1,4 @@
+print( "player initialization..." )
 local ply = FindMetaTable( "Player" )
 
 local teams = {}

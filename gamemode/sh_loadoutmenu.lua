@@ -1,4 +1,4 @@
-
+print( "sh_loadoutmenu initialization..." )
 --OLD LAYOUT: { <weapon name>, <class>, <unlock level>, <world model>, <cost>, { <damage>, <accuracy>, <rate of fire> } }  
 --NEW LAYOUT: { ["name"] = "weapon name", ["class"] = "class name", ["roles"] = { roles by level } }
 
@@ -84,11 +84,11 @@ equipment = equipment or {
 roles = {
 	{ "Militant", 		"Rifleman", 			"Rifleman", 	"Standard fighter, gets access to most weapon types but no frag grenade." },
 	{ "Scout", 			"Reconnaissance", 		"Recon", 		"Lightly armored but fast-moving fighter, gets access to all short-range weaponry and all grenades." },
-	{ "Gunner", 		"Support", 				"Support", 		"Supportive fighter, gets access to LMGs and some long-distance DMRs, but no frag grenades." },
+	{ "Gunner", 		"Support", 				"Gunner", 		"Super heavily armored supportive fighter, gets access to LMGs and some long-distance DMRs, but no frag grenades." },
 	{ "Sharpshooter", 	"Designated Marksman", 	"Marksman", 	"Lightly armored supportive fighter, gets access to all DMRs but no flash/frag grenades." },
-	{ "Striker", 		"Demolitions", 			"Demolitions", 	"Heavily armored fighter, gets access to all launchers but no smoke/flash grenade." },
+	{ "Striker", 		"Demolitions", 			"Demolitions", 	"Super heavily armored fighter, gets access to all launchers but no smoke/flash grenade." },
 	{ "Sniper", 		"Sniper", 				"Sniper", 		"Lightly armored supportive fighter, gets access to all sniper rifles but no grenades." },
-	{ "Sapper", 		"Breacher", 			"Breacher", 	"Medium armored supportive fighter, gets access to all throwable and remotely detonated explosives." },
+	{ "Sapper", 		"Breacher", 			"Breacher", 	"Heavily armored supportive fighter, gets access to all throwable and remotely detonated explosives." },
 	{ "Expert", 		"Specialist", 			"Specialist", 	"Medium armored fighter, gets access to extra, unique weapons for proving themselves in battle." }
 }
 
@@ -306,7 +306,7 @@ if SERVER then
 
 	function CheckRole( ply )
 		local role = ply.oldrole
-		for k, v in pairs( roles )
+		for k, v in pairs( roles ) do
 			if v[ ply:Team() ] == role then
 				return k
 			end

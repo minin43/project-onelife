@@ -1,3 +1,4 @@
+print( "cl_menu initialization..." )
 --[[
     surface.CreateFont( "", {
 	font = "",
@@ -215,10 +216,10 @@ function LoadoutMenu()
 		--//SetLoadout can be found in sh_loadoutmenu.lua
 		net.Start( "SetLoadout" )
 			local loadout = {
-				[ "primary" ] = selectedprimary or "",
-				[ "secondary" ] = selectedsecondary or "",
-				[ "equipment" ] = selectedequipment or "",
-				[ "role" ] = selectedrole or "",
+				[ "primary" ] = selectedprimary or nil,
+				[ "secondary" ] = selectedsecondary or nil,
+				[ "equipment" ] = selectedequipment or nil,
+				[ "role" ] = selectedrole or nil,
 				[ "pattachments" ] = pattach or { },
 				[ "sattachments" ] = sattach or { }
 			}

@@ -192,6 +192,11 @@ preload = preload or {} -- preload[
 
 function changeTeam( ply, cmd, args )
 
+	if GetGlobalBool( "RoundInProgress" ) and ply:Alive() then
+		ply:ChatPrint( "Cannot switch teams while a round is in progress and you are alive" )
+		return
+	end
+
 	local t = tonumber( args[1] )
 	
 	if( t ~= 0 and t ~= 1 and t ~= 2 ) then
@@ -216,9 +221,11 @@ function changeTeam( ply, cmd, args )
 			StartGame( "lts" )
 		end
 		return
-	elseif !GetGlobalBool( "RoundInProgress" ) then
-		ply:Kill()
-		ply:Spawn()
+	elseif !timer.Exists( "Time Countdown" ) or !GetGlobalBool( "RoundInProgress" ) then
+		if ply:Alive() then
+			ply:Kill()
+			ply:Spawn()
+		end
 	end
 
 

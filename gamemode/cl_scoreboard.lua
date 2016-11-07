@@ -189,16 +189,51 @@ function CreateScoreboard()
 			surface.SetDrawColor( 0, 0, 0, 164 )
 			surface.DrawTexturedRectRotated( enemyteam:GetWide() / 2, 56 + 4, 8, enemyteam:GetWide(), 270 )
 		end
-		
+
 		local pos = Vector( enemyteam:GetPos() )
 		enemyteam:SetPos( pos.x + 295, pos.y ) --Offsets the frame by a half + 5 pixel buffer
+
+		switchteams = vgui.Create( "DFrame" )
+		switchteams:ShowCloseButton( false )
+		switchteams:SetDraggable( false )
+		switchteams:SetTitle( "" )
+		switchteams:SetSize( 300, 70) )
+		switchteams:SetPos( ScrW() / 2 + ( enemyteam:GetWide() - switchteams:GetWide() ), ScrH() / 2 - ( enemyteam:GetTall() / 2 ) - switchteams:GetTall() - 5 )
+		switchteams:ParentToHUD()
+		switchteams.Paint = function()
+			surface.SetDrawColor( colors[ enemyteamnumber ] )
+			surface.DrawRect( switchteams:GetWide() / 3, 0, switchteams:GetWide(), switchteams:GetTall() )
+			surface.SetDrawColor( colors[ enemyteamnumber ] )
+			draw.NoTexture()
+			surface.DrawPoly( { x = 0, y = switchteams:GetTall() }, { x = switchteams:GetWide() / 3, y = 0 }, { x = switchteams:GetWide() / 3, y = switchteams:GetTall() } )
+		end
 		
-		--[[enemyteam.Think = function()
-			if input.IsMouseDown( MOUSE_RIGHT ) then
-				enemyteam:MakePopup()
-				myteam:MakePopup()
+		local switchteamshover = false
+		switchteamsbutton = vgui.Create( "DButton", switchteams )
+		switchteamsbutton:SetSize( switchteams:GetWide() / 2, switchteams:GetTall() - 4 )
+		switchteamsbutton:SetPos( switchteams:GetWide() / 2 - 2, 2 )
+		switchteamsbutton:SetText( "" )
+		switchteamsbutton.Paint = function()
+			surface.SetFont( "Exo 2 Large" )
+			draw.DrawText( "Click to Switch Teams", switchteamsbutton:GetWide() / 2, switchteamsbutton:GetTall() / 2, Color( 255, 255, 255 ), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER )
+			if switchteamshover then
+				surface.SetDrawColor( 200, 200, 200, 50 )
+				surface.DrawRect( 0, 0, switchteamsbutton:GetWide(), switchteamsbutton:GetTall() )
 			end
-		end]]
+		end
+		switchteams.DoClick = function()
+			if LocalPlayer():Team() == 2 then
+				LocalPlayer():Concommand( "pol_setteam 1" )
+			elseif LocalPlayer():Team() == 1 then
+				LocalPlayer():Concommand( "pol_setteam 2" )
+			end
+		end
+		switchteams.OnCursorEntered = function()
+			switchteamshover = true
+		end
+		switchteams.OnCursorExited = function()
+			switchteamshover = false
+		end
 		
 		dlist2 = vgui.Create( "DPanelList", enemyteam )
 		dlist2:SetPos( 1, 56 )
@@ -321,7 +356,7 @@ function CreateScoreboard()
 			
 			if v2:Team() == LocalPlayer():Team() then
 				dlist:AddItem( playerbase )
-			else
+			elseif ( LocalPlayer():Team() == 1 and v2:Team() == 2 ) or ( LocalPlayer():Team() == 2 and v2:Team() == 1 )
 				dlist2:AddItem( playerbase )
 			end
 		end

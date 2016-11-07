@@ -15,7 +15,8 @@ local availablemaps = {
     "gm_devruins",
     "de_crash",
     "de_keystone_beta",
-    "de_secretcamp"
+    "de_secretcamp",
+    "ttt_bf3_scrapmetal"
 }
 
 local votes = { }

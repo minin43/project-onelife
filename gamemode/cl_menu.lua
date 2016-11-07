@@ -682,8 +682,14 @@ function DrawSheet( num, noreset )
         		surface.DrawOutlinedRect( 0, 0, information:GetWide(), information:GetTall() )
 				draw.DrawText( "Role: " .. v[ teamnumber ], "Exo 2 Large", 2, 2, Color( 200, 200, 200 ) )
 				draw.DrawText( v[ 4 ], "Exo 2 Regular", 2, 30, Color( 150, 150, 150 ) )
-				draw.DrawText( "Level: " .. lvl, "Exo 2 Regular", 2, 55, Color( 200, 200, 200 ) )
-				draw.DrawText( "Money: $" .. money, "Exo 2 Regular", 2, 80, Color( 200, 200, 200 ) )
+				draw.DrawText( "Armor type: " .. roletoarmor[ k ], "Exo 2 Regular", 2, 55, Color( 200, 200, 200 ) )
+				draw.DrawText( "Max/Starting Health: " .. healthscaling[ roletoarmor[ k ] ], "Exo 2 Regular", 2, 80, Color( 200, 200, 200 ) )
+				draw.DrawText( "Your level: " .. lvl, "Exo 2 Regular", 2, 105, Color( 200, 200, 200 ) )
+				--//Column 2
+				draw.DrawText( "Walk speed: " .. armorspeed[ roletoarmor[ k ] ][ 1 ], "Exo 2 Regular", information:GetWide() / 2 + 2, 55, Color( 200, 200, 200 ) )
+				draw.DrawText( "Run speed: " .. armorspeed[ roletoarmor[ k ] ][ 2 ], "Exo 2 Regular", information:GetWide() / 2 + 2, 80, Color( 200, 200, 200 ) )
+				draw.DrawText( "Jump strength: " .. armorspeed[ roletoarmor[ k ] ][ 3 ], "Exo 2 Regular", information:GetWide() / 2 + 2, 105, Color( 200, 200, 200 ) )
+				draw.DrawText( "Money: $" .. money, "Exo 2 Regular", information:GetWide() / 2 + 2, 130, Color( 200, 200, 200 ) )
 			end
 		end
 	end

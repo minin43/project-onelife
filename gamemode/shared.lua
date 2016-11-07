@@ -5,9 +5,10 @@ GM.Email = "lobsterlogan43@yahoo.com"
 GM.Website = "egncommunity.com"
 
 possibleteams = {
-	--{ "Task Force 141", "US Army Rangers", "Navy Seals" },
-	{ "Task Force 141" },
+	{ "Task Force 141", "US Army Rangers", "Navy Seals" },
 	{ "Spetsnaz", "Militia", "OpFor" }
+	--{ "US Army Rangers" },
+	--{ "OpFor" }
 
 }
 
@@ -21,7 +22,8 @@ if SERVER then
 		[ "gm_devruins" ] = 748863203,
 		[ "de_secretcamp" ] = 296555359,
 		[ "de_keystone_beta" ] = 508986899,
-		[ "de_crash" ] = 671482026
+		[ "de_crash" ] = 671482026,
+		[ "ttt_bf3_scrapmetal" ] = 228105814
 	}
 
 	for k, v in pairs( maps ) do
@@ -31,9 +33,10 @@ if SERVER then
 	end
     
 	resource.AddWorkshop( "349050451" ) --CW2.0 Base
-	resource.AddWorkshop( "748212309" ) --Hand fix
+	resource.AddWorkshop( "729950952" ) --Hand fix
 	resource.AddWorkshop( "657241323" ) --KK's INS2 pack
-	--resource.AddWorkshop( "492765756" ) --Weapon attach Fix
+	resource.AddWorkshop( "793616016" ) --My Server files
+	resource.AddWorkshop( "176238701" ) --PMs
 	--resource.AddWorkshop( "639078265" ) --UT3/Insurgency Sounds
 	--resource.AddWorkshop( "575652408" ) --Player Expression Mod
 	

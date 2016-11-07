@@ -33,6 +33,8 @@ util.AddNetworkString( "RoundStart" )
 util.AddNetworkString( "RoundEnd" )
 util.AddNetworkString( "GameEnd" )
 util.AddNetworkString( "LowTime" )
+util.AddNetworkString( "CreateCountdown" )
+util.AddNetworkString( "Countdown" )
 
 function StartGame( mode )
     if !modes[ mode ] then
@@ -78,11 +80,13 @@ function RoundPrep( round )
     print( "Round preperation starting, cleaning up map..." )
 
     if round != 1 then
-        --ChangeSides() --To-do function, use this to change everyone's team, red to blue and blue to red, but keep their team name the same
+        --ChangeSides() --To-do function, use this to change everyone's spawn/objective?
     end
 
+    --//Spawns and freezes all players
     print( "All teams valid...")
     for k, v in pairs( player.GetAll() ) do
+        if v:Team() != 1 and v:Team() != 2 and v:Team() != 3 then continue end
         v:Spawn()
 	    v:Freeze( true )
         if v.InitialJoin then
@@ -94,14 +98,31 @@ function RoundPrep( round )
         print( "Spawning and locking: ", v )
     end
     
-    timer.Simple( 30, function()
+    --[[timer.Simple( 30, function()
         print( "30 second timer finished, starting round/game.")
         RoundBegin( round )
-    end)
+    end)]]
+
+    --//Calls the respective hook and starts the respective net message
     hook.Call( "RoundPrepStart", nil, round )
     net.Start( "RoundPrepStart" )
         net.WriteString( tostring( round ) )
     net.Broadcast()
+
+    --//Starts the countdown
+    net.Start( "CreateCountdown" )
+    net.Broadcast()
+    timer.Create( "Countdown Timer", 1, 30, function()
+        net.Start( "Countdown" )
+            net.WriteString( tostring( timer.RepsLeft( "Countdown Timer" ) ) )
+        net.Broadcast()
+
+        --//After 30 seconds has passed, begins the round
+        if timer.RepsLeft( "Countdown Timer" ) == 0 then
+            print( "30 second timer finished, starting round/game.")
+            RoundBegin( round )
+        end
+    end )
 end 
 
 --Game starting, player movement freed

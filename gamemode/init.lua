@@ -13,11 +13,13 @@ AddCSLuaFile( "cl_leaderboards.lua" )
 AddCSLuaFile( "sh_attachmenthandler.lua" )
 AddCSLuaFile( "sh_loadoutmenu.lua" )
 AddCSLuaFile( "sh_weaponstats.lua" )
+AddCSLuaFile( "sh_rolehandler.lua" )
 
 include( "shared.lua" )
 include( "player.lua" )
 include( "sh_attachmenthandler.lua" )
 include( "sh_loadoutmenu.lua" )
+include( "sh_rolehandler.lua" )
 include( "sh_weaponstats.lua" )
 include( "sv_bombs.lua" )
 include( "sv_feed.lua" )
@@ -28,7 +30,6 @@ include( "sv_lifestats.lua" )
 include( "sv_lvlhandler.lua" )
 include( "sv_moneyhandler.lua" )
 include( "sv_playerhandler.lua" )
-include( "sv_rolehandler.lua" )
 include( "sv_roundhandler.lua" )
 include( "sv_votehandler.lua" )
 
@@ -160,6 +161,7 @@ function GM:PlayerInitialSpawn( ply )
 	ply:SpectateEntity( anyteammate )
 	ply:Spectate( OBS_MODE_CHASE )
 	ply.InitialJoin = true
+	ply:SetCanZoom( false )
 	--ply:ConCommand( "tdm_spawnmenu" )
 end
 
@@ -214,13 +216,18 @@ function changeTeam( ply, cmd, args )
 			StartGame( "lts" )
 		end
 		return
+	elseif !GetGlobalBool( "RoundInProgress" ) then
+		ply:Kill()
+		ply:Spawn()
 	end
+
+
 end
 
 
 concommand.Add( "pol_setteam", changeTeam )
 
-local function GetValid()
+--[[local function GetValid()
 	local validEnts = {}
 	for k, v in next, player.GetAll() do
 		if IsValid( v ) and v:Team() and v:Team() ~= 0 then
@@ -258,23 +265,29 @@ local function getBlackTeam()
 		end
 	end
 	return teammates
+end]]
+
+local function getTeam( ply )
+	local teammates = { }
+	for k, v in pairs( team.GetPlayers( ply:Team() ) ) do
+		if IsValid( v ) and v:Alive() then
+			table.insert( teammates, v )
+		end
+	end
+	return teammates
 end
 
 function SetupSpectator( ply )
 	ply:StripWeapons()
-	local teammates
-	if ply:Team() == 1 then
-		teammates = getRedTeam()
-	elseif ply:Team() == 2 then
-		teammates = getBlueTeam()
-	else
-		teammates = getBlackTeam()
-	end
+	local teammates = getTeam( ply )
+	ply:SetNWBool( "IsSpectating", true )
+
 	if #teammates == 0 then
 		ply:Spectate( OBS_MODE_ROAMING )
 		return
 	end
-	ply:SpectateEntity( table.Random( teammates ) )
+	local tospec = table.Random( teammates )
+	ply:SpectateEntity( tospec )
 	ply:Spectate( OBS_MODE_CHASE )
 end
 
@@ -282,14 +295,7 @@ local function NextSpec( ply )
 	if not ply:GetObserverTarget() or ply:GetObserverTarget() == NULL then
 		return
 	end
-	local teammates
-	if ply:Team() == 1 then
-		teammates = getRedTeam()
-	elseif ply:Team() == 2 then
-		teammates = getBlueTeam()
-	else
-		teammates = getBlackTeam()
-	end
+	local teammates = getTeam( ply )
 	if not ply:GetObserverTarget() or ply:GetObserverTarget() == NULL then
 		return
 	end
@@ -310,14 +316,7 @@ local function PrevSpec( ply )
 	if not ply:GetObserverTarget() or ply:GetObserverTarget() == NULL then
 		return
 	end
-	local teammates
-	if ply:Team() == 1 then
-		teammates = getRedTeam()
-	elseif ply:Team() == 2 then
-		teammates = getBlueTeam()
-	else
-		teammates = getBlackTeam()
-	end
+	local teammates = getTeam( ply )
 	if not ply:GetObserverTarget() or ply:GetObserverTarget() == NULL then
 		return
 	end
@@ -326,8 +325,8 @@ local function PrevSpec( ply )
 		return
 	end
 	local newpos
-	if pos - 1 > #teammates then
-		newpos = table.GetFirstKey( teammates )
+	if pos - 1 <= 0 then
+		newpos = #teammates
 	else
 		newpos = pos - 1
 	end
@@ -379,14 +378,15 @@ function GM:PlayerSpawn( ply )
 
 	if ( ply:Team() != 1 and ply:Team() != 2 and ply:Team() != 3 ) or !GetGlobalBool( "GameInProgress" ) then --or !GetGlobalBool( "RoundInProgress" ) then
 		print( ply, " is not on a valid team, or the game hasn't been started. Disallowing spawn..." )
-		ply:Spectate( OBS_MODE_IN_EYE )
+		ply:Kill()
+		ply:Spectate( OBS_MODE_ROAMING )
 		SetupSpectator( ply )
 		return
 	end
 	
 	self.BaseClass:PlayerSpawn( ply )
 	
-	local redmodels = {
+	--[[local redmodels = {
 		"models/player/group03/male_01.mdl",
 		"models/player/group03/male_02.mdl",
 		"models/player/group03/male_03.mdl",
@@ -405,7 +405,9 @@ function GM:PlayerSpawn( ply )
 		ply:SetModel( table.Random( redmodels ) )
 	elseif ply:Team() == 2 then
 		ply:SetModel (table.Random( bluemodels ) )
-	end
+	end]]
+
+	ply:SetNWBool( "IsSpectating", false )
 
 	ply:SetJumpPower( 170 ) -- CTDM value was 170
 	ply:SetWalkSpeed( 140 ) --CTDM value was 180
@@ -414,13 +416,6 @@ function GM:PlayerSpawn( ply )
 	ply:SetNoCollideWithTeammates( false )
 end
 
-util.AddNetworkString( "SpectatePostDeath" )
-util.AddNetworkString( "SpectatePostDeathCallback" )
-
-net.Receive( "SpectatePostDeathCallback", function( len, ply )
-	SetupSpectator( ply )
-end )
-
 function GM:PlayerDeath( vic, inf, att )
 	if( vic:IsValid() and att:IsValid() and att:IsPlayer() ) then
 		net.Start( "tdm_deathnotice" )
@@ -428,11 +423,17 @@ function GM:PlayerDeath( vic, inf, att )
 			net.WriteEntity( att )
 		net.Broadcast()
 	end	
-
-	timer.Simple( 3, function()
-		net.Start( "SpectatePostDeath" )
-		net.Send( vic )
-	end )
+	
+	if GetGlobalBool( "GameInProgress" ) and GetGlobalBool( "RoundInProgress" ) then
+		timer.Simple( 3, function()
+			vic:ScreenFade( SCREENFADE.OUT, Color( 0, 0, 0 ), 2, 3 )
+			timer.Simple( 4, function()
+				if vic and vic:IsValid() and !vic:Alive() and GetGlobalBool( "GameInProgress" ) then
+					SetupSpectator( vic )
+				end
+			end )
+		end )
+	end
 end
 
 function GM:ScalePlayerDamage( ply, hitgroup, dmginfo )

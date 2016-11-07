@@ -4,6 +4,14 @@ util.AddNetworkString( "LastAlive" )
 hook.Add( "PostPlayerDeath", "fullteameliminationchecker", function( vic, info, att )
     DeadTeamCheck( vic )
 end )
+--[[
+hook.Add( "PlayerCanSeePlayersChat", function( msg, teamonly, receiver, sender )
+    if receiver.LastAlive then
+        return false
+    else
+        return true
+end )
+]]
 
 function DeadTeamCheck( deadply )
     if !GetGlobalBool( "GameInProgress" ) or !GetGlobalBool( "RoundInProgress" ) then return end
@@ -33,6 +41,7 @@ function DeadTeamCheck( deadply )
             net.Send( allaliveplayers[ 1 ] )
             print( allaliveplayers[ 1 ]:Nick(), " is the last alive on team ", teamnumber )
             allaliveplayers[ 1 ].alreadysent = true
+            --allaliveplayers[ 1 ].LastAlive = true
         elseif teamnumber == 3 and #aliveplayers[ teamnumber ] == 1 and GetGlobalBool( "TeamThree" ) then
             RoundEnd( GetGlobalInt( "Round" ), 3 )
             print( allaliveplayers[ 1 ]:Nick(), " is the last alive and winner for Solo Team" )

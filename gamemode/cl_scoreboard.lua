@@ -118,6 +118,13 @@ function CreateScoreboard()
 		surface.DrawRect( 0, 0, myteam:GetWide(), myteam:GetTall() )
 		surface.SetDrawColor( colors[ LocalPlayer():Team() ] )
 		surface.DrawRect( 0, 0, myteam:GetWide(), 56 )
+		if LocalPlayer():Team() == 1 then
+			surface.SetMaterial( Material( "hud/icons/icon_" .. team.GetName( 1 ) .. ".png" ) )
+		elseif LocalPlayer():Team() == 2 then
+			surface.SetMaterial( Material( "hud/icons/icon_" .. team.GetName( 2 ) .. ".png" ) )
+		end
+		surface.SetDrawColor( 255, 255, 255, 255 )
+		surface.DrawTexturedRect( 15, 10, 36, 36 )
 		draw.SimpleText( team.GetName( LocalPlayer():Team() ), "Exo 2 Regular", 66, 56 / 2, Color( 255, 255, 255 ), TEXT_ALIGN_LEFT, TEXT_ALIGN_CENTER )
 		local width, height = 0, 0
 		for k, v in pairs( table.Reverse( teamheaders ) ) do
@@ -164,6 +171,13 @@ function CreateScoreboard()
 			surface.DrawRect( 0, 0, enemyteam:GetWide(), enemyteam:GetTall() )
 			surface.SetDrawColor( colors[ enemyteamnumber ] )
 			surface.DrawRect( 0, 0, enemyteam:GetWide(), 56 )
+			if LocalPlayer():Team() == 1 then
+				surface.SetMaterial( Material( "hud/icons/icon_" .. team.GetName( 2 ) .. ".png" ) )
+			elseif LocalPlayer():Team() == 2 then
+				surface.SetMaterial( Material( "hud/icons/icon_" .. team.GetName( 1 ) .. ".png" ) )
+			end
+			surface.SetDrawColor( 255, 255, 255, 255 )
+			surface.DrawTexturedRect( 15, 10, 36, 36 )
 			draw.SimpleText( team.GetName( enemyteamnumber ), "Exo 2 Regular", 66, 56 / 2, Color( 255, 255, 255 ), TEXT_ALIGN_LEFT, TEXT_ALIGN_CENTER )
 			local width, height = 0, 0
 			for k, v in next, enemyheaders do

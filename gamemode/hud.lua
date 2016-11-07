@@ -59,10 +59,46 @@ function hidehud( name )
 end
 hook.Add( "HUDShouldDraw", "hidehud", hidehud )
 
+net.Receive( "CreateCountdown", function( len, ply )
+	local countdowntimeleft = 30
+	net.Receive( "Countdown", function( len, ply )
+		countdowntimeleft = tonumber( net.ReadString() )
+	end )
+	countdown = vgui.Create( "DFrame" )
+	countdown:SetSize( 270, 30 )
+	countdown:SetPos( ScrW() / 2 - ( countdown:GetWide() / 2 ), ScrH() / 6 )
+	countdown:SetTitle( "" )
+	countdown:SetVisible( true )
+	countdown:SetDraggable( false )
+	countdown:ShowCloseButton( false )
+	countdown.Paint = function()
+		if !countdown then return end
+		draw.RoundedBox( 5, 0, 0, countdown:GetWide(), countdown:GetTall(), Color( 0, 0, 0, 240 ) )
+		if countdowntimeleft == 1 then
+			draw.DrawText( "Round starting in: " .. countdowntimeleft .. " second", "Exo 2 Regular", countdown:GetWide() / 2, 5, Color( 255, 255, 255 ), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER )
+		elseif countdowntimeleft > 1 then
+			draw.DrawText( "Round starting in: " .. countdowntimeleft .. " seconds", "Exo 2 Regular", countdown:GetWide() / 2, 5, Color( 255, 255, 255 ), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER )
+		else
+			draw.DrawText( "The round has started...", "Exo 2 Regular", countdown:GetWide() / 2, 5, Color( 255, 255, 255 ), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER )
+		end
+	end
+	countdown.Think = function()
+		if countdowntimeleft == 0 then
+			timer.Simple( 2, function()
+				if countdown then
+					countdown:Close()
+					countdown = nil
+				end
+			end )
+			countdowntimeleft = -1
+		end
+	end
+end )
+
 local musictimes = {
 	[ "Militia_gamelost" ] = 9,
 	[ "Militia_gamewon" ] = 13,
-	[ "Militia_roundstart" ] = 1,
+	[ "Militia_roundstart" ] = 11,
 
 	[ "Navy Seals_gamelost" ] = 17,
 	[ "Navy Seals_gamewon" ] = 11,
@@ -86,7 +122,7 @@ local musictimes = {
 }
 
 local typeannouncement = {
-	--// [ "gametype" ] = "round start dialogue based on game type"
+	--// [ "gametype" ] = "round start announcer based on game type"
 	[ "lts" ] = "roundstart",
 	[ "objective-based" ] = "destroy/defend objective"
 }
@@ -97,7 +133,7 @@ net.Receive( "RoundPrepStart", function( len, ply )
 		surface.PlaySound( "music/" .. team.GetName( LocalPlayer():Team() ) .. "_roundstart.mp3" )
 	end )
 	timer.Simple( 30, function()
-		surface.PlaySound( "dialogue/" .. team.GetName( LocalPlayer():Team() ) .. "_roundstart.wav" )
+		surface.PlaySound( "announcer/" .. team.GetName( LocalPlayer():Team() ) .. "_roundstart.wav" )
 	end )
 end )
 
@@ -107,7 +143,7 @@ net.Receive( "RoundEnd", function( len, ply )
 	local result
 	if victor == LocalPlayer():Team() then result = "roundwon" else result = "roundlost" end
 	timer.Simple( 2, function()
-		surface.PlaySound( "dialogue/" .. team.GetName( LocalPlayer():Team() ) .. "_" .. result .. ".wav" )
+		surface.PlaySound( "announcer/" .. team.GetName( LocalPlayer():Team() ) .. "_" .. result .. ".wav" )
 	end )
 end )
 
@@ -117,18 +153,18 @@ net.Receive( "GameEnd", function( len, ply )
 	if victor == LocalPlayer():Team() then result = "gamewon" else result = "gamelost" end
 		surface.PlaySound( "music/" .. team.GetName( LocalPlayer():Team() ) .. "_" .. result .. ".mp3" )
 	timer.Simple( 5, function()
-		surface.PlaySound( "dialogue/" .. team.GetName( LocalPlayer():Team() ) .. "_" .. result .. math.random( 1, 3 ) .. ".wav" )
+		surface.PlaySound( "announcer/" .. team.GetName( LocalPlayer():Team() ) .. "_" .. result .. math.random( 1, 3 ) .. ".wav" )
 	end )
 end )
 
 net.Receive( "LastAlive", function( len, ply )
 	timer.Simple( 2, function()
-		surface.PlaySound( "dialogue/" .. team.GetName( LocalPlayer():Team() ) .. "_" .. "lastalive" .. math.random( 1, 5 ) .. ".wav" )
+		surface.PlaySound( "announcer/" .. team.GetName( LocalPlayer():Team() ) .. "_" .. "lastalive" .. math.random( 1, 5 ) .. ".wav" )
 	end )
 end )
 
 net.Receive( "LowTime", function( len, ply )
-	surface.PlaySound( "dialogue/" .. team.GetName( LocalPlayer():Team() ) .. "_" .. "lowtime.wav" )
+	surface.PlaySound( "announcer/" .. team.GetName( LocalPlayer():Team() ) .. "_" .. "lowtime.wav" )
 end )
 
 net.Receive( "SetTeam", function( len, ply )
@@ -226,12 +262,14 @@ net.Receive( "SetTeam", function( len, ply )
 end )
 
 --Stolen from Zet0r
-local blood_overlay = Material("hud/damageoverlay.png", "unlitgeneric smooth")
+local blood_overlay = Material( "hud/damageoverlay.png", "unlitgeneric smooth" )
 local bloodpulse = true
 local pulse = 0
 
 local badtimes = { [ 0 ] = "00", "01", "02", "03", "04", "05", "06", "07", "08", "09" }
 local usedseconds
+
+--local teamicon = Material( "hud/icons/icon_" .. team.GetName( LocalPlayer)():Team() ) .. ".png" )
 
 --//DermaDefault? vs Exo 2
 hook.Add( "HUDPaint", "hud_main", function()
@@ -281,7 +319,7 @@ hook.Add( "HUDPaint", "hud_main", function()
 
 	--//Gamemode information
 	surface.SetFont( "DermaDefaultBold" )
-	gminfo = "Project: OneLife | WORK IN PROGRESS | Build# 103116"
+	local gminfo = "Project: OneLife | WORK IN PROGRESS | Build# 110416"
 	local num = surface.GetTextSize( gminfo )
 	surface.SetDrawColor( 50, 50, 50, 200 )
 	surface.DrawRect( 30, 30, num + 4, 20 )
@@ -290,6 +328,28 @@ hook.Add( "HUDPaint", "hud_main", function()
 	surface.DrawText( gminfo )
 
 	if !LocalPlayer():Alive() then return end
+
+	--[[surface.SetFont( "DermaDefaultBold" )
+	local teamname = team.GetName( LocalPlayer():Team() )
+	local namewide = surface.GetTextSize( teamname )
+	surface.SetTextColor( 255, 255, 255 )
+	surface.SetTextPos( 54, 54 )
+	surface.DrawText( teamname )]]
+	if LocalPlayer():Team() == 1 or LocalPlayer():Team() == 2 or LocalPlayer():Team() == 3 then
+		surface.SetDrawColor( 50, 50, 50, 200 )
+		surface.DrawRect( 30, 52, 44, 44 )
+		surface.SetDrawColor( 255, 255, 255 )
+		surface.SetMaterial( Material( "hud/icons/icon_" .. team.GetName( LocalPlayer():Team() ) .. ".png" ) )
+		surface.DrawTexturedRect( 32, 54, 40, 40 )
+	end
+
+	if LocalPlayer():GetNWString( "ArmorType", false ) then
+		surface.SetDrawColor( 50, 50, 50, 200 )
+		surface.DrawRect( 76, 52, 44, 44 )
+		surface.SetDrawColor( 0, 0, 0 )
+		surface.SetMaterial( Material( "hud/icons/kevlar_" .. LocalPlayer():GetNWString( "ArmorType" ) .. ".png" ) )
+		surface.DrawTexturedRect( 78, 54, 40, 40 )
+	end
 
 	--//The Bloodied screen on low HP - thanks Zet0r
 	local fade = ( math.Clamp( LocalPlayer():Health() / LocalPlayer():GetMaxHealth(), 0.2, 0.5 ) - 0.2 ) / 0.3
@@ -367,28 +427,24 @@ hook.Add( "Think", "WeaponSelection", function()
 		for k, v in pairs( LocalPlayer():GetWeapons() ) do
 			if v:GetSlot() == 1 then
 				LocalPlayer():SelectWeapon( v:GetClass() )
-				print( "KEY_1 pressed" )
 			end
 		end
 	elseif input.IsKeyDown( KEY_2 ) and !mainframe and !mainframe2 then
 		for k, v in pairs( LocalPlayer():GetWeapons() ) do
 			if v:GetSlot() == 2 then
 				LocalPlayer():SelectWeapon( v:GetClass() )
-				print( "KEY_2 pressed" )
 			end
 		end
 	elseif input.IsKeyDown( KEY_3 ) and !mainframe and !mainframe2 then
 		for k, v in pairs( LocalPlayer():GetWeapons() ) do
 			if v:GetSlot() == 3 then
 				LocalPlayer():SelectWeapon( v:GetClass() )
-				print( "KEY_3 pressed" )
 			end
 		end
 	elseif input.IsKeyDown( KEY_4 ) and !mainframe and !mainframe2 then
 		for k, v in pairs( LocalPlayer():GetWeapons() ) do
 			if v:GetSlot() == 4 then
 				LocalPlayer():SelectWeapon( v:GetClass() )
-				print( "KEY_4 pressed" )
 			end
 		end
 	elseif input.IsMouseDown( MOUSE_WHEEL_UP ) and heldweapons[ LocalPlayer():GetActiveWeapon():GetSlot() + 1 ] and !mainframe and !mainframe2 then
@@ -398,7 +454,12 @@ hook.Add( "Think", "WeaponSelection", function()
 		LocalPlayer():SelectWeapon( heldweapons[ LocalPlayer():GetActiveWeapon():GetSlot() - 1 ] )
 		print( "MOUSE_WHEEL_DOWN pressed" )
 	end
-	
+
+	if input.IsMouseDown( MOUSE_WHEEL_UP ) then
+		print( "MOUSE_WHEEL_UP pressed" )
+	elseif input.IsMouseDown( MOUSE_WHEEL_DOWN ) then
+		print( "MOUSE_WHEEL_DOWN pressed" )
+	end
 end )
 
 --//Thank you Gmod wiki for having all the best solutions
@@ -439,30 +500,6 @@ net.Receive( "tdm_deathnotice", function()
 	else
 		print( " ADDDEATHNOTICE HIT AN ERROR... Attacker: ", attacker, IsValid( attacker ), " Victim: ", victim, IsValid( victim ) )
 	end
-end )
-
-net.Receive( "SpectatePostDeath", function( len, ply )
-	local fadecolor
-	local fadeframe = vgui.Create( "DFrame" )
-	fadeframe:SetSize( ScrW(), ScrH() )
-	fadeframe:SetPos( 0, 0 )
-	fadeframe:SetTitle( "" )
-	fadeframe:SetVisible( true )
-	fadeframe:SetDraggable( false )
-	fadeframe:ShowCloseButton( false )
-	fadeframe.Paint = function()
-		surface.SetDrawColor( 255, 255, 255, fadecolor )
-		surface.DrawRect( 0, 0, ScrW(), ScrH() )
-	end
-	fadeframe.Think = function()
-		fadecolor = Lerp( FrameTime() * 20, 1, 255 )
-	end
-	
-	timer.Simple( 5, function()
-		net.Start( "SpectatePostDeathCallback" )
-		net.SendToServer()
-		fadeframe:Close()
-	end )
 end )
 
 --I think this is the healthbar above teammate's head? Set this as the upside-down triangle, colored to show health (green = 100, red = 0)
@@ -663,7 +700,7 @@ surface.CreateFont( "wsmall", {
 
 --First person death, stolen from a workshop addon
  hook.Add( "CalcView", "CalcView:GmodDeathView", function( player, origin, angles, fov )
-    if IsValid( player:GetRagdollEntity() ) then --and *insert code about spectating someone here* ) then 
+    if IsValid( player:GetRagdollEntity() ) and !player:GetNWBool( "IsSpectating" ) then 
 		local CameraPos = player:GetRagdollEntity():GetAttachment( player:GetRagdollEntity():LookupAttachment( "eyes" ) )  
 		return { origin = CameraPos.Pos, angles = CameraPos.Ang, fov = 90 }
 	end

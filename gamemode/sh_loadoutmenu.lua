@@ -82,7 +82,7 @@ equipment = equipment or {
 --// { "Red Team Name", "Blue Team Name", "FFA Team Name", "Role Description" }
 --// Refer to this for future descriptions: http://insurgency.wikia.com/wiki/Insurgency
 roles = {
-	{ "Militant", 		"Rifleman", 			"Rifleman", 	"Standard fighter, gets access to most weapon types but no frag grenade." },
+	{ "Militant", 		"Rifleman", 			"Rifleman", 	"Standard meduim armored fighter, gets access to most weapon types but no frag grenade." },
 	{ "Scout", 			"Reconnaissance", 		"Recon", 		"Lightly armored but fast-moving fighter, gets access to all short-range weaponry and all grenades." },
 	{ "Gunner", 		"Support", 				"Gunner", 		"Super heavily armored supportive fighter, gets access to LMGs and some long-distance DMRs, but no frag grenades." },
 	{ "Sharpshooter", 	"Designated Marksman", 	"Marksman", 	"Lightly armored supportive fighter, gets access to all DMRs but no flash/frag grenades." },
@@ -244,7 +244,8 @@ if SERVER then
 				for k, v in pairs( ply.oldpatt ) do
 					ply:GetWeapon( ply.oldprim ):attachSpecificAttachment( v )
 					if v == "kk_ins2_gl_gp25" or v == "kk_ins2_gl_m203" then 
-						give40mm = true 
+						give40mm = true
+						print( ply:Nick(), " has a nade launcher, give them some nades..." )
 					end
 				end
 			end )
@@ -257,9 +258,9 @@ if SERVER then
 			end )
 		end
 
-		if teamnumber == 1 then
+		if ply:Team() == 1 then
 			ply:Give( "cw_kk_ins2_mel_gurkha" )
-		elseif teamnumber == 2 then
+		elseif ply:Team() == 2 then
 			ply:Give( "cw_kk_ins2_mel_bayonet" )
 		else
 			ply:Give( table.Random( { "cw_kk_ins2_mel_gurkha", "cw_kk_ins2_mel_bayonet" } ) )
@@ -302,6 +303,8 @@ if SERVER then
 				end
 			end
 		end )
+		print( "SetRole called via sh_loadoutmenu" )
+		SetRole( ply )
 	end
 
 	function CheckRole( ply )
@@ -365,7 +368,7 @@ end )
 
 hook.Add( "PlayerButtonDown", "DropWeapons", function( ply, bind ) 
 	if bind == KEY_Q then
-		if not ply.CanCustomizeLoadout then
+		if not ply:IsFrozen() then
 			if ply and IsValid( ply ) and ply:IsPlayer() and ply:Alive() then
 				ply:ConCommand( "cw_dropweapon" )
 			end

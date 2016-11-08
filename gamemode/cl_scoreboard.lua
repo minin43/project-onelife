@@ -141,6 +141,7 @@ function CreateScoreboard()
 			myteam:MakePopup()
 			--if !TeamThree() then
 				enemyteam:MakePopup()
+				switchteams:MakePopup()
 			--end
 		end
 	end
@@ -197,7 +198,7 @@ function CreateScoreboard()
 		switchteams:ShowCloseButton( false )
 		switchteams:SetDraggable( false )
 		switchteams:SetTitle( "" )
-		switchteams:SetSize( 300, 70) )
+		switchteams:SetSize( 300, 70 )
 		switchteams:SetPos( ScrW() / 2 + ( enemyteam:GetWide() - switchteams:GetWide() ), ScrH() / 2 - ( enemyteam:GetTall() / 2 ) - switchteams:GetTall() - 5 )
 		switchteams:ParentToHUD()
 		switchteams.Paint = function()
@@ -205,7 +206,7 @@ function CreateScoreboard()
 			surface.DrawRect( switchteams:GetWide() / 3, 0, switchteams:GetWide(), switchteams:GetTall() )
 			surface.SetDrawColor( colors[ enemyteamnumber ] )
 			draw.NoTexture()
-			surface.DrawPoly( { x = 0, y = switchteams:GetTall() }, { x = switchteams:GetWide() / 3, y = 0 }, { x = switchteams:GetWide() / 3, y = switchteams:GetTall() } )
+			surface.DrawPoly( { x = switchteams:GetWide() / 3, y = 0 }, { x = switchteams:GetWide() / 3, y = switchteams:GetTall() }, { x = 0, y = switchteams:GetTall() } )
 		end
 		
 		local switchteamshover = false
@@ -215,7 +216,7 @@ function CreateScoreboard()
 		switchteamsbutton:SetText( "" )
 		switchteamsbutton.Paint = function()
 			surface.SetFont( "Exo 2 Large" )
-			draw.DrawText( "Click to Switch Teams", switchteamsbutton:GetWide() / 2, switchteamsbutton:GetTall() / 2, Color( 255, 255, 255 ), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER )
+			draw.DrawText( "Click to Switch Teams", "Exo 2 Regular", switchteamsbutton:GetWide() / 2, switchteamsbutton:GetTall() / 2, Color( 255, 255, 255 ), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER )
 			if switchteamshover then
 				surface.SetDrawColor( 200, 200, 200, 50 )
 				surface.DrawRect( 0, 0, switchteamsbutton:GetWide(), switchteamsbutton:GetTall() )
@@ -356,7 +357,7 @@ function CreateScoreboard()
 			
 			if v2:Team() == LocalPlayer():Team() then
 				dlist:AddItem( playerbase )
-			elseif ( LocalPlayer():Team() == 1 and v2:Team() == 2 ) or ( LocalPlayer():Team() == 2 and v2:Team() == 1 )
+			elseif ( LocalPlayer():Team() == 1 and v2:Team() == 2 ) or ( LocalPlayer():Team() == 2 and v2:Team() == 1 ) then
 				dlist2:AddItem( playerbase )
 			end
 		end
@@ -373,6 +374,7 @@ function GM:ScoreboardHide()
 	end
 	myteam:SetVisible( false )
 	enemyteam:SetVisible( false )
+	switchteams:SetVisible( false )
 	--[[if spec then
 		spec:SetVisible( false )
 	end]]

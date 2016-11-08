@@ -5,11 +5,8 @@ GM.Email = "lobsterlogan43@yahoo.com"
 GM.Website = "egncommunity.com"
 
 possibleteams = {
-	{ "Task Force 141", "US Army Rangers", "Navy Seals" },
+	{ "Task Force 141" },--, "US Army Rangers", "Navy Seals" },
 	{ "Spetsnaz", "Militia", "OpFor" }
-	--{ "US Army Rangers" },
-	--{ "OpFor" }
-
 }
 
 team.SetUp( 1, table.Random( possibleteams[ 2 ] ), Color( 255, 0, 0 ) )

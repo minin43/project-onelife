@@ -173,7 +173,7 @@ function RoundEnd( round, roundvictor )
     local winnername, winnercolor
     if roundvictor == 1 then
         SetGlobalInt( "RedTeamWins", GetGlobalInt( "RedTeamWins" ) + 1 )
-        winnername = Team( 1 )[ "Name" ]
+        winnername = team.GetName( 1 )
         winnercolor = Color( 100, 15, 15 )
         for k, v in pairs( team.GetPlayers( 1 ) ) do
             --AddNotice( v, "ROUND WON", SCORECOUNTS.ROUND_WON, NOTICETYPES.RND )
@@ -183,7 +183,7 @@ function RoundEnd( round, roundvictor )
         end
     elseif roundvictor == 2 then
         SetGlobalInt( "BlueTeamWins", GetGlobalInt( "BlueTeamWins" ) + 1 )
-        winnername = Team( 2 )[ "Name" ]
+        winnername = team.GetName( 2 )
         winnercolor = Color( 30, 80, 180 )
         for k, v in pairs( team.GetPlayers( 1 ) ) do
             --AddNotice( v, "ROUND LOST", SCORECOUNTS.ROUND_LOST, NOTICETYPES.RND )

@@ -1,11 +1,47 @@
 print( "sh_rolehandler initialization..." )
 roleplayermodels = {
-    [ "Task Force 141" ] = { "Models/mw2guy/diver/diver_01.mdl", "Models/mw2guy/diver/diver_02.mdl", "Models/mw2guy/BZ/bzgb01.mdl", "Models/mw2guy/BZ/bzghost.mdl", "Models/mw2guy/BZ/bzsoap.mdl", "Models/mw2guy/BZ/tfbzw01.mdl", "Models/mw2guy/BZ/tfbzw02.mdl" },
-    [ "US Army Rangers" ] = { "Models/CODMW2/CODMW2.mdl", "Models/CODMW2/CODMW2H.mdl", "Models/CODMW2/CODMW2HE.mdl", "Models/CODMW2/CODMW2HEXE.mdl", "Models/CODMW2/CODMW2M.mdl" },
-    [ "Navy Seals" ] = { "Models/CODMW2/T_CODM.mdl", "Models/CODMW2/T_CODMW2.mdl", "Models/CODMW2/T_CODMW2H.mdl", "Models/mw2guy/BZ/tfbz01.mdl", "Models/mw2guy/BZ/tfbz02.mdl", "Models/mw2guy/BZ/tfbz03.mdl" },
-    [ "Spetsnaz" ] = { "Models/mw2guy/RUS/gassoldier.mdl", "Models/mw2guy/RUS/soldier_a.mdl", "Models/mw2guy/RUS/soldier_c.mdl", "Models/mw2guy/RUS/soldier_d.mdl", "Models/mw2guy/RUS/soldier_e.mdl", "Models/mw2guy/RUS/soldier_f.mdl",  },
-    [ "Militia" ] = { "Models/COD players/opfor1.mdl", "Models/COD players/opfor2.mdl", "Models/COD players/opfor3.mdl", "Models/COD players/opfor4.mdl", "Models/COD players/opfor4.mdl", "Models/COD players/opfor6.mdl" },
-    [ "OpFor" ] = { "Models/COD players/opfor1.mdl", "Models/COD players/opfor2.mdl", "Models/COD players/opfor3.mdl", "Models/COD players/opfor4.mdl", "Models/COD players/opfor4.mdl", "Models/COD players/opfor6.mdl" }
+    [ "Task Force 141" ] = { 
+        "Models/mw2guy/diver/diver_01.mdl", 
+        "Models/mw2guy/diver/diver_02.mdl", 
+        "Models/mw2guy/BZ/bzgb01.mdl", 
+        "Models/mw2guy/BZ/bzghost.mdl", 
+        "Models/mw2guy/BZ/bzsoap.mdl", 
+        "Models/mw2guy/BZ/tfbzw01.mdl", 
+        "Models/mw2guy/BZ/tfbzw02.mdl" },
+    [ "US Army Rangers" ] = { 
+        "Models/CODMW2/CODMW2.mdl", 
+        "Models/CODMW2/CODMW2H.mdl", 
+        "Models/CODMW2/CODMW2HE.mdl", 
+        "Models/CODMW2/CODMW2HEXE.mdl", 
+        "Models/CODMW2/CODMW2M.mdl" },
+    [ "Navy Seals" ] = { 
+        "Models/CODMW2/T_CODM.mdl", 
+        "Models/CODMW2/T_CODMW2.mdl", 
+        "Models/CODMW2/T_CODMW2H.mdl", 
+        "Models/mw2guy/BZ/tfbz01.mdl", 
+        "Models/mw2guy/BZ/tfbz02.mdl", 
+        "Models/mw2guy/BZ/tfbz03.mdl" },
+    [ "Spetsnaz" ] = { 
+        "Models/mw2guy/RUS/gassoldier.mdl", 
+        "Models/mw2guy/RUS/soldier_a.mdl", 
+        "Models/mw2guy/RUS/soldier_c.mdl", 
+        "Models/mw2guy/RUS/soldier_d.mdl", 
+        "Models/mw2guy/RUS/soldier_e.mdl", 
+        "Models/mw2guy/RUS/soldier_f.mdl",  },
+    [ "Militia" ] = { 
+        "Models/COD players/opfor1.mdl", 
+        "Models/COD players/opfor2.mdl", 
+        "Models/COD players/opfor3.mdl", 
+        "Models/COD players/opfor4.mdl", 
+        "Models/COD players/opfor4.mdl", 
+        "Models/COD players/opfor6.mdl" },
+    [ "OpFor" ] = { 
+        "Models/COD players/opfor1.mdl", 
+        "Models/COD players/opfor2.mdl", 
+        "Models/COD players/opfor3.mdl", 
+        "Models/COD players/opfor4.mdl", 
+        "Models/COD players/opfor4.mdl", 
+        "Models/COD players/opfor6.mdl" }
 }
 roleplayermodels[ "Solo" ] = {  }
 
@@ -65,8 +101,10 @@ hook.Add( "PlayerSpawn", "SetRoleModifiers", SetRole )
 
 function SetRole( ply )
     timer.Simple( 0.1, function()
+        if ply:Team() != 1 and ply:Team() != 2 and ply:Team() != 3 then return end
         print( "SetRole called for ", ply:Nick() )
 
+        print( "Debug", ply:Nick(), ply:Team(), team.GetName( ply:Team() ) )
         ply:SetModel( roleplayermodels[ team.GetName( ply:Team() ) ][ math.random( #roleplayermodels[ team.GetName( ply:Team() ) ] ) ] )
         print( "Setting ", ply:Nick(), "'s model to ", ply:GetModel() )
 

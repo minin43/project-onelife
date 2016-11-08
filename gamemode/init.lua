@@ -385,13 +385,13 @@ function GM:PlayerSpawn( ply )
 
 	if ( ply:Team() != 1 and ply:Team() != 2 and ply:Team() != 3 ) or !GetGlobalBool( "GameInProgress" ) then --or !GetGlobalBool( "RoundInProgress" ) then
 		print( ply, " is not on a valid team, or the game hasn't been started. Disallowing spawn..." )
-		ply:Kill()
+		--ply:Kill()
 		ply:Spectate( OBS_MODE_ROAMING )
 		SetupSpectator( ply )
 		return
 	end
 	
-	self.BaseClass:PlayerSpawn( ply )
+	--self.BaseClass:PlayerSpawn( ply )
 	
 	--[[local redmodels = {
 		"models/player/group03/male_01.mdl",

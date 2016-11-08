@@ -266,7 +266,7 @@ if weapons.Get( "cw_kk_ins2_toz" ) then
     --wep.Primary.Ammo = "" --The ammo type the weapon uses
     wep.FireDelay = 0.3 --Fire rate
     wep.Recoil = 3.0 --Recoil
-    wep.HipSpread = 0.5 --Starting spread when firing from the hip
+    wep.HipSpread = 0.05 --Starting spread when firing from the hip
     wep.AimSpread = 0.005 --Starting spread when firing while aiming
     wep.VelocitySensitivity = 1.9 --spread increase when whipping your gun around
     wep.MaxSpreadInc = 0.06 --Maximum spread your weapon can achieve
@@ -544,7 +544,7 @@ if weapons.Get( "cw_kk_ins2_m590" ) then
     --wep.Primary.Ammo = "" --The ammo type the weapon uses
     wep.FireDelay = 0.3 --Fire rate
     wep.Recoil = 3.0 --Recoil
-    wep.HipSpread = 0.5 --Starting spread when firing from the hip
+    wep.HipSpread = 0.05 --Starting spread when firing from the hip
     wep.AimSpread = 0.005 --Starting spread when firing while aiming
     wep.VelocitySensitivity = 1.9 --spread increase when whipping your gun around
     wep.MaxSpreadInc = 0.06 --Maximum spread your weapon can achieve

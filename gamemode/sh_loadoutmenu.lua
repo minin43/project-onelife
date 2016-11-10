@@ -60,18 +60,20 @@ equipment = equipment or {
 		{ ["name"] = "F1 Frag", 		["class"] = "cw_kk_ins2_nade_f1", 	["roles"] = { 2, 5, 7, 8 } },
 		{ ["name"] = "IED", 			["class"] = "cw_kk_ins2_nade_ied", 	["roles"] = { 7 } },
 		{ ["name"] = "RPG-7", 			["class"] = "cw_kk_ins2_rpg", 		["roles"] = { 5 } },
+		{ ["name"] = "Molotov", 		["class"] = "cw_kk_ins2_nade_molotov",["roles"] = { 3, 7 } },
 		{ ["name"] = "M18 Smoke", 		["class"] = "cw_kk_ins2_nade_m18", 	["roles"] = { 1, 2, 3, 4, 7, 8 } },
 		{ ["name"] = "M84 Flash", 		["class"] = "cw_kk_ins2_nade_m84", 	["roles"] = { 1, 2, 3, 7, 8 } },
-		{ ["name"] = "GP35", 			["class"] = "cw_kk_ins2_gp25", 		["roles"] = { 7 } },
+		--{ ["name"] = "GP35", 			["class"] = "cw_kk_ins2_gp25", 		["roles"] = { 7 } },
 		{ ["name"] = "P2A1 Flare Gun", 	["class"] = "cw_kk_ins2_p2a1", 		["roles"] = { 1, 2, 3, 4, 5, 6, 7, 8 } } --This is the flare gun, for night maps, I guess
 	},
 	[2] = {
 		{ ["name"] = "M67 Frag", 		["class"] = "cw_kk_ins2_nade_m67", 	["roles"] = { 2, 5, 7, 8 } },
 		{ ["name"] = "C4", 				["class"] = "cw_kk_ins2_nade_c4", 	["roles"] = { 7 } },
 		{ ["name"] = "AT-4", 			["class"] = "cw_kk_ins2_at4", 		["roles"] = { 5 } },
+		{ ["name"] = "ANM-14", 			["class"] = "cw_kk_ins2_nade_anm14",["roles"] = { 3, 7 } },
 		{ ["name"] = "M18 Smoke", 		["class"] = "cw_kk_ins2_nade_m18", 	["roles"] = { 1, 2, 3, 4, 7, 8 } },
 		{ ["name"] = "M84 Flash", 		["class"] = "cw_kk_ins2_nade_m84", 	["roles"] = { 1, 2, 3, 7, 8 } },
-		{ ["name"] = "GP35", 			["class"] = "cw_kk_ins2_gp25", 		["roles"] = { 7 } },
+		--{ ["name"] = "GP35", 			["class"] = "cw_kk_ins2_gp25", 		["roles"] = { 7 } },
 		{ ["name"] = "P2A1 Flare Gun", 	["class"] = "cw_kk_ins2_p2a1", 		["roles"] = { 1, 2, 3, 4, 5, 6, 7, 8 } } --This is the flare gun, for night maps, I guess
 	},
 	[3] = {
@@ -275,6 +277,8 @@ if SERVER then
 			[ "cw_kk_ins2_nade_m84" ] = 2,
 			[ "cw_kk_ins2_nade_c4" ] = 1,
 			[ "cw_kk_ins2_nade_ied" ] = 1,
+			[ "cw_kk_ins2_nade_anm14" ] = 2,
+			[ "cw_kk_ins2_nade_molotov" ] = 2,
 			--//This is how many EXTRA the player gets (so 1 + whatever's down below)
 			[ "cw_kk_ins2_rpg" ] = 1,
 			[ "cw_kk_ins2_gp25" ] = 3,

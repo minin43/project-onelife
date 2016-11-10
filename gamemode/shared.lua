@@ -5,13 +5,17 @@ GM.Email = "lobsterlogan43@yahoo.com"
 GM.Website = "egncommunity.com"
 
 possibleteams = {
-	{ "Task Force 141" },--, "US Army Rangers", "Navy Seals" },
+	{ "Task Force 141", "US Army Rangers", "Navy Seals" },
 	{ "Spetsnaz", "Militia", "OpFor" }
 }
 
 team.SetUp( 1, table.Random( possibleteams[ 2 ] ), Color( 255, 0, 0 ) )
 team.SetUp( 2, table.Random( possibleteams[ 1 ] ), Color( 0, 0, 255 ) )
 team.SetUp( 3, "Solo", Color( 0, 255, 0 ) )
+
+print( "Team 1: ", team.GetName( 1 ) )
+print( "Team 2: ", team.GetName( 2 ) )
+print( "Team 3: ", team.GetName( 3 ) )
 
 if SERVER then
 

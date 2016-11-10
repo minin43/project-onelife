@@ -8,18 +8,18 @@ hook.Add( "GameStart", "SetBombs", function( mode )
 		[ "gm_devruins" ] = {
 			--//Vector positions, hotpoint size
 			{ Vector( 0, 0, 0 ), 200 }
-		}
+		},
 		[ "de_crash" ] = {
 			{ Vector( 0, 0, 0 ), 200 },
 			{ Vector( 0, 0, 0 ), 200 }
-		}
+		},
 		[ "de_keystone_beta" ] = {
 			{ Vector( 0, 0, 0 ), 200 },
 			{ Vector( 0, 0, 0 ), 200 }
-		}
+		},
 		[ "de_secretcamp" ] = {
 			{ Vector( 0, 0, 0 ), 200 }
-		}
+		},
 		[ "ttt_bf3_scrapmetal" ] = {
 			{ Vector( 0, 0, 0 ), 200 },
 			{ Vector( 0, 0, 0 ), 200 }
@@ -29,19 +29,19 @@ hook.Add( "GameStart", "SetBombs", function( mode )
 	objspawn[ "cache" ] = {
 		[ "gm_devruins" ] = {
 			[ "A" ] = { }
-		}
+		},
 		[ "de_crash" ] = {
-			[ "A" ] = { }
+			[ "A" ] = { },
 			[ "B" ] = { }
-		}
+		},
 		[ "de_keystone_beta" ] = {
-			[ "A" ] = { }
+			[ "A" ] = { },
 			[ "B" ] = { }
-		}
+		},
 		[ "de_secretcamp" ] = {
-			[ "A" ] = { }
+			[ "A" ] = { },
 			[ "B" ] = { }
-		}
+		},
 		[ "ttt_bf3_scrapmetal" ] = {
 			[ "A" ] = { }
 		}
@@ -49,23 +49,23 @@ hook.Add( "GameStart", "SetBombs", function( mode )
 
 	objspawn[ "hq" ] = {
 		[ "gm_devruins" ] = {
-			[ 1 ] = { }
+			[ 1 ] = { },
 			[ 2 ] = { }
-		}
+		},
 		[ "de_crash" ] = {
-			[ 1 ] = { }
+			[ 1 ] = { },
 			[ 2 ] = { }
-		}
+		},
 		[ "de_keystone_beta" ] = {
-			[ 1 ] = { }
+			[ 1 ] = { },
 			[ 2 ] = { }
-		}
+		},
 		[ "de_secretcamp" ] = {
-			[ 1 ] = { }
+			[ 1 ] = { },
 			[ 2 ] = { }
-		}
+		},
 		[ "ttt_bf3_scrapmetal" ] = {
-			[ 1 ] = { }
+			[ 1 ] = { },
 			[ 2 ] = { }
 		}
 	}

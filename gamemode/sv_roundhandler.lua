@@ -89,6 +89,7 @@ function RoundPrep( round )
         if v:Team() != 1 and v:Team() != 2 and v:Team() != 3 then continue end
         v:Spawn()
 	    v:Freeze( true )
+        v:SetObserverMode( OBS_MODE_NONE )
         if v.InitialJoin then
             v:SendLua( "LoadoutMenu()" )
             v.InitialJoin = false

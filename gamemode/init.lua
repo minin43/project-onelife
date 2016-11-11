@@ -31,6 +31,7 @@ include( "sv_lvlhandler.lua" )
 include( "sv_moneyhandler.lua" )
 include( "sv_playerhandler.lua" )
 include( "sv_roundhandler.lua" )
+include( "sv_roundstats.lua" )
 include( "sv_votehandler.lua" )
 
 --[[for k, v in pairs( file.Find( "onelife/gamemode/perks/*.lua", "LUA" ) ) do
@@ -369,6 +370,7 @@ hook.Add( "PlayerDisconnected", "Spec_DC", function( ply )
 			end
 		end
 	end
+	if leaderboard[ ply:Nick() ] then leaderboard[ ply:Nick() ] = nil end
 end )
 
 

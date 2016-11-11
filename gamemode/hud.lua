@@ -533,6 +533,15 @@ hook.Add( "PostPlayerDraw", "hud_icon", function( ply )
 	end
 end )
 
+--//MVP List
+net.Receive( "MVPList", function()
+	local mostkills = net.ReadTable()
+	local mostdeaths = net.ReadTable()
+	local mostheadshots = net.ReadTable()
+
+	--Do something here...
+end )
+
 surface.CreateFont( "Vote", { font = "Exo 2", size = 15 } )
 surface.CreateFont( "Vote Larger", { font = "Exo 2", size = 20 } )
 surface.CreateFont( "Vote Huge", { font = "Exo 2", size = 30 } )
@@ -542,7 +551,7 @@ net.Receive( "StartGMVote", function()
 	local selectedoption
 
 	mainframe = vgui.Create( "DFrame" )
-	mainframe:SetSize( 200, ( 140 + ( 40 * ( math.Clamp( #gametypes - 4, 0, #gametypes ) ) ) ) ) --All text height = 22 title, 24 for each option name, 
+	mainframe:SetSize( 200, ( 140 + ( 40 * ( math.Clamp( #gametypes - 4, 0, #gametypes ) ) ) ) ) --All text height - 22 title, 24 for each option name, 
 	mainframe:SetPos( -201, 100 )
 	mainframe:SetTitle( "" )
 	mainframe:SetVisible( true )
@@ -569,7 +578,7 @@ net.Receive( "StartGMVote", function()
 			return 
 		end
 		for k, v in pairs( keyenums ) do
-			if input.IsKeyDown( v ) then
+			if input.IsKeyDown( v ) and gametypes[ k ] then
 				selectedoption = k
 				net.Start( "EndVoteCallback" )
 					net.WriteString( tostring( selectedoption ) )

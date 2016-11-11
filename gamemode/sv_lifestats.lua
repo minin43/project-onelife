@@ -2,7 +2,7 @@ print( "sv_lifestats initialization..." )
 util.AddNetworkString( "RequestLifestats" )
 util.AddNetworkString( "RequestLifestatsCallback" )
 
-function table.Cut( tab, num ) -- why isnt this already a thing
+--[[function table.Cut( tab, num ) -- why isnt this already a thing
 	assert( type( tab ) == "table", "Bad argument #1 to table.Cut: argument type must be a table" )
 	assert( type( num ) == "number", "Bad argument #2 to table.Cut: argument type must be a number" )
 	assert( math.Round( num ) == num, "Bad argument #2 to table.Cut: number must be whole" )
@@ -15,7 +15,7 @@ function table.Cut( tab, num ) -- why isnt this already a thing
 		table.remove( tab, last )
 	until table.Count( tab ) <= num
 	return tab
-end
+end]]
 
 timer.Create( "pol_timerecord", 60, 0, function()
 	for k, v in next, player.GetAll() do

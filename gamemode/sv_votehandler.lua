@@ -23,11 +23,9 @@ local votes = { }
 hook.Add( "GameEnd", "EndGameVoting", function( winner )
     --On game end, ask all players to vote for a map
     --This will all be drawn in hud.lua
-    for k, v in pairs( player.GetAll() ) do
-        net.Start( "StartGMVote" )
-            net.WriteTable( availablegamemodes )
-        net.Send( v )
-    end
+    net.Start( "StartGMVote" )
+        net.WriteTable( availablegamemodes )
+    net.Broadcast()
 
     --After 30 seconds, set a winning mode, save it in a file - based on any sent votes - and start the map vote
     --After another 30 seconds, set a winning map and change to it

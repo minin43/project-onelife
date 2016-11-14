@@ -46,9 +46,11 @@ local hide = {
 	"CHudBattery",
 	"CHudAmmo",
 	"CHudSecondaryAmmo",
-	"CHudDamageIndictator",
+	"CHudDamageIndicator",
 	"CHudWeaponSelection",
-	"CHudZoom"
+	"CHudZoom",
+	"CHudCrosshair",
+	"CHudDeathNotice"
 }
 function hidehud( name )
 	if( table.HasValue( hide, name ) ) then
@@ -480,11 +482,11 @@ hook.Add( "CreateMove", "WeaponSwitch", function( cmd )
 end )
 
 --//Can be found in init.lua - move?
-net.Receive( "tdm_deathnotice", function()
+net.Receive( "DeathNotice", function()
 	local victim = net.ReadEntity()
 	local attacker = net.ReadEntity()
 	
-	if attacker and victim and IsValid( attacker ) and IsValid( victim ) and attacker ~= NULL and victim ~= NULL then
+	if attacker and victim and IsValid( attacker ) and IsValid( victim ) and attacker:IsPlayer() and victim:IsPlayer() then
 		local aname = attacker:Nick()
 		local ateam = attacker:Team()
 		local vname = victim:Nick()
@@ -497,6 +499,12 @@ net.Receive( "tdm_deathnotice", function()
 		else
 			GAMEMODE:AddDeathNotice( aname, ateam, " killed ", vname, vteam )
 		end
+	elseif attack:IsWorld() and victim:IsPlayer() then
+		aname = vname
+		ateam = vteam
+		vname = ""
+		vteam = ""
+		GAMEMODE:AddDeathNotice( aname, ateam, " broke his legs.", vname, vteam )
 	else
 		print( " ADDDEATHNOTICE HIT AN ERROR... Attacker: ", attacker, IsValid( attacker ), " Victim: ", victim, IsValid( victim ) )
 	end
@@ -685,27 +693,6 @@ net.Receive( "StartMapVote", function()
 		end )
 	end )
 end )
-
---Use these for the soon-to-be-implemented bombs
---[[usermessage.Hook( "enemyflagcaptured", function( um )
-end )
-
-usermessage.Hook( "friendlyflagcaptured", function( um )
-end )]]
-
-surface.CreateFont( "wlarge", {
- font = "BF4 Numbers",
- size = 100,
- weight = 0,
- antialias = true
-} )
-
-surface.CreateFont( "wsmall", {
- font = "BF4 Numbers",
- size = 60,
- weight = 0,
- antialias = true
-} )
 
 --First person death, stolen from a workshop addon
  hook.Add( "CalcView", "CalcView:GmodDeathView", function( player, origin, angles, fov )

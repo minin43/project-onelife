@@ -177,20 +177,20 @@ function RoundEnd( round, roundvictor )
         winnername = team.GetName( 1 )
         winnercolor = Color( 100, 15, 15 )
         for k, v in pairs( team.GetPlayers( 1 ) ) do
-            --AddNotice( v, "ROUND WON", SCORECOUNTS.ROUND_WON, NOTICETYPES.RND )
+            AddReward( v, SCORECOUNTS.ROUND_WON )
         end
         for k, v in pairs( team.GetPlayers( 2 ) ) do
-            --AddNotice( v, "ROUND LOST", SCORECOUNTS.ROUND_LOST, NOTICETYPES.RND )
+            AddReward( v, SCORECOUNTS.ROUND_LOST )
         end
     elseif roundvictor == 2 then
         SetGlobalInt( "BlueTeamWins", GetGlobalInt( "BlueTeamWins" ) + 1 )
         winnername = team.GetName( 2 )
         winnercolor = Color( 30, 80, 180 )
         for k, v in pairs( team.GetPlayers( 1 ) ) do
-            --AddNotice( v, "ROUND LOST", SCORECOUNTS.ROUND_LOST, NOTICETYPES.RND )
+            AddReward( v, SCORECOUNTS.ROUND_LOST )
         end
         for k, v in pairs( team.GetPlayers( 2 ) ) do
-            --AddNotice( v, "ROUND WON", SCORECOUNTS.ROUND_WON, NOTICETYPES.RND )
+            AddReward( v, SCORECOUNTS.ROUND_WON )
         end
     end
     ULib.tsayColor( nil, true, winnercolor, winnername, Color( 255, 255, 255 ), " has won round " .. round .. "." )
@@ -207,11 +207,11 @@ function RoundEnd( round, roundvictor )
         net.Broadcast()
         ULib.tsayColor( nil, true, winnercolor, winnername, Color( 255, 255, 255 ), " has won the game." )
         for k, v in pairs( team.GetPlayers( roundvictor ) ) do
-            --AddNotice( v, "GAME WON", SCORECOUNTS.GAME_WON, NOTICETYPES.RND )
+            AddReward( v, SCORECOUNTS.GAME_WON )
         end
         if roundvictor == 1 then losingteam = 2 elseif roundvictor == 2 then losingteam = 1 end
         for k, v in pairs( team.GetPlayers( losingteam ) ) do
-            --AddNotice( v, "GAME LOST", SCORECOUNTS.GAME_LOST, NOTICETYPES.RND )
+            AddReward( v, SCORECOUNTS.GAME_LOST )
         end
     else
         SetGlobalBool( "RoundInProgress", false )

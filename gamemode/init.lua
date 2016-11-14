@@ -55,12 +55,11 @@ end
 
 local _Ply = FindMetaTable( "Player" )
 function _Ply:AddScore( score )
-	local num = self:GetNWInt( "tdm_score" )
-	self:SetNWInt( "tdm_score", num + score )
+	local num = self:GetNWInt( "pol_score" )
+	self:SetNWInt( "pol_score", num + score )
 end
 
-util.AddNetworkString( "tdm_loadout" )
-util.AddNetworkString( "tdm_deathnotice" )
+util.AddNetworkString( "DeathNotice" )
 util.AddNetworkString( "SetTeam" )
 
 if not file.Exists( "onelife", "DATA" ) then
@@ -427,7 +426,7 @@ end
 
 function GM:PlayerDeath( vic, inf, att )
 	if( vic:IsValid() and att:IsValid() and att:IsPlayer() ) then
-		net.Start( "tdm_deathnotice" )
+		net.Start( "DeathNotice" )
 			net.WriteEntity( vic )
 			net.WriteEntity( att )
 		net.Broadcast()
@@ -437,7 +436,7 @@ function GM:PlayerDeath( vic, inf, att )
 		timer.Simple( 3, function()
 			vic:ScreenFade( SCREENFADE.OUT, Color( 0, 0, 0 ), 2, 3 )
 			timer.Simple( 4, function()
-				if vic and vic:IsValid() and !vic:Alive() and GetGlobalBool( "GameInProgress" ) then
+				if vic and vic:IsValid() and !vic:Alive() and GetGlobalBool( "GameInProgress" ) and GetGlobalBool( "RoundInProgress" ) then
 					SetupSpectator( vic )
 				end
 			end )

@@ -7,6 +7,9 @@ GM.Website = "egncommunity.com"
 local redTeamName, BlueTeamName
 if SERVER then
 
+	util.AddNetworkString( "AskTeams" )
+	util.AddNetworkString( "AskTeamsCallback" )
+
 	possibleteams = {
 		{ "Task Force 141", "US Army Rangers", "Navy Seals" },
 		{ "Spetsnaz", "Militia", "OpFor" }
@@ -14,6 +17,17 @@ if SERVER then
 
 	redTeamName = table.Random( possibleteams[ 2 ] )
 	BlueTeamName = table.Random( possibleteams[ 1 ] )
+
+	team.SetUp( 1, redTeamName, Color( 255, 0, 0 ) )
+	team.SetUp( 2, BlueTeamName, Color( 0, 0, 255 ) )
+	team.SetUp( 3, "Solo", Color( 0, 255, 0 ) )
+
+	net.Receive( "AskTeams", function( len, ply )
+		net.Start( "AskTeamsCallback" )
+			net.WriteString( redTeamName )
+			net.WriteString( BlueTeamName )
+		net.Send( ply )
+	end )
 
 	local maps = {
 		[ "gm_devruins" ] = 748863203,
@@ -39,9 +53,9 @@ if SERVER then
 	
 end
 
-team.SetUp( 1, redTeamName, Color( 255, 0, 0 ) )
+--[[team.SetUp( 1, redTeamName, Color( 255, 0, 0 ) )
 team.SetUp( 2, BlueTeamName, Color( 0, 0, 255 ) )
-team.SetUp( 3, "Solo", Color( 0, 255, 0 ) )
+team.SetUp( 3, "Solo", Color( 0, 255, 0 ) )]]
 
 print( "Team 1: ", team.GetName( 1 ) )
 print( "Team 2: ", team.GetName( 2 ) )
@@ -55,4 +69,14 @@ local _PLY = FindMetaTable( "Player" )
 
 function _PLY:Score()
 	return self:GetNWInt( "tdm_score" )
+end
+
+if CLIENT then
+	net.Start( "AskTeams" )
+	net.SendToServer()
+	net.Receive( "AskTeamsCallback", function()
+		team.SetUp( 1, net.ReadString(), Color( 255, 0, 0 ) )
+		team.SetUp( 2, net.ReadString(), Color( 0, 0, 255 ) )
+		team.SetUp( 3, "Solo", Color( 0, 255, 0 ) )
+	end )
 end

@@ -170,6 +170,15 @@ net.Receive( "LowTime", function( len, ply )
 end )
 
 net.Receive( "SetTeam", function( len, ply )
+
+	net.Start( "AskTeams" )
+	net.SendToServer()
+	net.Receive( "AskTeamsCallback", function()
+		team.SetUp( 1, net.ReadString(), Color( 255, 0, 0 ) )
+		team.SetUp( 2, net.ReadString(), Color( 0, 0, 255 ) )
+		team.SetUp( 3, "Solo", Color( 0, 255, 0 ) )
+	end )
+
 	--if LocalPlayer():Team() != 1 or LocalPlayer():Team() != 2 or LocalPlayer():Team() != 3 then
 	local hoverone, hovertwo
 	surface.SetFont( "Exo 2 Large" )
@@ -177,6 +186,7 @@ net.Receive( "SetTeam", function( len, ply )
 	local info1width, info1height = surface.GetTextSize( info1 )
 	local info2 = team.GetName( 2 ) .. " (" .. #team.GetPlayers( 2 ) .. ")"
 	local info2width, info2height = surface.GetTextSize( info2 )
+	print( "DEBUG: ", team.GetName( 1 ), info1width, team.GetName( 2 ), info2width )
 
 	local teamset = vgui.Create( "DFrame" )
 	teamset:SetSize( 400 + info1width + info2width, 300 )

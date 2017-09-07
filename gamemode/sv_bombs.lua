@@ -1,5 +1,5 @@
 print( "sv_bombs initialization..." )
-hook.Add( "GameStart", "SetBombs", function( mode )
+--[[hook.Add( "GameStart", "SetBombs", function( mode )
 	objspawn = objspawn or { }
 
 	-- Pasting this in console gets everyone's current location: lua_run for k, v in pairs(player.GetAll()) do print(v, v:GetPos())end useful for getting good spawn positions
@@ -75,4 +75,4 @@ hook.Add( "GameStart", "SetBombs", function( mode )
 	--else
 	
 	end
-end )
+end )]]

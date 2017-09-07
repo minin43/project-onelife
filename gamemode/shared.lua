@@ -48,6 +48,12 @@ if SERVER then
 	resource.AddWorkshop( "657241323" ) --KK's INS2 pack
 	resource.AddWorkshop( "793616016" ) --My Server files
 	resource.AddWorkshop( "176238701" ) --PMs
+	resource.AddWorkshop( "805735515" )
+	resource.AddWorkshop( "805601312" )
+	resource.AddWorkshop( "805591562" )
+	resource.AddWorkshop( "804726861" )
+	resource.AddWorkshop( "804725707" )
+	resource.AddWorkshop( "804724618" )
 	--resource.AddWorkshop( "639078265" ) --UT3/Insurgency Sounds
 	--resource.AddWorkshop( "575652408" ) --Player Expression Mod
 	

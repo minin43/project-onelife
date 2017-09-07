@@ -8,7 +8,7 @@ SCORECOUNTS = {
     
     ROUND_WON = 100,
     ROUND_LOST = 50,
-    ROUND_TIED = 50
+    ROUND_TIED = 50,
 
     GAME_WON = 200,
     GAME_TIED = 100,

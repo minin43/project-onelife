@@ -155,7 +155,7 @@ function LoadoutMenu()
 	local teamnumber = LocalPlayer():Team()
 	for k, v in pairs( roles ) do
 		surface.SetFont( "Exo 2 Regular" )
-		local text = v[ teamnumber ]
+		local text = v[ teamnumber ] or "default"
 		local textwidth, textheight = surface.GetTextSize( text )
 
 		local hoverrole

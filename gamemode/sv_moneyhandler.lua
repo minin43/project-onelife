@@ -18,7 +18,7 @@ function unid( steamid )
 	return string.upper( x )
 end
 
-function GetMoney( ply )
+function GM:GetMoney( ply )
 	if not ply:GetPData( "pol_money" ) then
 		ply:SetPData( "pol_money", "0" )
 	end
@@ -26,41 +26,41 @@ function GetMoney( ply )
 	return tonumber( ply:GetPData( "pol_money" ) )
 end
 
-function AddMoney( ply, amt )
+function GM:AddMoney( ply, amt )
 	if ply and IsValid( ply ) then
 		local group = ply:GetNWString( "usergroup" )
 		local mult = 1
 		if amt > 0 then
-			for k, v in next, lvl.VIPGroups do
+			for k, v in next, GM.lvl.VIPGroups do
 				if v[ 1 ] == group then
 					mult = v[ 2 ]
 				end
 			end
 		end
-		ply:SetPData( "pol_money", GetMoney( ply ) + ( amt * mult) )
-		SendUpdate( ply )
+		ply:SetPData( "pol_money", self.GetMoney( ply ) + ( amt * mult) )
+		self.SendUpdate( ply )
 	end
 end
 
-function SetMoney( ply, num )
+function GM:SetMoney( ply, num )
 	ply:SetPData( "pol_money", num )
-	SendUpdate( ply )
+	self.SendUpdate( ply )
 end
 
-function SendUpdate( ply )
+function GM:SendUpdate( ply )
 	net.Start( "SendMoneyUpdate" )
-		net.WriteString( GetMoney( ply ) )
+		net.WriteString( self.GetMoney( ply ) )
 	net.Send( ply )
 end
 
 hook.Add( "PlayerSpawn", "tdm_initialspawn", function( ply )
 	net.Start( "SendInitialMoney" )
-		net.WriteString( GetMoney( ply ) )
+		net.WriteString( GM:GetMoney( ply ) )
 	net.Send( ply )
 end )
 
 net.Receive( "RequestMoney", function( len, ply )
-	local num = GetMoney( ply )
+	local num = GM:GetMoney( ply )
 	
 	net.Start( "RequestMoneyCallback" )
 		net.WriteString( tostring( num ) )
@@ -84,10 +84,10 @@ net.Receive( "BuyAttachment", function( len, ply )
 	file.Write( "onelife/users/" .. id( ply:SteamID() ) .. ".txt", newfile )
 
 	price = -price
-	AddMoney( ply, price )
+	GM:AddMoney( ply, price )
 
 	timer.Simple( 0.1, function()
-		local cur = GetMoney( ply )
+		local cur = GM:GetMoney( ply )
 		net.Start( "BuyAttachmentCallback" )
 			net.WriteString( tostring( cur ) )
 		net.Send( ply )

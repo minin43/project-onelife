@@ -1,36 +1,36 @@
 print( "sh_loadoutmenu initialization..." )
---OLD LAYOUT: { <weapon name>, <class>, <unlock level>, <world model>, <cost>, { <damage>, <accuracy>, <rate of fire> } }  
---NEW LAYOUT: { ["name"] = "weapon name", ["class"] = "class name", ["roles"] = { roles by level } }
-
+--OLD LAYOUT: { <weapon name>, <class>, <unlock level>, <world model>, <cost>, { <damage>, <accuracy>, <rate of fire> } }
+--NEW LAYOUT: { weaponName = "weapon name", weaponClass = "class name", weaponWeight = 0, weaponRoles = { roles by level = shop price } }
+--Red team: 3 ARs, 3 SMGs, 3 DMRs, 1 SR, 1 HMG, 1 SG	Blue team: 
 primaries = primaries or {
 	[1] = {
-		{ ["name"] = "AK-74", 			["class"] = "cw_kk_ins2_ak74", 		["roles"] = { 5, 8 } },
-		{ ["name"] = "AKM", 			["class"] = "cw_kk_ins2_akm", 		["roles"] = { 1, 2, 3, 4, 5, 6, 7, 8 } },
-		{ ["name"] = "AKS-74u", 		["class"] = "cw_kk_ins2_aks74u", 	["roles"] = { 2, 8 } },
-		{ ["name"] = "FN FAL", 			["class"] = "cw_kk_ins2_fnfal", 	["roles"] = { 4, 7 } },
-		{ ["name"] = "M1 Carbine", 		["class"] = "cw_kk_ins2_m1a1", 		["roles"] = { 1, 3 } },
-		{ ["name"] = "M1A1 Carbine", 	["class"] = "cw_kk_ins2_m1a1_para", ["roles"] = { 4 } },
-		{ ["name"] = "Mosin Nagant", 	["class"] = "cw_kk_ins2_mosin", 	["roles"] = { 6, 8 } },
-		{ ["name"] = "MP-40", 			["class"] = "cw_kk_ins2_mp40", 		["roles"] = { 1, 2 } },
-		{ ["name"] = "RPK", 			["class"] = "cw_kk_ins2_rpk", 		["roles"] = { 3, 8 } },
-		{ ["name"] = "SKS", 			["class"] = "cw_kk_ins2_sks", 		["roles"] = { 4, 6 } },
-		{ ["name"] = "Sterling", 		["class"] = "cw_kk_ins2_sterling", 	["roles"] = { 2, 7 } },
-		{ ["name"] = "TOZ", 			["class"] = "cw_kk_ins2_toz", 		["roles"] = { 2, 5, 8 } }
+		{ weaponName = "AK-74", 		weaponClass = "cw_kk_ins2_ak74", 		weaponWeight = 0, weaponRoles = {} }, --AR
+		{ weaponName = "AKM", 			weaponClass = "cw_kk_ins2_akm", 		weaponWeight = 0, weaponRoles = {} }, --AR
+		{ weaponName = "AKS-74u", 		weaponClass = "cw_kk_ins2_aks74u", 		weaponWeight = 0, weaponRoles = {} }, --SMG
+		{ weaponName = "FN FAL", 		weaponClass = "cw_kk_ins2_fnfal", 		weaponWeight = 0, weaponRoles = {} }, --AR
+		{ weaponName = "M1 Carbine", 	weaponClass = "cw_kk_ins2_m1a1", 		weaponWeight = 0, weaponRoles = {} }, --DMR
+		{ weaponName = "M1A1 Carbine", 	weaponClass = "cw_kk_ins2_m1a1_para", 	weaponWeight = 0, weaponRoles = {} }, --DMR
+		{ weaponName = "Mosin Nagant", 	weaponClass = "cw_kk_ins2_mosin", 		weaponWeight = 0, weaponRoles = {} }, --SR
+		{ weaponName = "MP-40", 		weaponClass = "cw_kk_ins2_mp40", 		weaponWeight = 0, weaponRoles = {} }, --SMG
+		{ weaponName = "RPK", 			weaponClass = "cw_kk_ins2_rpk", 		weaponWeight = 0, weaponRoles = {} }, --HMG
+		{ weaponName = "SKS", 			weaponClass = "cw_kk_ins2_sks", 		weaponWeight = 0, weaponRoles = {} }, --DMR
+		{ weaponName = "Sterling", 		weaponClass = "cw_kk_ins2_sterling", 	weaponWeight = 0, weaponRoles = {} }, --SMG
+		{ weaponName = "TOZ", 			weaponClass = "cw_kk_ins2_toz", 		weaponWeight = 0, weaponRoles = {} } --SG
 	},
-	[2] = {
-		{ ["name"] = "AC-556", 		["class"] = "cw_kk_ins2_mini14", 			["roles"] = { 5, 7 } },
-		{ ["name"] = "Galil", 		["class"] = "cw_kk_ins2_galil", 			["roles"] = { 1, 5 } },
-		{ ["name"] = "Galil ACE", 	["class"] = "cw_kk_ins2_cstm_galil_ace", 	["roles"] = { 8 } },
-		{ ["name"] = "HK MP5K", 	["class"] = "cw_kk_ins2_mp5k", 				["roles"] = { 2, 7 } },
-		{ ["name"] = "HK UMP .45", 	["class"] = "cw_kk_ins2_ump45", 			["roles"] = { 1, 2, 8 } },
-		{ ["name"] = "L1A1", 		["class"] = "cw_kk_ins2_l1a1", 				["roles"] = { 3, 4 } },
-		{ ["name"] = "M14 EBR", 	["class"] = "cw_kk_ins2_m14", 				["roles"] = { 4, 6 } },
-		{ ["name"] = "M16A4", 		["class"] = "cw_kk_ins2_m16a4", 			["roles"] = { 1, 2, 3, 4, 6 } },
-		{ ["name"] = "M249", 		["class"] = "cw_kk_ins2_m249", 				["roles"] = { 3 } },
-		{ ["name"] = "M40A1", 		["class"] = "cw_kk_ins2_m40a1", 			["roles"] = { 6 } },
-		{ ["name"] = "M4A1", 		["class"] = "cw_kk_ins2_m4a1", 				["roles"] = { 5, 7 } },
-		{ ["name"] = "M590", 		["class"] = "cw_kk_ins2_m590", 				["roles"] = { 2, 8 } },
-		{ ["name"] = "MK18", 		["class"] = "cw_kk_ins2_mk18", 				["roles"] = { 8 } }
+	[2] = { --I think we're missing some weapons here
+		{ weaponName = "AC-556", 		weaponClass = "cw_kk_ins2_mini14", 			weaponWeight = 0, weaponRoles = {} },
+		{ weaponName = "Galil", 		weaponClass = "cw_kk_ins2_galil", 			weaponWeight = 0, weaponRoles = {} }, --AR
+		{ weaponName = "Galil ACE", 	weaponClass = "cw_kk_ins2_cstm_galil_ace", 	weaponWeight = 0, weaponRoles = {} }, --AR
+		{ weaponName = "HK MP5K", 		weaponClass = "cw_kk_ins2_mp5k", 			weaponWeight = 0, weaponRoles = {} }, --SMG
+		{ weaponName = "HK UMP .45", 	weaponClass = "cw_kk_ins2_ump45", 			weaponWeight = 0, weaponRoles = {} }, --SMG
+		{ weaponName = "L1A1", 			weaponClass = "cw_kk_ins2_l1a1", 			weaponWeight = 0, weaponRoles = {} },
+		{ weaponName = "M14 EBR", 		weaponClass = "cw_kk_ins2_m14", 			weaponWeight = 0, weaponRoles = {} },
+		{ weaponName = "M16A4", 		weaponClass = "cw_kk_ins2_m16a4", 			weaponWeight = 0, weaponRoles = {} }, --AR
+		{ weaponName = "M249", 			weaponClass = "cw_kk_ins2_m249", 			weaponWeight = 0, weaponRoles = {} },
+		{ weaponName = "M40A1", 		weaponClass = "cw_kk_ins2_m40a1", 			weaponWeight = 0, weaponRoles = {} },
+		{ weaponName = "M4A1", 			weaponClass = "cw_kk_ins2_m4a1", 			weaponWeight = 0, weaponRoles = {} }, --AR
+		{ weaponName = "M590", 			weaponClass = "cw_kk_ins2_m590", 			weaponWeight = 0, weaponRoles = {} },
+		{ weaponName = "MK18", 			weaponClass = "cw_kk_ins2_mk18", 			weaponWeight = 0, weaponRoles = {} } --AR
 	},
 	[3] = {
 		--Intentionally left blank
@@ -40,14 +40,14 @@ primaries = primaries or {
 
 secondaries = secondaries or {
 	[1] = {
-		{ ["name"] = "M1911", 		["class"] = "cw_kk_ins2_m1911", 	["roles"] = { 1, 2, 3, 4, 5, 6, 7, 8 } },
-		{ ["name"] = "Makarov", 	["class"] = "cw_kk_ins2_makarov", 	["roles"] = { 1, 2, 3, 4, 5, 6, 7, 8 } },
-		{ ["name"] = "Model 10", 	["class"] = "cw_kk_ins2_revolver", 	["roles"] = { 1, 2, 3, 4, 5, 6, 7, 8 } }
+		{ weaponName = "M1911", 		weaponClass = "cw_kk_ins2_m1911", 	weaponWeight = 0, weaponRoles = { 1, 2, 3, 4, 5, 6, 7, 8 } },
+		{ weaponName = "Makarov", 	weaponClass = "cw_kk_ins2_makarov", 	weaponWeight = 0, weaponRoles = { 1, 2, 3, 4, 5, 6, 7, 8 } },
+		{ weaponName = "Model 10", 	weaponClass = "cw_kk_ins2_revolver", 	weaponWeight = 0, weaponRoles = { 1, 2, 3, 4, 5, 6, 7, 8 } }
 	},
 	[2] = {
-		{ ["name"] = "Beretta M9", 	["class"] = "cw_kk_ins2_m9", 		["roles"] = { 1, 2, 3, 4, 5, 6, 7, 8 } },
-		{ ["name"] = "M45", 		["class"] = "cw_kk_ins2_m45", 		["roles"] = { 1, 2, 3, 4, 5, 6, 7, 8 } },
-		{ ["name"] = "Model 10", 	["class"] = "cw_kk_ins2_revolver", 	["roles"] = { 1, 2, 3, 4, 5, 6, 7, 8 } }
+		{ weaponName = "Beretta M9", 	weaponClass = "cw_kk_ins2_m9", 		weaponWeight = 0, weaponRoles = { 1, 2, 3, 4, 5, 6, 7, 8 } },
+		{ weaponName = "M45", 		weaponClass = "cw_kk_ins2_m45", 		weaponWeight = 0, weaponRoles = { 1, 2, 3, 4, 5, 6, 7, 8 } },
+		{ weaponName = "Model 10", 	weaponClass = "cw_kk_ins2_revolver", 	weaponWeight = 0, weaponRoles = { 1, 2, 3, 4, 5, 6, 7, 8 } }
 	},
 	[3] = {
 		--Intentionally left blank
@@ -57,41 +57,28 @@ secondaries = secondaries or {
 --// Layout: "Equipment name", "equipment class", "roles to receive"
 equipment = equipment or {
 	[1] = {
-		{ ["name"] = "F1 Frag", 		["class"] = "cw_kk_ins2_nade_f1", 	["roles"] = { 2, 5, 7, 8 } },
-		{ ["name"] = "IED", 			["class"] = "cw_kk_ins2_nade_ied", 	["roles"] = { 7 } },
-		{ ["name"] = "RPG-7", 			["class"] = "cw_kk_ins2_rpg", 		["roles"] = { 5 } },
-		{ ["name"] = "Molotov", 		["class"] = "cw_kk_ins2_nade_molotov",["roles"] = { 3, 7 } },
-		{ ["name"] = "M18 Smoke", 		["class"] = "cw_kk_ins2_nade_m18", 	["roles"] = { 1, 2, 3, 4, 7, 8 } },
-		{ ["name"] = "M84 Flash", 		["class"] = "cw_kk_ins2_nade_m84", 	["roles"] = { 1, 2, 3, 7, 8 } },
-		--{ ["name"] = "GP35", 			["class"] = "cw_kk_ins2_gp25", 		["roles"] = { 7 } },
-		{ ["name"] = "P2A1 Flare Gun", 	["class"] = "cw_kk_ins2_p2a1", 		["roles"] = { 1, 2, 3, 4, 5, 6, 7, 8 } } --This is the flare gun, for night maps, I guess
+		{ weaponName = "F1 Frag", 		weaponClass = "cw_kk_ins2_nade_f1", 	weaponWeight = 0, weaponRoles = { 2, 5, 7, 8 } },
+		{ weaponName = "IED", 			weaponClass = "cw_kk_ins2_nade_ied", 	weaponWeight = 0, weaponRoles = { 7 } },
+		{ weaponName = "RPG-7", 			weaponClass = "cw_kk_ins2_rpg", 	weaponWeight = 0, weaponRoles = { 5 } },
+		{ weaponName = "Molotov", 		weaponClass = "cw_kk_ins2_nade_molotov",weaponWeight = 0, weaponRoles = { 3, 7 } },
+		{ weaponName = "M18 Smoke", 		weaponClass = "cw_kk_ins2_nade_m18",weaponWeight = 0, weaponRoles = { 1, 2, 3, 4, 7, 8 } },
+		{ weaponName = "M84 Flash", 		weaponClass = "cw_kk_ins2_nade_m84",weaponWeight = 0, weaponRoles = { 1, 2, 3, 7, 8 } },
+		--{ weaponName = "GP35", 			weaponClass = "cw_kk_ins2_gp25", 	weaponWeight = 0, weaponRoles = { 7 } },
+		{ weaponName = "P2A1 Flare Gun", 	weaponClass = "cw_kk_ins2_p2a1", 	weaponWeight = 0, weaponRoles = { 1, 2, 3, 4, 5, 6, 7, 8 } } --This is the flare gun, for night maps, I guess
 	},
 	[2] = {
-		{ ["name"] = "M67 Frag", 		["class"] = "cw_kk_ins2_nade_m67", 	["roles"] = { 2, 5, 7, 8 } },
-		{ ["name"] = "C4", 				["class"] = "cw_kk_ins2_nade_c4", 	["roles"] = { 7 } },
-		{ ["name"] = "AT-4", 			["class"] = "cw_kk_ins2_at4", 		["roles"] = { 5 } },
-		{ ["name"] = "ANM-14", 			["class"] = "cw_kk_ins2_nade_anm14",["roles"] = { 3, 7 } },
-		{ ["name"] = "M18 Smoke", 		["class"] = "cw_kk_ins2_nade_m18", 	["roles"] = { 1, 2, 3, 4, 7, 8 } },
-		{ ["name"] = "M84 Flash", 		["class"] = "cw_kk_ins2_nade_m84", 	["roles"] = { 1, 2, 3, 7, 8 } },
-		--{ ["name"] = "GP35", 			["class"] = "cw_kk_ins2_gp25", 		["roles"] = { 7 } },
-		{ ["name"] = "P2A1 Flare Gun", 	["class"] = "cw_kk_ins2_p2a1", 		["roles"] = { 1, 2, 3, 4, 5, 6, 7, 8 } } --This is the flare gun, for night maps, I guess
+		{ weaponName = "M67 Frag", 		weaponClass = "cw_kk_ins2_nade_m67", 		weaponWeight = 0, weaponRoles = { 2, 5, 7, 8 } },
+		{ weaponName = "C4", 				weaponClass = "cw_kk_ins2_nade_c4", 	weaponWeight = 0, weaponRoles = { 7 } },
+		{ weaponName = "AT-4", 			weaponClass = "cw_kk_ins2_at4", 			weaponWeight = 0, weaponRoles = { 5 } },
+		{ weaponName = "ANM-14", 			weaponClass = "cw_kk_ins2_nade_anm14",	weaponWeight = 0, weaponRoles = { 3, 7 } },
+		{ weaponName = "M18 Smoke", 		weaponClass = "cw_kk_ins2_nade_m18", 	weaponWeight = 0, weaponRoles = { 1, 2, 3, 4, 7, 8 } },
+		{ weaponName = "M84 Flash", 		weaponClass = "cw_kk_ins2_nade_m84", 	weaponWeight = 0, weaponRoles = { 1, 2, 3, 7, 8 } },
+		--{ weaponName = "GP35", 			weaponClass = "cw_kk_ins2_gp25", 		weaponWeight = 0, weaponRoles = { 7 } },
+		{ weaponName = "P2A1 Flare Gun", 	weaponClass = "cw_kk_ins2_p2a1", 		weaponWeight = 0, weaponRoles = { 1, 2, 3, 4, 5, 6, 7, 8 } } --This is the flare gun, for night maps, I guess
 	},
 	[3] = {
 		--Intentionally left blank
 	}
-}
-
---// { "Red Team Name", "Blue Team Name", "FFA Team Name", "Role Description" }
---// Refer to this for future descriptions: http://insurgency.wikia.com/wiki/Insurgency
-roles = {
-	{ "Militant", 		"Rifleman", 			"Rifleman", 	"Standard meduim armored fighter, gets access to most weapon types but no frag grenade." },
-	{ "Scout", 			"Reconnaissance", 		"Recon", 		"Lightly armored but fast-moving fighter, gets access to all short-range weaponry and all grenades." },
-	{ "Gunner", 		"Support", 				"Gunner", 		"Super heavily armored supportive fighter, gets access to LMGs and some long-distance DMRs, but no frag grenades." },
-	{ "Sharpshooter", 	"Designated Marksman", 	"Marksman", 	"Lightly armored supportive fighter, gets access to all DMRs but no flash/frag grenades." },
-	{ "Striker", 		"Demolitions", 			"Demolitions", 	"Super heavily armored fighter, gets access to all launchers but no smoke/flash grenade." },
-	{ "Sniper", 		"Sniper", 				"Sniper", 		"Lightly armored supportive fighter, gets access to all sniper rifles but no grenades." },
-	{ "Sapper", 		"Breacher", 			"Breacher", 	"Heavily armored supportive fighter, gets access to all throwable and remotely detonated explosives." },
-	{ "Expert", 		"Specialist", 			"Specialist", 	"Medium armored fighter, gets access to extra, unique weapons for proving themselves in battle." }
 }
 
 if CLIENT then
@@ -100,19 +87,19 @@ local models = { }
 function GetModels()
 	for k, v in pairs( primaries ) do
 		for k2, v2 in pairs( v ) do
-			local model = weapons.Get( v2["class"] )
+			local model = weapons.Get( v2weaponClass )
 			table.insert( models, model["WorldModel"] )
 		end
 	end
 	for k, v in pairs( secondaries ) do
 		for k2, v2 in pairs( v ) do
-			local model = weapons.Get( v2["class"] )
+			local model = weapons.Get( v2weaponClass )
 			table.insert( models, model["WorldModel"] )
 		end
 	end
 	for k, v in pairs( equipment ) do
 		for k2, v2 in pairs( v ) do
-			local model = weapons.Get( v2["class"] )
+			local model = weapons.Get( v2weaponClass )
 			table.insert( models, model["WorldModel"] )
 		end
 	end
@@ -180,7 +167,7 @@ end
 --hook.Add( "to-do hook", "TeamThree", TeamThree() )
 
 --//Should I edit CW2.0's pickup function as as to disallow multiple weapon pickups, or rewrite it here?
-if SERVER then  	
+if SERVER then	
 	--//This saves the player's' loadout (weapons/attachments) when they hit the "Save Loadout" button in the menu
 	util.AddNetworkString( "SetLoadout" )
 	net.Receive( "SetLoadout", function( len, ply )
@@ -223,7 +210,7 @@ if SERVER then
 		ply:RemoveAmmo( ply:GetAmmoCount( "cw_kk_ins2_nade_m18" ), "cw_kk_ins2_nade_m18" )
 		ply:RemoveAmmo( ply:GetAmmoCount( "cw_kk_ins2_nade_m67" ), "cw_kk_ins2_nade_m67" )
 		ply:RemoveAmmo( ply:GetAmmoCount( "cw_kk_ins2_nade_m84" ), "cw_kk_ins2_nade_m84" )
-		ply:RemoveAmmo( ply:GetAmmoCount( "cw_kk_ins2_nade_c4" ),  "cw_kk_ins2_nade_c4" )
+		ply:RemoveAmmo( ply:GetAmmoCount( "cw_kk_ins2_nade_c4" ), "cw_kk_ins2_nade_c4" )
 		ply:RemoveAmmo( ply:GetAmmoCount( "cw_kk_ins2_nade_ied" ), "cw_kk_ins2_nade_ied" )]]
 
 		local attachmentequipdelay = 0.3
@@ -311,7 +298,7 @@ if SERVER then
 		SetRole( ply )
 	end
 
-	function CheckRole( ply )
+	function GM:CheckRole( ply )
 		local role = ply:GetNWString( "role" )
 		for k, v in pairs( roles ) do
 			if v[ ply:Team() ] == role then

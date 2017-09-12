@@ -3,43 +3,43 @@ GM.Name = "Project: OneLife"
 GM.Author = "Logan"
 GM.Email = "lobsterlogan43@yahoo.com"
 GM.Website = "egncommunity.com"
+GM.Version = "09092017"
 
-local redTeamName, BlueTeamName
 if SERVER then
 
 	util.AddNetworkString( "AskTeams" )
 	util.AddNetworkString( "AskTeamsCallback" )
 
-	possibleteams = {
+	GM.possibleTeamNames = {
 		{ "Task Force 141", "US Army Rangers", "Navy Seals" },
 		{ "Spetsnaz", "Militia", "OpFor" }
 	}
 
-	redTeamName = table.Random( possibleteams[ 2 ] )
-	BlueTeamName = table.Random( possibleteams[ 1 ] )
+	GM.redTeam.Name = table.Random( GM.possibleTeamNames[ 2 ] )
+	GM.blueTeam.Name = table.Random( GM.possibleTeamNames[ 1 ] )
 
-	team.SetUp( 1, redTeamName, Color( 255, 0, 0 ) )
-	team.SetUp( 2, BlueTeamName, Color( 0, 0, 255 ) )
+	team.SetUp( 1, GM.redTeam.Name, Color( 255, 0, 0 ) )
+	team.SetUp( 2, GM.blueTeam.Name, Color( 0, 0, 255 ) )
 	team.SetUp( 3, "Solo", Color( 0, 255, 0 ) )
 
 	net.Receive( "AskTeams", function( len, ply )
 		net.Start( "AskTeamsCallback" )
-			net.WriteString( redTeamName )
-			net.WriteString( BlueTeamName )
+			net.WriteString( GM.redTeam.Name )
+			net.WriteString( GM.blueTeam.Name )
 		net.Send( ply )
 	end )
 
-	local maps = {
-		[ "gm_devruins" ] = 748863203,
-		[ "de_secretcamp" ] = 296555359,
-		[ "de_keystone_beta" ] = 508986899,
-		[ "de_crash" ] = 671482026,
-		[ "ttt_bf3_scrapmetal" ] = 228105814
+	GM.availableMaps = {
+		[ "gm_devruins" ] = {ID = 748863203, Votes = 0},
+		[ "de_secretcamp" ] = {ID = 296555359, Votes = 0},
+		[ "de_keystone_beta" ] = {ID = 508986899, Votes = 0},
+		[ "de_crash" ] = {ID = 671482026, Votes = 0},
+		[ "ttt_bf3_scrapmetal" ] = {ID = 228105814, Votes = 0}
 	}
-
-	for k, v in pairs( maps ) do
+	
+	for k, v in pairs( GM.availableMaps ) do
 		if game.GetMap() == k then
-			resource.AddWorkshop( v )
+			resource.AddWorkshop( tostring(v.ID) )
 		end
 	end
     
@@ -58,14 +58,6 @@ if SERVER then
 	--resource.AddWorkshop( "575652408" ) --Player Expression Mod
 	
 end
-
---[[team.SetUp( 1, redTeamName, Color( 255, 0, 0 ) )
-team.SetUp( 2, BlueTeamName, Color( 0, 0, 255 ) )
-team.SetUp( 3, "Solo", Color( 0, 255, 0 ) )]]
-
-print( "Team 1: ", team.GetName( 1 ) )
-print( "Team 2: ", team.GetName( 2 ) )
-print( "Team 3: ", team.GetName( 3 ) )
 
 function GM:Initialize()
 	self.BaseClass.Initialize( self )

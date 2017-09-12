@@ -1,6 +1,4 @@
-print( "sv_feed initialization..." )
-
-SCORECOUNTS = {
+GM.SCORECOUNTS = {
     KILL_KILL = 50,
     KILL_HEADSHOT = 20,
     KILL_LONGSHOT = 10,
@@ -15,9 +13,9 @@ SCORECOUNTS = {
     GAME_LOST = 100
 }
 
-function AddRewards( ply, score )
-    lvl.AddEXP( ply, score )
-    AddMoney( ply, score )
+function GM:AddRewards( ply, score )
+    self.lvl.AddEXP( ply, score )
+    self.AddMoney( ply, score )
     ply:AddScore( score )
 end
 
@@ -29,22 +27,22 @@ hook.Add( "PlayerDeath", "AddNotices", function( vic, inf, att )
     end
     
     --//Standard kill
-    AddRewards( att, SCORECOUNTS.KILL_KILL )
+    GM:AddRewards( att, GM.SCORECOUNTS.KILL_KILL )
     
     --//Headshot bonus
     if vic:LastHitGroup() == HITGROUP_HEAD then
-        AddRewards( att, SCORECOUNTS.KILL_HEADSHOT )
+        GM:AddRewards( att, GM.SCORECOUNTS.KILL_HEADSHOT )
     end
 
     --//Long shot bonus
     local shotDistance = math.Round(att:GetPos():Distance(vic:GetPos()) / 39) -- Converts to meters
     if shotDistance > 50 then
-        AddRewards( att, SCORECOUNTS.KILL_LONGSHOT )
+        GM:AddRewards( att, GM.SCORECOUNTS.KILL_LONGSHOT )
     end
 
     --//Low life bonus
     if att:Health() <= 20 then
-        AddRewards( att, SCORECOUNTS.KILL_LOWLIFE )
+        GM:AddRewards( att, GM.SCORECOUNTS.KILL_LOWLIFE )
     end
 	
 end )

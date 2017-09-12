@@ -1,19 +1,26 @@
 --// key is player name, value is table where 1 = kills, 2 = deaths, and 3 = headshots - Should I add more?
-leaderboard = { }
+GM.gameData = { }
+
+function table.IsEmpty( tab )
+    for k, v in pairs(tab) do
+        if v then return false end
+    end
+    return true
+end
 
 hook.Add( "PlayerDeath", "GlobalKills", function( vic, wep, att )
 	if vic and att and IsValid( vic ) and IsValid( att ) and vic != NULL and att != NULL and att:IsPlayer() then
-        if not leaderboard[ vic:Nick() ] then
-            leaderboard[ vic:Nick() ] = { 0, 0, 0 }
+        if not GM.gameData[ vic:Nick() ] then
+            GM.gameData[ vic:Nick() ] = {kills = 0, deaths = 0, headshots = 0}
         end
-        if not leaderboard[ att:Nick() ] then
-            leaderboard[ att:Nick() ] = { 0, 0, 0 }
+        if not GM.gameData[ att:Nick() ] then
+            GM.gameData[ att:Nick() ] = {kills = 0, deaths = 0, headshots = 0}
         end
 
-        leaderboard[ att:Nick() ][ 1 ] = leaderboard[ att ][ 1 ] + 1
-		leaderboard[ vic:Nick() ][ 2 ] = leaderboard[ vic ][ 2 ] + 1
+        GM.gameData[ att:Nick() ].kills = GM.gameData[ att:Nick() ].kills + 1
+		GM.gameData[ vic:Nick() ].deaths = GM.gameData[ vic:Nick() ].deaths + 1
         if vic:LastHitGroup() == "HITGROUP_HEAD" then
-            leaderboard[ att:Nick() ][ 3 ] = leaderboard[ att ][ 3 ] + 1
+            GM.gameData[ att:Nick() ].headshots = GM.gameData[ att ].headshots + 1
         end
 	end
 end )
@@ -22,33 +29,37 @@ util.AddNetworkString( "MVPList" )
 
 hook.Add( "GameEnd", "EndGameMVP", function( winner )
     --On game end, send all players an MVP list
-    local mostkills, mostdeaths, mostheadshots, mostobj = { }, { }, { }, { }
-    for k, v in pairs( leaderboard ) do
-        if v[ 1 ] > mostkills[ 1 ] then
-            table.Empty( mostkills )
-            mostkills[ k ] = v[ 1 ]
-        elseif v[ 1 ] == mostkills[ 1 ] then
-            table.insert( mostkills, k, v[ 1 ] )
+    GM.mostKills, GM.mostDeaths, GM.mostHeadshots, GM.mostObj = {players = {}, amount = 0}, {players = {}, amount = 0}, {players = {}, amount = 0}, {players = {}, amount = 0}
+
+    for k, v in pairs( GM.gameData ) do
+        if v.kills > GM.mostKills.amount then
+            table.Empty( GM.mostKills )
+            GM.mostKills.players[1] = k
+            GM.mostkills.amount = v.kills
+        elseif v.kills == GM.mostKills.amount then
+            GM.mostkills.players[#GM.mostKills.players + 1] = k
         end
-        if v[ 2 ] > mostdeaths[ 1 ] then
-            table.Empty( mostdeaths )
-            mostdeaths[ k ] = v[ 2 ]
-        elseif v[ 2 ] == mostdeaths[ 1 ] then
-            table.insert( mostdeaths, k, v[ 2 ] )
+        if v.deaths > GM.mostDeaths.amount then
+            table.Empty( GM.mostDeaths )
+            GM.mostDeaths.players[1] = k
+            GM.mostDeaths.amount = v.deaths
+        elseif v.deaths == GM.mostDeaths.amount then
+            GM.mostDeaths.players[#GM.mostDeaths.players + 1] = k
         end
-        if v[ 3 ] > mostheadshots[ 1 ] then
-            table.Empty( mostheadshots )
-            mostheadshots[ k ] = v[ 3 ]
-        elseif v[ 3 ] == mostheadshots[ 3 ] then
-            table.insert( mostheadshots, k, v[ 3 ] )
+        if v.headshots > GM.mostHeadshots.amount then
+            table.Empty( GM.mostHeadshots )
+            GM.mostHeadshots.players[1] = k
+            GM.mostHeadshots.amount = v.headshots
+        elseif v.headshots == GM.mostHeadshots.amount then
+            GM.mostHeadshots.players[#GM.mostHeadshots.players + 1] = k
         end
         --How should we calculate objective accolades? Maybe substitute kills for score?
     end
 
     net.Start( "MVPList" )
-        net.WriteTable( mostkills )
-        net.WriteTable( mostdeaths )
-        net.WriteTable( mostheadshots )
-        --net.WriteTable( mostobj )
+        net.WriteTable( GM.mostKills )
+        net.WriteTable( GM.mostDeaths )
+        net.WriteTable( GM.mostHeadshots )
+        --net.WriteTable( mostObj )
     net.Broadcast()
 end )

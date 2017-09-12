@@ -1,29 +1,51 @@
-print( "sv_rounderhandler initialization..." )
-modes = {
-    --//ROUNDS = ROUNDS NEEDED FOR GAME VICTORY, ROUNTIME = TOTAL ALOTTMENT OF TIME FOR A GIVEN ROUND, 
-    [ "lts" ] = { --Last Team Standing, your basic one-life team-deathmatch
-        [ "Rounds" ] = 5,
-        [ "RoundTime" ] = 180,
+GM.modes = {
+    lts = {
+        Rounds = 5,
+        roundTime = 180,
+        Solo = false,
+        Name = "Last Team Standing",
+        Description = "Eliminate the enemy team.",
+        Voteable = true
     },
-    [ "cache" ] = { --Weapon Cache. destroy Red's weapon cache, attack/defense based mode
-        [ "Rounds" ] = 5,
-        [ "RoundTime" ] = 240,
+    cache = {
+        Rounds = 5,
+        roundTime = 240,
+        Solo = false,
+        Name = "Weapons Cache",
+        Description = "Blue team must destroy Red team's weapons cache.",
+        Voteable = false
     },
-    [ "oma" ] = { --One Man Army, Last Team Standing but every man for themself
-        [ "Rounds" ] = 5,
-        [ "RoundTime" ] = 180,
-        TeamThree = true,
+    oma = {
+        Rounds = 5,
+        roundTime = 180,
+        Solo = true,
+        Name = "One Man Army",
+        Description = "Every man for themself.",
+        Voteable = false
     },
-    [ "hot" ] = { --HotPoint, whichever team captures the single point wins
-        [ "Rounds" ] = 5,
-        [ "RoundTime" ] = 240,
+    hot = {
+        Rounds = 5,
+        roundTime = 240,
+        Solo = false,
+        Name = "HotPoint",
+        Description = "Capture the neutral single point to win.",
+        Voteable = false
     },
-    [ "hq" ] = { --Headquarters, dual Weapon Cache, where you must both defend and attack
-        [ "Rounds" ] = 3,
-        [ "RoundTime" ] = 300,
+    hq = {
+        Rounds = 3,
+        roundTime = 300,
+        Solo = false,
+        Name = "Headquarters",
+        Description = "Defend your own weapons cache or destroy the enemy's.",
+        Voteable = false
     },
-    [ "tits" ] = {
-        --[]
+    placeholder = {
+        Rounds = 0,
+        roundTime = 0,
+        Solo = false,
+        Name = "Nothing here yet",
+        Description = "More to come.",
+        Voteable = true
     }
 }
 
@@ -36,76 +58,87 @@ util.AddNetworkString( "LowTime" )
 util.AddNetworkString( "CreateCountdown" )
 util.AddNetworkString( "Countdown" )
 
-function StartGame( mode )
-    if !modes[ mode ] then
+function GM:StartGame( mode )
+    if !self.modes[mode] then
         print( "Invalid mode type, preventing game start." )
         return
     end
-    if GetGlobalBool( "GameInProgress" ) == true then 
+    if self.GameInProgress then 
         print( "There is already a game in progress..." )
         return 
     end
-    SetGlobalString( "GameType", mode )
+
+    self.gameType = mode
+    self.gameInProgress = true
+    self.Round = 1
+    self.redTeam.Wins = 0
+    self.blueTeam.Wins = 0
+    self.SoloMode = self.modes[mode].Solo
+
+    self:StartRound(self.Round)
+    net.Start( "GameStart" )
+        net.WriteString( mode )
+    net.Broadcast()
+
+    --[[SetGlobalString( "GameType", mode )
     SetGlobalBool( "GameInProgress", true )
     SetGlobalInt( "Round", 1 )
     SetGlobalInt( "RedTeamWins", 0 )
     SetGlobalInt( "BlueTeamWins", 0 )
-    SetGlobalBool( "TeamThree", modes[ mode ][ "TeamThree" ] )
+    SetGlobalBool( "TeamThree", GM.modes[ mode ][ "TeamThree" ] )
     StartRound( 1 )
     hook.Call( "GameStart", nil, mode )
     net.Start( "GameStart" )
         net.WriteString( mode )
-    net.Broadcast()
+    net.Broadcast()]]
 end
 
-function StartRound( round )
-    SetGlobalInt( "RoundTime", modes[ GetGlobalString( "GameType" ) ][ "RoundTime" ] )
-    SetGlobalInt( "Round", round )
-    RoundPrep( round )
+function GM:StartRound( round )
+    SetGlobalInt( "RoundTime", self.modes[self.gameType].roundTime )
+    self.Round = self.Round
+    self.RoundPrep( self.round )
 end
 
 --Round preperation stuff
-function RoundPrep( round ) 
+function GM:RoundPrep( round ) 
     print( "We are starting round: ", round)
-    if !allteamsvalid() then 
+    if !self:allteamsvalid() then 
         print( "Not all teams are valid, preventing round preperation." ) 
-        SetGlobalBool( "GameInProgress", false ) 
-        SetGlobalString( "Gametype", "none" )
-        SetGlobalBool( "GameInProgress", false )
-        SetGlobalBool( "RoundInProgress", false )
+        self.GameInProgress = false ) 
+        self.gameType = "none"
+        self.GameInProgress = false )
+        self.RoundInProgress = false )
         SetGlobalInt( "RoundTime", 0 ) 
         return 
     end
     game.CleanUpMap()
     print( "Round preperation starting, cleaning up map..." )
 
-    if round != 1 then
+    if not self.Round % 2 == 0 and not self.Round == 1 then
         --ChangeSides() --To-do function, use this to change everyone's spawn/objective?
     end
 
     --//Spawns and freezes all players
     print( "All teams valid...")
     for k, v in pairs( player.GetAll() ) do
-        if v:Team() != 1 and v:Team() != 2 and v:Team() != 3 then continue end
-        v:Spawn()
-	    v:Freeze( true )
-        v:SetObserverMode( OBS_MODE_NONE )
-        if v.InitialJoin then
-            v:SendLua( "LoadoutMenu()" )
-            v.InitialJoin = false
+        if v:Team() == 1 or v:Team() == 2 or v:Team() == 3 then
+            v:Spawn()
+            timer.Simple( 0, function()
+	            v:Freeze( true )
+            end)
+            v:SetObserverMode( OBS_MODE_NONE )
+            if v.initialJoin then
+                v:SendLua( "LoadoutMenu()" )
+                v.initialJoin = false
+            end
+            --//Found in sh_loadoutmenu//--
+            GiveLoadout( v )
+            print( "Spawning and locking: ", v )
         end
-        --//Found in sh_loadoutmenu//--
-        GiveLoadout( v )
-        print( "Spawning and locking: ", v )
     end
-    
-    --[[timer.Simple( 30, function()
-        print( "30 second timer finished, starting round/game.")
-        RoundBegin( round )
-    end)]]
 
     --//Calls the respective hook and starts the respective net message
-    hook.Call( "RoundPrepStart", nil, round )
+    hook.Call( "RoundPrepStart", self, round )
     net.Start( "RoundPrepStart" )
         net.WriteString( tostring( round ) )
     net.Broadcast()
@@ -121,13 +154,13 @@ function RoundPrep( round )
         --//After 30 seconds has passed, begins the round
         if timer.RepsLeft( "Countdown Timer" ) == 0 then
             print( "30 second timer finished, starting round/game.")
-            RoundBegin( round )
+            self:RoundBegin( round )
         end
     end )
 end 
 
 --Game starting, player movement freed
-function RoundBegin( round )
+function GM:RoundBegin( round )
     print( "Starting round...", round )
     --Start the round's countdown timer
     timer.Create( "Time Countdown", 1, 0, function()
@@ -145,7 +178,7 @@ function RoundBegin( round )
         end
 
         if GetGlobalInt( "RoundTime" ) < 1 then
-            RoundEnd( round, 0 )
+            self.RoundEnd( 0 )
             SetGlobalInt( "RoundTime", 0 )
             timer.Remove( "Time Countdown" )
         end
@@ -153,29 +186,33 @@ function RoundBegin( round )
 
     --Unlocks all player movements but disallows kit customization
     print( "Round has started..." )
-    SetGlobalBool( "RoundInProgress", true )
+    self.roundInProgress = true
     for k, v in pairs( player.GetAll() ) do
 	    v:Freeze( false )
         print( "Unlocking: ", v )
         v.alreadysent = false
     end
-    hook.Call( "RoundStart", nil, round )
+    hook.Call( "RoundStart", self, round )
     net.Start( "RoundStart" )
         net.WriteString( tostring( round ) )
     net.Broadcast()
 end
 
 --Game finishes, restart round if needed and deliver rewards
-function RoundEnd( round, roundvictor )
+function GM:RoundEnd( roundVictor )
     if timer.Exists( "Time Countdown" ) then
         timer.Remove( "Time Countdown" )
     end
     
-    local winnername, winnercolor
+    self.winningTeam = roundVictor
+    self.winningTeamColor = Color(0, 0, 0)
+    self.roundInProgress = false
+
     if roundvictor == 1 then
-        SetGlobalInt( "RedTeamWins", GetGlobalInt( "RedTeamWins" ) + 1 )
-        winnername = team.GetName( 1 )
-        winnercolor = Color( 100, 15, 15 )
+        self.redTeam.Wins = self.redTeam.Wins + 1
+        self.winningTeamName = team.GetName( 1 )
+        self.winningTeamColor = Color( 100, 15, 15 )
+
         for k, v in pairs( team.GetPlayers( 1 ) ) do
             AddRewards( v, SCORECOUNTS.ROUND_WON )
         end
@@ -183,9 +220,10 @@ function RoundEnd( round, roundvictor )
             AddRewards( v, SCORECOUNTS.ROUND_LOST )
         end
     elseif roundvictor == 2 then
-        SetGlobalInt( "BlueTeamWins", GetGlobalInt( "BlueTeamWins" ) + 1 )
-        winnername = team.GetName( 2 )
-        winnercolor = Color( 30, 80, 180 )
+        self.blueTeamWins = self.blueTeamWins + 1
+        self.winningTeamName = team.GetName( 2 )
+        self.winningTeamColor = Color( 30, 80, 180 )
+
         for k, v in pairs( team.GetPlayers( 1 ) ) do
             AddRewards( v, SCORECOUNTS.ROUND_LOST )
         end
@@ -195,17 +233,19 @@ function RoundEnd( round, roundvictor )
     end
     ULib.tsayColor( nil, true, winnercolor, winnername, Color( 255, 255, 255 ), " has won round " .. round .. "." )
 
-    if GameWon() then --Might need to add "winner" parameter
+    if self:IsGameWon() then --Might need to add "winner" parameter
         print( "Game has been won" )
-        SetGlobalString( "Gametype", "none" )
-        SetGlobalBool( "GameInProgress", false )
-        SetGlobalBool( "RoundInProgress", false )
-        SetGlobalInt( "RoundTime", 0 ) 
-        hook.Call( "GameEnd", nil, roundvictor )
+        GM.gameType = nil
+        GM.gameInProgress = false
+        GM.roundInProgress = false
+        SetGlobalInt( "RoundTime", 0 )
+
+        hook.Call( "GameEnd", self, roundvictor )
         net.Start( "GameEnd" )
             net.WriteString( tostring( roundvictor ) )
         net.Broadcast()
         ULib.tsayColor( nil, true, winnercolor, winnername, Color( 255, 255, 255 ), " has won the game." )
+
         for k, v in pairs( team.GetPlayers( roundvictor ) ) do
             AddRewards( v, SCORECOUNTS.GAME_WON )
         end
@@ -214,14 +254,13 @@ function RoundEnd( round, roundvictor )
             AddRewards( v, SCORECOUNTS.GAME_LOST )
         end
     else
-        SetGlobalBool( "RoundInProgress", false )
         print( "Nobody's won the game yet." )
         timer.Simple( 15, function()
-            StartRound( round + 1 )
+            StartRound( self.Round + 1 )
         end )
         local leadingteam
-        if GetGlobalInt( "RedTeamWins" ) > GetGlobalInt( "BlueTeamWins" ) then leadingteam = 1 elseif GetGlobalInt( "BlueTeamWins" ) > GetGlobalInt( "RedTeamWins" ) then leadingteam = 2 else leadingteam = 0 end
-        hook.Call( "RoundEnd", nil, round, roundvictor, leadingteam )
+        if self.redTeam.Wins > self.blueTeam.Wins then leadingteam = 1 elseif self.blueTeam.Wins > self.redTeam.Wins then leadingteam = 2 else leadingteam = 0 end
+        hook.Call( "RoundEnd", self, round, roundvictor, leadingteam )
         net.Start( "RoundEnd" )
             net.WriteString( tostring( roundvictor ) )
             net.WriteString( tostring( leadingteam ) )
@@ -229,21 +268,15 @@ function RoundEnd( round, roundvictor )
     end
 end 
 
-function GameWon()
-    print( "Debug", GetGlobalInt( "RedTeamWins" ), GetGlobalInt( "BlueTeamWins" ), modes[ GetGlobalString( "GameType" ) ][ "Rounds" ] )
-    if GetGlobalInt( "RedTeamWins" ) >= ( modes[ GetGlobalString( "GameType" ) ][ "Rounds" ] ) or GetGlobalInt( "BlueTeamWins" ) >= ( modes[ GetGlobalString( "GameType" ) ][ "Rounds" ] ) then
+function GM:IsGameWon()
+    if self.redTeamWins >= GM.modes[self.gameType].Rounds or self.blueTeamWins >= GM.modes[ elf.gameType].Rounds then
         return true
     end
     return false
 end
 
-function allteamsvalid()
-    print( "Initial Team Checker Initializing...")
-    local redvalid = false
-    local bluevalid = false
-    local blackvalid = false
+function GM:allteamsvalid()
     for k, v in pairs( team.GetAllTeams() ) do
-        --print( k, v, team.GetName( k ), "v value: ", team.GetName( v ) )
         if k == 3 then
             print( "Team 3 teamchecker commencing..." )
             if table.Count( team.GetPlayers( 3 ) ) > 1 then

@@ -4,96 +4,93 @@ util.AddNetworkString( "EndVote" )
 util.AddNetworkString( "EndVoteCallback" )
 util.AddNetworkString( "StartMapVote" )
 
---// Format: "gametype name as seen in roundhandler", "Full name", "Description"
-local availablegamemodes = {
-    { "lts", "Last Team Standing", "Eliminate the enemy team." },
-    { "lts", "More to come...", "No description here!" }
-}
+function GM:StartVoting()
+    --Called when the game as completeted
 
---// Self-explanatory
-local availablemaps = {
-    "gm_devruins",
-    "de_crash",
-    "de_keystone_beta",
-    "de_secretcamp",
-    "ttt_bf3_scrapmetal"
-}
-
-local votes = { }
-hook.Add( "GameEnd", "EndGameVoting", function( winner )
-    --On game end, ask all players to vote for a map
-    --This will all be drawn in hud.lua
-    net.Start( "StartGMVote" )
-        net.WriteTable( availablegamemodes )
-    net.Broadcast()
-
-    --After 30 seconds, set a winning mode, save it in a file - based on any sent votes - and start the map vote
-    --After another 30 seconds, set a winning map and change to it
-    timer.Simple( 30, function()
-        local winningmode = table.GetWinningKey( votes )
-        SetWinner( "mode", winningmode )
-        print( "The winning gametype is: ", winningmode )
-        for k, v in pairs( player.GetAll() ) do
-            for k2, v2 in pairs( availablegamemodes ) do
-                if winningmode == v2[ 1 ] then
-                    net.Start( "EndVote" )
-                        net.WriteString( v2[ 2 ] )
-                    net.Send( v )
-                end
-            end
-
-            timer.Simple( 5, function()
-                net.Start( "StartMapVote" )
-                    net.WriteTable( availablemaps )
-                net.Send( v )
-            end )
+    --//Separates the modes that have "Voteable" set to true from those that have it set to false/nil, and sends all clients the list of voteable modes
+    self.voteableModes = { }
+    for k, v in pairs(self.modes) do
+        if v.Voteable then
+            self.voteableModes[#self.voteableModes + 1] = k
+            v.Votes = 0
         end
 
-        timer.Simple( 35, function()
-            local winningmap = table.GetWinningKey( votes ) or availablemaps[ 1 ]
-            PrintTable( votes )
-            print( "Switching map to: ", winningmap )
-            SetWinner( "map", winningmap )
-            for k, v in pairs( player.GetAll() ) do
-                net.Start( "EndVote" )
-                    net.WriteString( winningmap )
-                net.Send( v )
+    end
+    net.Start( "StartGMVote" )
+        net.WriteTable( self.voteableModes )
+    net.Broadcast()
+
+    --After 30 seconds, set a winning mode, save it in a file - based on any received votes - and start the map vote
+    --After another 30 seconds, set a winning map and change to it
+    timer.Simple( 30, function()
+        local winningMode, previousVote = {}, 0
+        for k, v in pairs(self.voteableModes) do
+            if v.Votes == previousVote then
+                winningMode[#winningMode + 1] = k
+            elseif v.Votes > previousVote then
+                table.Clear(winningMode)
+                winningMode[1] = k
             end
+        end
+        if #winningMode == 1 then
+            self.wonMode = winningMode[1]
+        elseif #winningMode > 1 then
+            self.wonMode = winningMode[math.random(1, #winningMode)]
+        end
+        self:SetVoteWinner( "mode", self.wonMode )
+        
+        net.Start( "EndVote" )
+            net.WriteString( self.wonMode.Name )
+        net.Broadcast()
+
+        timer.Simple( 5, function()
+            net.Start( "StartMapVote" )
+                net.WriteTable( self.availableMaps )
+            net.Broadcast()
+        end )
+
+        timer.Simple( 35, function()
+            local winningMap, previousVote = {}, 0
+            for k, v in pairs(self.availableMaps) do
+                if v.Votes == previousVote then
+                    winningMap[#winningMap + 1] = k
+                elseif v.Votes > previousVote then
+                    table.Clear(winningMap)
+                    winningMap[1] = k
+                end
+            end
+            if #winningMap == 1 then
+                self.wonMap = winningMap[1]
+            elseif #winningMap > 1 then
+                self.wonMap = winningMap[math.random(1, #winningMap)]
+            end
+            self:SetVoteWinner( "map", self.wonMap )
+
+            net.Start( "EndVote" )
+                net.WriteString( self.wonMap )
+            net.Broadcast()
         end)
     end)
 
-    for k, v in pairs( availablegamemodes ) do
-        votes[ v[ 1 ] ] = 0
-    end
-
     net.Receive( "EndVoteCallback", function( len, ply )
-        print( "EndVoteCallback received")
-        local playervote = net.ReadString()
-        print( ply:Nick() .. " voted for: ", playervote )
-        if votes[ playervote ] then
-            votes[ playervote ] = votes[ playervote ] + 1
+        local playerVote = net.ReadString()
+        for k, v in pairs(self.modes) do
+            if playerVote == v.Name then
+                v.Votes = v.Votes + 1 
+            end
         end
     end)
 end )
 
-function GetWinner( tab )
-    return table.GetWinningKey( tab )
-end
-
-function SetWinner( type, winner )
+function GM:SetVoteWinner( type, winner )
     if type == "mode" then
         if not file.Exists( "onelife/nextmode", "DATA" ) then
 	        file.CreateDir( "onelife/nextmode" )
         end
 		file.Write( "onelife/nextmode/mode.txt", winner )
-        --We know logically that the mapvote can only come AFTER the next mode has been set, so we can go ahead and add/clear vote table values here
-        table.Empty( votes )
-        for k, v in pairs( availablemaps ) do
-            votes[ v ] = 0
-        end
     elseif type == "map" then
         --Give client time to notify the player of the decision
-        timer.Simple( 5, function()
+        timer.Simple( 7, function()
             RunConsoleCommand( "changelevel", winner )
         end)
     end

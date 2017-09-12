@@ -59,7 +59,6 @@ hook.Add( "PlayerDeath", "GlobalKills", function( vic, wep, att )
 	end
 end )
 
-
 net.Receive( "RequestLifestats", function( len, ply )
     net.Start( "RequestLifestatsCallback" )
         net.WriteString( tostring( ply:GetPData( "g_time" ) ) ) --time

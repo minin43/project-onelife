@@ -63,12 +63,6 @@ function GM:Initialize()
 	self.BaseClass.Initialize( self )
 end
 
-local _PLY = FindMetaTable( "Player" )
-
-function _PLY:Score()
-	return self:GetNWInt( "tdm_score" )
-end
-
 if CLIENT then
 	net.Start( "AskTeams" )
 	net.SendToServer()

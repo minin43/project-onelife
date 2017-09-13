@@ -124,10 +124,10 @@ local musictimes = {
 }
 
 local typeannouncement = {
-	--// [ "gametype" ] = "round start announcer based on game type"
-	[ "lts" ] = "roundstart",
-	[ "objective-based" ] = "destroy/defend objective"
-}
+	roundstart = {"lts"},
+	destroyObjective = {},
+	defendObjective = {}
+} --let's make this obsolete by having the team's objective as a string in the team table that we can reference on clients
 
 net.Receive( "RoundPrepStart", function( len, ply )
 	local round = tonumber( net.ReadString() )

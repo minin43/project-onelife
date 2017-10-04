@@ -5,6 +5,19 @@ GM.Roles = {
         blueTeamName = "Rifleman",
         soloTeamName = "Rifleman",
         roleDescription = "Standard armored fighter. Granted access to most weapon types and frag grenades.",
+        roleDescriptionExpanded = { --All values are strings: true, false, or partial (used to describe availability) - ONLY USED IN ROLE DESCRIPTION
+            AssaultRifles = "true"
+            SubMachineGuns = "partial"
+            Shotguns = "false"
+            HeavyMachineGuns = "false"
+            DesignatedMarksmanRifles = "partial"
+            Snipers = "false"
+            FragGrenades = "true"
+            FlashGrenades = "false"
+            SmokeGrenades = "false"
+            RemoteExplosives = "false"
+            ExplosiveLaunchers = "false"
+        }
         armorRating = self.Armor.standard
     },
     {
@@ -12,6 +25,19 @@ GM.Roles = {
         blueTeamName = "Reconnaissance",
         soloTeamName = "Recon",
         roleDescription = "Lightly armored but fast-moving fighter. Granted access to all short-range weaponry and flash grenades.",
+        roleDescriptionExpanded = {
+            AssaultRifles = "false"
+            SubMachineGuns = "true"
+            Shotguns = "true"
+            HeavyMachineGuns = "false"
+            DesignatedMarksmanRifles = "false"
+            Snipers = "false"
+            FragGrenades = "false"
+            FlashGrenades = "true"
+            SmokeGrenades = "false"
+            RemoteExplosives = "false"
+            ExplosiveLaunchers = "false"
+        }
         armorRating = self.Armor.light
     },
     {
@@ -19,6 +45,19 @@ GM.Roles = {
         blueTeamName = "Support",
         soloTeamName = "Gunner",
         roleDescription = "Super heavily armored supportive fighter. Granted access to LMGs, some long-distance DMRs, and smoke grenades.",
+        roleDescriptionExpanded = {
+            AssaultRifles = "partial"
+            SubMachineGuns = "false"
+            Shotguns = "false"
+            HeavyMachineGuns = "true"
+            DesignatedMarksmanRifles = "partial"
+            Snipers = "false"
+            FragGrenades = "false"
+            FlashGrenades = "false"
+            SmokeGrenades = "true"
+            RemoteExplosives = "false"
+            ExplosiveLaunchers = "false"
+        }
         armorRating = self.Armor.superheavy
     },
     {
@@ -26,6 +65,19 @@ GM.Roles = {
         blueTeamName = "Designated Marksman",
         soloTeamName = "Marksman",
         roleDescription = "Lightly armored supportive fighter. Granted access to all DMRs but no sniper rifle.",
+        roleDescriptionExpanded = {
+            AssaultRifles = "partial"
+            SubMachineGuns = "false"
+            Shotguns = "false"
+            HeavyMachineGuns = "false"
+            DesignatedMarksmanRifles = "true"
+            Snipers = "false"
+            FragGrenades = "false"
+            FlashGrenades = "false"
+            SmokeGrenades = "true"
+            RemoteExplosives = "false"
+            ExplosiveLaunchers = "false"
+        }
         armorRating = self.Armor.light
     },
     {
@@ -33,6 +85,19 @@ GM.Roles = {
         blueTeamName = "Demolitions",
         soloTeamName = "Demolitions",
         roleDescription = "Super heavily armored fighter. Granted access to all launchers and Assault Rifles, but no grenades.",
+        roleDescriptionExpanded = {
+            AssaultRifles = "true"
+            SubMachineGuns = "false"
+            Shotguns = "false"
+            HeavyMachineGuns = "false"
+            DesignatedMarksmanRifles = "false"
+            Snipers = "false"
+            FragGrenades = "false"
+            FlashGrenades = "false"
+            SmokeGrenades = "false"
+            RemoteExplosives = "false"
+            ExplosiveLaunchers = "true"
+        }
         armorRating = self.Armor.superheavy
     },
     {
@@ -40,6 +105,19 @@ GM.Roles = {
         blueTeamName = "Sniper",
         soloTeamName = "Sniper",
         roleDescription = "Lightly armored supportive fighter. Granted access to all sniper rifles but no grenades.",
+        roleDescriptionExpanded = {
+            AssaultRifles = "false"
+            SubMachineGuns = "false"
+            Shotguns = "false"
+            HeavyMachineGuns = "false"
+            DesignatedMarksmanRifles = "false"
+            Snipers = "true"
+            FragGrenades = "false"
+            FlashGrenades = "false"
+            SmokeGrenades = "false"
+            RemoteExplosives = "false"
+            ExplosiveLaunchers = "false"
+        }
         armorRating = self.Armor.light
     },
     {
@@ -47,6 +125,19 @@ GM.Roles = {
         blueTeamName = "Breacher",
         soloTeamName = "Breacher",
         roleDescription = "Heavily armored supportive fighter. Granted access to all throwable and remotely detonated explosives.",
+        roleDescriptionExpanded = {
+            AssaultRifles = "partial"
+            SubMachineGuns = "partial"
+            Shotguns = "partial"
+            HeavyMachineGuns = "false"
+            DesignatedMarksmanRifles = "false"
+            Snipers = "false"
+            FragGrenades = "true"
+            FlashGrenades = "true"
+            SmokeGrenades = "true"
+            RemoteExplosives = "true"
+            ExplosiveLaunchers = "false"
+        }
         armorRating = self.Armor.heavy
     },
     {
@@ -54,6 +145,19 @@ GM.Roles = {
         blueTeamName = "Specialist",
         soloTeamName = "Specialist",
         roleDescription = "Special armored fighter. Granted access to extra, unique weapons for proving themselves in combat.",
+        roleDescriptionExpanded = {
+            AssaultRifles = "true"
+            SubMachineGuns = "true"
+            Shotguns = "true"
+            HeavyMachineGuns = "true"
+            DesignatedMarksmanRifles = "true"
+            Snipers = "false"
+            FragGrenades = "true"
+            FlashGrenades = "true"
+            SmokeGrenades = "true"
+            RemoteExplosives = "false"
+            ExplosiveLaunchers = "false"
+        }
         armorRating = self.Armor.standard
     },
 }

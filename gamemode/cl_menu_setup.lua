@@ -1,49 +1,57 @@
 --//This file is strictly for creating/registering custom vgui elements
 
-local roleButton = {}
-roleButton.font = "DermaLarge"
-roleButton.text = ""
-roleButton.imgsrc = ""
-roleButton.img = Material(roleButton.imgsrc)
-roleButton.title = false
-roleButton.hover = false
-roleButton.locked = false
-roleButton.selected = false
+local roleSelectionButton = {}
+roleSelectionButton.font = "DermaLarge"
+roleSelectionButton.text = "nil"
+roleSelectionButton.imgsrc = ""
+roleSelectionButton.img = Material(roleSelectionButton.imgsrc)
+roleSelectionButton.title = false
+roleSelectionButton.hover = false
+roleSelectionButton.locked = false
+roleSelectionButton.selected = false
+roleSelectionButton.Role = 1 --Default value, always unlocked
 
-function roleButton:SetFont(font)
+function roleSelectionButton:SetFont(font)
     self.font = font
 end
 
-function roleButton:SetText(text)
+function roleSelectionButton:SetText(text)
     self.text = text
 end
 
-function roleButton:IsTitle(bool)
+function roleSelectionButton:SetRole(num)
+    self.role = num
+end
+
+function roleSelectionButton:IsTitle(bool)
     self.title = bool
 end
 
-function roleButton:IsLocked(bool)
-    roleButton.locked = bool
+function roleSelectionButton:IsLocked(bool)
+    roleSelectionButton.locked = bool
 end
 
-function roleButton:SetImage(img)
+function roleSelectionButton:SetImage(img)
     self.imgsrc = img
-    self.img = Material(roleButton.imgsrc)
+    self.img = Material(roleSelectionButton.imgsrc)
 end
 
---[[function roleButton:Selected(bool)
-    if bool == true or bool == false then
-        self.selected = bool
-    else
-        return self.selected
+function roleSelectionButton:DoClick()
+    if not roleSelectionButton.locked then
+        GM.roleMainButtonDown = self.role
     end
-end]]
-
-function roleButton:OnCursorEntered()
-    --surface.PlaySound("")
 end
 
-function roleButton:Paint()
+function roleSelectionButton:OnCursorEntered()
+    --surface.PlaySound("")
+    self.cursorEntered = true
+end
+
+function roleSelectionButton:OnCursorExited()
+    self.cursorEntered = false
+end
+
+function roleSelectionButton:Paint()
     local w, h = self:GetSize()
 
     if self.img then --if IsValid(self.img) then
@@ -65,7 +73,7 @@ function roleButton:Paint()
             surface.DrawRect(1, 1, w - 2, h - 2)
             draw.SimpleText("LOCKED", self.font, w / 2, h / 2, Color(255, 255, 255), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
         else
-            if hover or GM.roleMainButtonDown == self then
+            if self.cursorEntered or GM.roleMainButtonDown == self then
                 surface.SetDrawColor(255, 255, 255)
                 surface.DrawOutlinedRect(0, 0, w, h)
             end
@@ -73,4 +81,27 @@ function roleButton:Paint()
     end
 end
 
-vgui.Register("RoleButton", roleButton, "DButton")
+vgui.Register("RoleSelectionButton", roleSelectionButton, "DButton")
+
+local roleDescriptionButton = {}
+roleDescriptionButton.text = ""
+
+function roleDescriptionButton:SetText(txt)
+    self.text = txt
+end
+
+function roleDescriptionButton:OnCursorEntered()
+    self.cursorEntered = true
+end
+
+function roleDescriptionButton:OnCursorExited()
+    self.cursorEntered = false
+end
+
+function roleDescriptionButton:Paint()
+
+end
+
+function roleDescriptionButton:DoClick()
+
+end

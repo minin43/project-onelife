@@ -103,14 +103,19 @@ function GM:RoleMenu()
 	self.roleMainDesc.Paint = function()
 		surface.SetDrawColor(180, 180, 180)
         surface.DrawRect(1, 1, w - 2, h - 2)
-		draw.SimpleText("", self.font, w / 2, h / 2, Color(0, 0, 0), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
+		draw.SimpleText(self.Roles[self.roleMainButtonNumber]["roleDescription"] or "None.", self.font, w / 2, h / 2, Color(0, 0, 0), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
+
+		if self.roleMainDescHover then
+			surface.SetDrawColor(255, 255, 255)
+            surface.DrawOutlinedRect(0, 0, w, h)
+		end
 	end
 	self.roleMainDesc.DoClick = function()
 		--surface.PlaySound("")
 		self.roleMain:Close()
-		--Open new derma panel
+		--Open new derma panel(role-to-auto-jump-to)
 	end
-	self.roleMainDesc.OnCuursorEntered = function()
+	self.roleMainDesc.OnCursorEntered = function()
 		self.roleMainDescHover = true
 	end
 	self.roleMainDesc.OnCursorExited = function()
@@ -122,18 +127,25 @@ function GM:RoleMenu()
 	self.roleMainArmor:SetSize(self.roleMain:GetWide() / 2, self.roleMainBottomBarHeight)
 	self.roleMainArmor:SetText("")
 	self.roleMainArmor.Paint = function()
+		surface.SetDrawColor(180, 180, 180)
+        surface.DrawRect(1, 1, w - 2, h - 2)
+		draw.SimpleText(self.Roles[self.roleMainButtonNumber]["armorRating"].armorName or "None", self.font, w / 2, h / 2, Color(0, 0, 0), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
 
+		if self.roleMainArmorHover then
+			surface.SetDrawColor(255, 255, 255)
+            surface.DrawOutlinedRect(0, 0, w, h)
+		end
 	end
 	self.roleMainArmor.DoClick = function()
 		--surface.PlaySound("")
 		self.roleMain:Close()
 		--Open new derma panel
 	end
-	self.roleMainArmor.OnCuursorEntered = function()
-
+	self.roleMainArmor.OnCursorEntered = function()
+		self.roleMainArmorHover = true
 	end
 	self.roleMainArmor.OnCursorExited = function()
-
+		self.roleMainArmorHover = false
 	end
 	
 	--//When you select a role, display role-sepcific information, if it's an unlocked role, automatically select it
@@ -167,20 +179,16 @@ function GM:RoleMenu()
 		self.teamToRoleName ="soloTeamName"
 	end
 	for k, v in pairs(self.roleMainButtonPOS) do
-		local but = vgui.Create("RoleButton", self.roleMain, "but" .. k)
+		local but = vgui.Create("RoleSelectionButton", self.roleMain, "but" .. k)
 		but:SetPos(self.roleMainButtonPOS[k].x, self.roleMainButtonPOS[k].y)
 		but:SetSize(self.roleMainButtonWide, self.roleMainButtonTall)
 		but:SetText(self.Roles[k][self.teamToRoleName])
+		but:SetRole(k)
 		if k == 2 then
 			but:IsTitle(true)
 		else
 			if k > self.playerLevel then 
 				but:IsLocked(true)
-			else
-				but.DoClick = function()
-					self.roleMainButtonDown = but
-					--surface.PlaySound("")
-				end
 			end
 		end
 	end
@@ -341,4 +349,34 @@ function GM:RoleMenu()
 		self.roleEnemyRoleCount = net.ReadTable()
 		self.RefreshEnemyRoles(self.roleEnemyRoleCount)
 	end)
+end
+
+function GM:RoleDescriptions(role)
+
+	self.roleDescMenu = vgui.Create("DFrame")
+	self.roleDescMenu:SetSize(400, 300)
+	self.roleDescMenu:SetTitle("")
+	self.roleDescMenu:SetVisible(true)
+	self.roleDescMenu:SetDraggable(false)
+	self.roleDescMenu:ShowCloseButton(false)
+	self.roleDescMenu:MakePopup()
+	self.roleDescMenu:Center()
+	self.roleDescMenuX, self.roleDescMenuY = self.roleDescMenu:GetPos()
+    self.roleDescMenu.Paint = function()
+		Derma_DrawBackgroundBlur(self.roleDescMenu, CurTime())
+		surface.SetDrawColor(0, 0, 0, 220)
+        surface.DrawRect(0, 0, self.roleDescMenu:GetWide(), self.roleDescMenu:GetTall())
+    end
+	self.roleDescMenu.Think = function()
+		if self.roleMain then
+			self.roleDescMenu:Close()
+		elseif self.roleDescMenu then
+			self.roleDescMenu:MakePopup()
+		end
+	end
+
+	for k, v in pairs(self.Roles) do
+		local but = vgui.Create("", self.roleDescMenu)
+	end
+
 end

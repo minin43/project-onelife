@@ -374,7 +374,7 @@ function GM:RoleDescriptions(role)
 		end
 	end
 
-	self.roleDescMenuRoleWidth = 0
+	self.roleDescMenuRoleWidth = self.roleDescMenu:GetWide() / 3
 	for k, v in pairs(self.Roles) do
 		local but = vgui.Create("RoleDescriptionButton", self.roleDescMenu)
 		but:SetSize(self.roleDescMenuRoleWidth, self.roleDescMenu / #self.Roles)
@@ -397,6 +397,7 @@ function GM:RoleDescriptions(role)
 		surface.DrawLine(w, h, 0, h)
 		surface.DrawLine(0, 0, 0, self.roleDescMenuButtonY)
 		surface.DrawLine(0, self.roleDescMenuButtonY + self.roleDescMenuButtonTall, 0, h)
+		draw.SimpleText(self.Roles[k][self.teamToRoleName[self.teamToRoleName[LocalPlayer():Team()]]], "DermaLarge", Color(255, 255, 255), self.roleDescMenu:GetWide() / 2, 6, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
 	end
 
 	self.roleDescMenuExit = vgui.Create("DFrame")

@@ -85,9 +85,18 @@ vgui.Register("RoleSelectionButton", roleSelectionButton, "DButton")
 
 local roleDescriptionButton = {}
 roleDescriptionButton.text = ""
+roleDescriptionButton.font = "DermaDefault"
 
 function roleDescriptionButton:SetText(txt)
     self.text = txt
+end
+
+function roleDescriptionButton:SetRole(num)
+    self.role = num
+end
+
+function roleDescriptionButton:SetFont(fnt)
+    self.font = fnt
 end
 
 function roleDescriptionButton:OnCursorEntered()
@@ -99,9 +108,25 @@ function roleDescriptionButton:OnCursorExited()
 end
 
 function roleDescriptionButton:Paint()
+    local w, h = self:GetSize()
 
+    draw.SimpleText(GM.roleToTeamName[LocalPlayer():Team()], self.font, w / 2, h / 2, Color(175, 175, 175), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
+    if self.cursorEntered or GM.roleDescMenuButtonDown == self.role then
+        draw.SimpleText(GM.roleToTeamName[LocalPlayer():Team()], self.font, w / 2, h / 2, Color(255, 255, 255), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
+        surface.SetDrawColor(255, 255, 255)
+        surface.DrawLine(0, 0, w, 0)
+        surface.DrawLine(0, 0, 0, h)
+        surface.DrawLine(0, h, w, h)
+    end
 end
 
 function roleDescriptionButton:DoClick()
-
+    GM.roleDescMenuButtonDown = self.role
 end
+
+function roleDescriptionButton:Think()
+    GM.roleDescMenuButtonX, GM.roleDescMenuButtonY = self:GetPos()
+    GM.roleDesMenuButtonWide, GM.roleDescMenuButtonTall = self:GetSize()
+end
+
+vgui.Register("RoleDescriptionButton", roleDescriptionButton, "DButton")

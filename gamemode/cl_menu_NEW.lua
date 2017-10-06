@@ -29,6 +29,12 @@ hook.Add("InitPostEntity", "PrecacheWeaponModelsToPreventInitialMenuOpeningLag",
 	end
 end)
 
+GM.teamToRoleName = {
+	1 = "redTeamName",
+	2 = "blueTeamName",
+	3 = "soloTeamName"
+}
+
 function GM:LoadoutMenu()
     if self.Main then return end
 
@@ -171,18 +177,11 @@ function GM:RoleMenu()
 		{x = (self.roleMainButtonWideSpacer * 2) + self.roleMainButtonWide, y = (self.roleMainButtonTallSpacer * 2) + (self.roleMainButtonTall * 2)},
 		{x = (self.roleMainButtonWideSpacer * 3) + (self.roleMainButtonWide * 2), y = (self.roleMainButtonTallSpacer * 2) + (self.roleMainButtonTall * 2)}
 	}
-	if LocalPlayer():Team() == 1 then
-		self.teamToRoleName = "redTeamName"
-	elseif LocalPlayer():Team() == 2 then
-		self.teamToRoleName = "blueTeamName"
-	elseif LocalPlayer():Team() == 3 then
-		self.teamToRoleName ="soloTeamName"
-	end
 	for k, v in pairs(self.roleMainButtonPOS) do
 		local but = vgui.Create("RoleSelectionButton", self.roleMain, "but" .. k)
 		but:SetPos(self.roleMainButtonPOS[k].x, self.roleMainButtonPOS[k].y)
 		but:SetSize(self.roleMainButtonWide, self.roleMainButtonTall)
-		but:SetText(self.Roles[k][self.teamToRoleName])
+		but:SetText(self.Roles[k][self.teamToRoleName[self.teamToRoleName[LocalPlayer():Team()]]])
 		but:SetRole(k)
 		if k == 2 then
 			but:IsTitle(true)
@@ -375,8 +374,53 @@ function GM:RoleDescriptions(role)
 		end
 	end
 
+	self.roleDescMenuRoleWidth = 0
 	for k, v in pairs(self.Roles) do
-		local but = vgui.Create("", self.roleDescMenu)
+		local but = vgui.Create("RoleDescriptionButton", self.roleDescMenu)
+		but:SetSize(self.roleDescMenuRoleWidth, self.roleDescMenu / #self.Roles)
+		but:SetPos(0, (k - 1) * (self.roleDescMenu / #self.Roles))
+		but:SetText(v[self.teamToRoleName[LocalPlayer():Team()]])
+		if role == k then
+			but:DoClick()
+		end
 	end
 
+	self.roleDescMenuInfo = vgui.Create("DPanel", self.roleDescMenu)
+	self.roleDescMenuInfo:SetSize(self.roleDescMenu:GetWide() - self.roleDescMenuRoleWidth, self.roleDescMenu:GetTall())
+	self.roleDescMenuInfo:SetPos(self.roleDescMenuRoleWidth, 0)
+	self.roleDescMenuInfo.Paint = function()
+		local w, h = self:GetSize()
+
+		surface.SetDrawColor(255, 255, 255)
+		surface.DrawLine(0, 0, w, 0)
+		surface.DrawLine(w, 0, w, h)
+		surface.DrawLine(w, h, 0, h)
+		surface.DrawLine(0, 0, 0, self.roleDescMenuButtonY)
+		surface.DrawLine(0, self.roleDescMenuButtonY + self.roleDescMenuButtonTall, 0, h)
+	end
+
+	self.roleDescMenuExit = vgui.Create("DFrame")
+	self.roleDescMenuExit:SetSize(50, 50)
+	self.roleDescMenuExit:SetPos(self.roleDescMenuX + self.roleDescMenu:GetWide() + 2, self.roleDescMenuExitY)
+	self.roleDescMenuExit:SetTitle("")
+	self.roleDescMenuExit:SetVisible(true)
+	self.roleDescMenuExit:SetDraggable(false)
+	self.roleDescMenuExit:ShowCloseButton(false)
+	self.roleDescMenuExit:MakePopup()
+	self.roleDescMenuExitX, self.roleDescMenuExitY = self.roleDescMenuExit:GetPos()
+	self.roleDescMenuExit.Think = function()
+		if not self.roleDescMenu then
+			self.roleDescMenuExit:Close()
+		end
+	end
+
+	self.roleDescMenuExitButton = vgui.Create("DButton", self.roleDescMenuExit)
+	self.roleDescMenuExitButton:SetPos(0, 0)
+	self.roleDescMenuExitButton:SetSize(self.roleDescMenuExit:GetWide(), self.roleDescMenuExit:GetTall())
+	self.roleDescMenuExitButton:SetText("X")
+	self.roleDescMenuExitButton.DoClick = function()
+		self.roleDescMenuExitButton:Close()
+		self.roleDescMenuExit:Close()
+		self:RoleMenu()
+	end
 end

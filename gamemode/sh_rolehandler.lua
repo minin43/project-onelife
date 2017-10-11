@@ -6,19 +6,19 @@ GM.Roles = {
         soloTeamName = "Rifleman",
         roleDescription = "Standard armored fighter. Granted access to most weapon types and frag grenades.",
         roleDescriptionExpanded = { --All values are strings: true, false, or partial (used to describe availability) - ONLY USED IN ROLE DESCRIPTION
-            "Assault Rifles" = "true",
-            "Sub-Machine Guns" = "partial",
-            "Shotguns" = "false",
-            "Heavy Machine Guns" = "false",
-            "D.M.R.s" = "partial",
-            "Snipers" = "false",
-            "Frag Grenades" = "true",
-            "Flash Grenades" = "false",
-            "Smoke Grenades" = "false",
-            "Remote Explosives" = "false",
-            "Explosive Launchers" = "false"
+            "Assault Rifles" = "Full",
+            "Sub-Machine Guns" = "Partial",
+            "Shotguns" = "No",
+            "Heavy Machine Guns" = "No",
+            "D.M.R.s" = "Partial",
+            "Snipers" = "No",
+            "Frag Grenades" = "Full",
+            "Flash Grenades" = "No",
+            "Smoke Grenades" = "No",
+            "Remote Explosives" = "No",
+            "Explosive Launchers" = "No"
         }
-        armorRating = self.Armor.standard
+        armorRating = self.Armor[2]
     },
     {
         redTeamName = "Scout",
@@ -26,19 +26,19 @@ GM.Roles = {
         soloTeamName = "Recon",
         roleDescription = "Lightly armored but fast-moving fighter. Granted access to all short-range weaponry and flash grenades.",
         roleDescriptionExpanded = {
-            "Assault Rifles" = "false",
-            "Sub-Machine Guns" = "true",
-            "Shotguns" = "true",
-            "Heavy Machine Guns" = "false",
-            "D.M.R.s" = "false",
-            "Snipers" = "false",
-            "Frag Grenades" = "false",
-            "Flash Grenades" = "true",
-            "Smoke Grenades" = "false",
-            "Remote Explosives" = "false",
-            "Explosive Launchers" = "false"
+            "Assault Rifles" = "No",
+            "Sub-Machine Guns" = "Full",
+            "Shotguns" = "Full",
+            "Heavy Machine Guns" = "No",
+            "D.M.R.s" = "No",
+            "Snipers" = "No",
+            "Frag Grenades" = "No",
+            "Flash Grenades" = "Full",
+            "Smoke Grenades" = "No",
+            "Remote Explosives" = "No",
+            "Explosive Launchers" = "No"
         }
-        armorRating = self.Armor.light
+        armorRating = self.Armor[1]
     },
     {
         redTeamName = "Gunner",
@@ -46,19 +46,19 @@ GM.Roles = {
         soloTeamName = "Gunner",
         roleDescription = "Super heavily armored supportive fighter. Granted access to LMGs, some long-distance DMRs, and smoke grenades.",
         roleDescriptionExpanded = {
-            "Assault Rifles" = "partial",
-            "Sub-Machine Guns" = "false",
-            "Shotguns" = "false",
-            "Heavy Machine Guns" = "true",
-            "D.M.R.s" = "partial",
-            "Snipers" = "false",
-            "Frag Grenades" = "false",
-            "Flash Grenades" = "false",
-            "Smoke Grenades" = "true",
-            "Remote Explosives" = "false",
-            "Explosive Launchers" = "false"
+            "Assault Rifles" = "Partial",
+            "Sub-Machine Guns" = "No",
+            "Shotguns" = "No",
+            "Heavy Machine Guns" = "Full",
+            "D.M.R.s" = "Partial",
+            "Snipers" = "No",
+            "Frag Grenades" = "No",
+            "Flash Grenades" = "No",
+            "Smoke Grenades" = "Full",
+            "Remote Explosives" = "No",
+            "Explosive Launchers" = "No"
         }
-        armorRating = self.Armor.superheavy
+        armorRating = self.Armor[4]
     },
     {
         redTeamName = "Sharpshooter",
@@ -66,19 +66,19 @@ GM.Roles = {
         soloTeamName = "Marksman",
         roleDescription = "Lightly armored supportive fighter. Granted access to all DMRs but no sniper rifle.",
         roleDescriptionExpanded = {
-            "Assault Rifles" = "partial",
-            "Sub-Machine Guns" = "false",
-            "Shotguns" = "false",
-            "Heavy Machine Guns" = "false",
-            "D.M.R.s" = "true",
-            "Snipers" = "false",
-            "Frag Grenades" = "false",
-            "Flash Grenades" = "false",
-            "Smoke Grenades" = "true",
-            "Remote Explosives" = "false",
-            "Explosive Launchers" = "false"
+            "Assault Rifles" = "Partial",
+            "Sub-Machine Guns" = "No",
+            "Shotguns" = "No",
+            "Heavy Machine Guns" = "No",
+            "D.M.R.s" = "Full",
+            "Snipers" = "No",
+            "Frag Grenades" = "No",
+            "Flash Grenades" = "No",
+            "Smoke Grenades" = "Full",
+            "Remote Explosives" = "No",
+            "Explosive Launchers" = "No"
         }
-        armorRating = self.Armor.light
+        armorRating = self.Armor[1]
     },
     {
         redTeamName = "Striker",
@@ -86,19 +86,19 @@ GM.Roles = {
         soloTeamName = "Demolitions",
         roleDescription = "Super heavily armored fighter. Granted access to all launchers and Assault Rifles, but no grenades.",
         roleDescriptionExpanded = {
-            "Assault Rifles" = "true",
-            "Sub-Machine Guns" = "false",
-            "Shotguns" = "false",
-            "Heavy Machine Guns" = "false",
-            "D.M.R.s" = "false",
-            "Snipers" = "false",
-            "Frag Grenades" = "false",
-            "Flash Grenades" = "false",
-            "Smoke Grenades" = "false",
-            "Remote Explosives" = "false",
-            "Explosive Launchers" = "true"
+            "Assault Rifles" = "Full",
+            "Sub-Machine Guns" = "No",
+            "Shotguns" = "No",
+            "Heavy Machine Guns" = "No",
+            "D.M.R.s" = "No",
+            "Snipers" = "No",
+            "Frag Grenades" = "No",
+            "Flash Grenades" = "No",
+            "Smoke Grenades" = "No",
+            "Remote Explosives" = "No",
+            "Explosive Launchers" = "Full"
         }
-        armorRating = self.Armor.superheavy
+        armorRating = self.Armor[4]
     },
     {
         redTeamName = "Sniper",
@@ -106,19 +106,19 @@ GM.Roles = {
         soloTeamName = "Sniper",
         roleDescription = "Lightly armored supportive fighter. Granted access to all sniper rifles but no grenades.",
         roleDescriptionExpanded = {
-            "Assault Rifles" = "false",
-            "Sub-Machine Guns" = "false",
-            "Shotguns" = "false",
-            "Heavy Machine Guns" = "false",
-            "D.M.R.s" = "false",
-            "Snipers" = "true",
-            "Frag Grenades" = "false",
-            "Flash Grenades" = "false",
-            "Smoke Grenades" = "false",
-            "Remote Explosives" = "false",
-            "Explosive Launchers" = "false"
+            "Assault Rifles" = "No",
+            "Sub-Machine Guns" = "No",
+            "Shotguns" = "No",
+            "Heavy Machine Guns" = "No",
+            "D.M.R.s" = "No",
+            "Snipers" = "Full",
+            "Frag Grenades" = "No",
+            "Flash Grenades" = "No",
+            "Smoke Grenades" = "No",
+            "Remote Explosives" = "No",
+            "Explosive Launchers" = "No"
         }
-        armorRating = self.Armor.light
+        armorRating = self.Armor[1]
     },
     {
         redTeamName = "Sapper",
@@ -126,19 +126,19 @@ GM.Roles = {
         soloTeamName = "Breacher",
         roleDescription = "Heavily armored supportive fighter. Granted access to all throwable and remotely detonated explosives.",
         roleDescriptionExpanded = {
-            "Assault Rifles" = "partial",
-            "Sub-Machine Guns" = "partial",
-            "Shotguns" = "partial",
-            "Heavy Machine Guns" = "false",
-            "D.M.R.s" = "false",
-            "Snipers" = "false",
-            "Frag Grenades" = "true",
-            "Flash Grenades" = "true",
-            "Smoke Grenades" = "true",
-            "Remote Explosives" = "true",
-            "Explosive Launchers" = "false"
+            "Assault Rifles" = "Partial",
+            "Sub-Machine Guns" = "Partial",
+            "Shotguns" = "Partial",
+            "Heavy Machine Guns" = "No",
+            "D.M.R.s" = "No",
+            "Snipers" = "No",
+            "Frag Grenades" = "Full",
+            "Flash Grenades" = "Full",
+            "Smoke Grenades" = "Full",
+            "Remote Explosives" = "Full",
+            "Explosive Launchers" = "No"
         }
-        armorRating = self.Armor.heavy
+        armorRating = self.Armor[3]
     },
     {
         redTeamName = "Expert",
@@ -146,84 +146,49 @@ GM.Roles = {
         soloTeamName = "Specialist",
         roleDescription = "Special armored fighter. Granted access to extra, unique weapons for proving themselves in combat.",
         roleDescriptionExpanded = {
-            "Assault Rifles" = "true",
-            "Sub-Machine Guns" = "true",
-            "Shotguns" = "true",
-            "Heavy Machine Guns" = "true",
-            "D.M.R.s" = "true",
-            "Snipers" = "false",
-            "Frag Grenades" = "true",
-            "Flash Grenades" = "true",
-            "Smoke Grenades" = "true",
-            "Remote Explosives" = "false",
-            "Explosive Launchers" = "false"
+            "Assault Rifles" = "Full",
+            "Sub-Machine Guns" = "Full",
+            "Shotguns" = "Full",
+            "Heavy Machine Guns" = "Full",
+            "D.M.R.s" = "Full",
+            "Snipers" = "No",
+            "Frag Grenades" = "Full",
+            "Flash Grenades" = "Full",
+            "Smoke Grenades" = "Full",
+            "Remote Explosives" = "No",
+            "Explosive Launchers" = "No"
         }
-        armorRating = self.Armor.standard
+        armorRating = self.Armor[2]
     },
 }
 
 --//Default damage scaling: head = 1.5, chest & stomach = 1, arms = 0.9, legs = 0.85
---//Base move speeds: walkSpeed = 140, runSpeed = 260, jumpStrength = 170
+--//Gmod move speeds: walkSpeed = 200, runSpeed = 400, jumpPower = 200
+--//My move speeds: walkSpeed = 140, runSpeed = 260, jumpStrength = 170
 GM.Armor = {
-    light = {
+    {
         armorName = "Light",
         healthScaling = 85,
-        damageScaling = {
-            head = 2.0,
-            torso = 1.2,
-            arms = 1,
-            legs = 0.9
-        },
-        movementScaling = {
-            walkSpeed = 140,
-            runSpeed = 260,
-            jumpStrength = 170
-        },
+        damageScaling = {2.0, 1.2, 1, 0.9}, --Order: head, chest, arms, legs
+        movementScaling = {140, 260, 170}, --Order: walkSpeed, runSpeed, jumpPower
     },
-    standard = {
+    {
         armorName = "Standard"
         healthScaling = 100,
-        damageScaling = {
-            head = 2.0,
-            torso = 1.1,
-            arms = 0.9,
-            legs = 0.85
-        },
-        movementScaling = {
-            walkSpeed = 120,
-            runSpeed = 240,
-            jumpStrength = 160
-        },
+        damageScaling = {2.0, 1.1, 0.9, 0.85},
+        movementScaling = {120, 240, 160},
     },
-    heavy = {
+    {
         armorName = "Heavy"
         healthScaling = 100,
-        damageScaling = {
-            head = 2.0,
-            torso = 1.0,
-            arms = 0.9,
-            legs = 0.85
-        },
-        movementScaling = {
-            walkSpeed = 120,
-            runSpeed = 230,
-            jumpStrength = 150
-        },
+        damageScaling = {2.0, 1.0, 0.9, 0.85},
+        movementScaling = {120, 230, 150},
     },
-    superheavy = {
+    {
         armorName = "Super Heavy"
         healthScaling = 115
-        damageScaling = {
-            head = 1.5,
-            torso = 0.9,
-            arms = 0.7,
-            legs = 0.65
-        }
-        movementScaling = { 
-            walkSpeed = 100,
-            runSpeed = 220,
-            jumpStrength = 130
-        }
+        damageScaling = {1.5, 0.9, 0.7, 0.65}
+        movementScaling = { 100= 220= 13 }
     }
 }
 
@@ -293,19 +258,19 @@ end )
 
 hook.Add( "PlayerSpawn", "SetRoleModifiers", SetRole )
 
-function GM:SetRole( ply, role )
+function GM:SetRole(ply, role) --ply is the player ent, role is a num
     timer.Simple( 0, function() --timer.Simple with 0 time runs on next server tick
         if ply:Team() != 1 and ply:Team() != 2 and ply:Team() != 3 then return end
 
-        ply:SetModel( self.playerModelByRoleplayerModelByRole[team.GetName(ply:Team())][math.random(#playerModelByRole[team.GetName(ply:Team())])] )
+        ply:SetModel( self.playerModelByRole[team.GetName(ply:Team())][math.random(#playerModelByRole[team.GetName(ply:Team())])] )
 
-        ply.armorRating = self.Role[role][armorRating]
+        ply.armorRating = self.Roles[role].armorRating
 
         if ply.armorRating.movementScaling then
-            ply:SetNWString( "ArmorType", tostring(ply.armorRating) )
-            ply:SetwalkSpeed( ply.armorRating.movementScaling.walkSpeed )
-            ply:SetrunSpeed( ply.armorRating.movementScaling.runSpeed )
-            ply:SetJumpPower( ply.armorRating.movementScaling.jumpStrength )
+            ply:SetNWString( "ArmorType", tostring(ply.armorRating.armorName) )
+            ply:SetwalkSpeed( ply.armorRating.movementScaling[1] )
+            ply:SetrunSpeed( ply.armorRating.movementScaling[2] )
+            ply:SetJumpPower( ply.armorRating.movementScaling[3] )
         end
 
         if ply.armorRating.healthScaling then

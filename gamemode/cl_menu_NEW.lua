@@ -29,7 +29,7 @@ hook.Add("InitPostEntity", "PrecacheWeaponModelsToPreventInitialMenuOpeningLag",
 	end
 end)
 
-GM.teamToRoleName = {
+GM.teamNumberToName = {
 	1 = "redTeamName",
 	2 = "blueTeamName",
 	3 = "soloTeamName"
@@ -77,7 +77,7 @@ end
 --//Similar to the menu system of Insurgency, players will select their roles in a separate menu
 --//Plan: list all teammate's and their roles, and a summary of the enemy's roles
 --//I would like the teammate and enemy role roster update dynamically
-function GM:RoleMenu()
+function GM:RoleSelectionMenu()
 	if self.roleMain then return end
 
 	self.roleMain = vgui.Create("DFrame")
@@ -109,7 +109,7 @@ function GM:RoleMenu()
 	self.roleMainDesc.Paint = function()
 		surface.SetDrawColor(180, 180, 180)
         surface.DrawRect(1, 1, w - 2, h - 2)
-		draw.SimpleText(self.Roles[self.roleMainButtonNumber]["roleDescription"] or "None.", self.font, w / 2, h / 2, Color(0, 0, 0), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
+		draw.SimpleText(self.Roles[self.roleMainButtonNumber]["roleDescription"] or "None.", "DermaDefault", w / 2, h / 2, Color(0, 0, 0), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
 
 		if self.roleMainDescHover then
 			surface.SetDrawColor(255, 255, 255)
@@ -117,9 +117,9 @@ function GM:RoleMenu()
 		end
 	end
 	self.roleMainDesc.DoClick = function()
-		--surface.PlaySound("")
+		surface.PlaySound("buttons/button22.wav")
 		self.roleMain:Close()
-		--Open new derma panel(role-to-auto-jump-to)
+		self:RoleDescriptions(self.roleMainButtonNumber)
 	end
 	self.roleMainDesc.OnCursorEntered = function()
 		self.roleMainDescHover = true
@@ -143,9 +143,9 @@ function GM:RoleMenu()
 		end
 	end
 	self.roleMainArmor.DoClick = function()
-		--surface.PlaySound("")
+		surface.PlaySound("buttons/button22.wav")
 		self.roleMain:Close()
-		--Open new derma panel
+		self:ArmorDescription(self.roleMainButtonNumber)
 	end
 	self.roleMainArmor.OnCursorEntered = function()
 		self.roleMainArmorHover = true
@@ -154,14 +154,6 @@ function GM:RoleMenu()
 		self.roleMainArmorHover = false
 	end
 	
-	--//When you select a role, display role-sepcific information, if it's an unlocked role, automatically select it
-	--[[self.roleMainPanel = vgui.Create("DPanel", self.roleMain)
-	self.roleMainPanel:SetSize(self.roleMain:GetWide(), self.roleMain:GetTall())
-	self.roleMainPanel:SetPos(0, 0)
-	self.roleMainPanel.Paint = function()
-		surface.SetDrawColor()
-		surface.DrawRect()
-	end]]
 	self.roleMainButtonWide = self.roleMain:GetWide() / 4
 	self.roleMainButtonWideSpacer = (self.roleMain:GetWide() - (self.roleMainButtonWide * 3)) / 4
 	self.roleMainButtonTall = (self.roleMain:GetTall() - self.roleMainBottomBarHeight) / 4
@@ -181,7 +173,7 @@ function GM:RoleMenu()
 		local but = vgui.Create("RoleSelectionButton", self.roleMain, "but" .. k)
 		but:SetPos(self.roleMainButtonPOS[k].x, self.roleMainButtonPOS[k].y)
 		but:SetSize(self.roleMainButtonWide, self.roleMainButtonTall)
-		but:SetText(self.Roles[k][self.teamToRoleName[self.teamToRoleName[LocalPlayer():Team()]]])
+		but:SetText(self.Roles[k][self.teamNumberToName[self.teamNumberToName[LocalPlayer():Team()]]])
 		but:SetRole(k)
 		if k == 2 then
 			but:IsTitle(true)
@@ -281,6 +273,7 @@ function GM:RoleMenu()
     self.roleEnemy.Paint = function()
         draw.RoundedBoxEx(4, 0, 0, self.roleEnemy:GetWide(), self.roleEnemy:GetTall(), Color(0, 0, 0, 220), false, true, false, true)
 		draw.SimpleText("Enemy Role Count", "DermaDefault", 2, 2, Color(255, 255, 255), TEXT_ALIGN_LEFT, TEXT_ALIGN_TOP)
+		--Currently commented out in case "if not IsValid(self.roleEnemyScroll:GetChildren()) then" does not function as intended below
 		--[[if not self.roleEnemyRoleCount then
 			draw.RoundedBoxEx(4, 0, 0, self.roleEnemy:GetWide(), self.roleEnemy:GetTall(), Color(255, 252, 255, 220), false, true, false, true)
 			draw.SimpleText("Loading Enemy Role Count", "DermaDefault", self.roleEnemy:GetWide() / 2, self.roleEnemy:GetTall() / 2, Color(0, 0, 0), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
@@ -379,7 +372,7 @@ function GM:RoleDescriptions(role)
 		local but = vgui.Create("RoleDescriptionButton", self.roleDescMenu)
 		but:SetSize(self.roleDescMenuRoleWidth, self.roleDescMenu / #self.Roles)
 		but:SetPos(0, (k - 1) * (self.roleDescMenu / #self.Roles))
-		but:SetText(v[self.teamToRoleName[LocalPlayer():Team()]])
+		but:SetText(v[self.teamNumberToName[LocalPlayer():Team()]])
 		if role == k then
 			but:DoClick()
 		end
@@ -397,7 +390,10 @@ function GM:RoleDescriptions(role)
 		surface.DrawLine(w, h, 0, h)
 		surface.DrawLine(0, 0, 0, self.roleDescMenuButtonY)
 		surface.DrawLine(0, self.roleDescMenuButtonY + self.roleDescMenuButtonTall, 0, h)
-		draw.SimpleText(self.Roles[k][self.teamToRoleName[self.teamToRoleName[LocalPlayer():Team()]]], "DermaLarge", Color(255, 255, 255), self.roleDescMenu:GetWide() / 2, 6, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
+		draw.SimpleText(self.Roles[self.roleDescMenuButtonNumber][self.teamNumberToName[self.teamNumberToName.armor]], "DermaLarge", Color(255, 255, 255), self.roleDescMenu:GetWide() / 2, 8, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
+		draw.SimpleText(self.Roles[self.roleDescMenuButtonNumber].roleDescription, "DermaDefault", Color(255, 255, 255), self.roleDescMenu:GetWide() / 2, 20, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
+		
+		--Draw role information
 	end
 
 	self.roleDescMenuExit = vgui.Create("DFrame")
@@ -420,8 +416,122 @@ function GM:RoleDescriptions(role)
 	self.roleDescMenuExitButton:SetSize(self.roleDescMenuExit:GetWide(), self.roleDescMenuExit:GetTall())
 	self.roleDescMenuExitButton:SetText("X")
 	self.roleDescMenuExitButton.DoClick = function()
-		self.roleDescMenuExitButton:Close()
+		surface.PlaySound("buttons/button22.wav")
+		self.roleDescMenu:Close()
 		self.roleDescMenuExit:Close()
-		self:RoleMenu()
+		self:RoleSelectionMenu()
+	end
+end
+
+function GM:ArmorDescription(armor)
+	self.armorDescMenu = vgui.Create("DFrame")
+	self.armorDescMenu:SetSize(400, 200)
+	self.armorDescMenu:SetTitle("")
+	self.armorDescMenu:SetVisible(true)
+	self.armorDescMenu:SetDraggable(false)
+	self.armorDescMenu:ShowCloseButton(false)
+	self.armorDescMenu:MakePopup()
+	self.armorDescMenu:Center()
+	self.armorDescMenuX, self.armorDescMenuY = self.armorDescMenu:GetPos()
+    self.armorDescMenu.Paint = function()
+		Derma_DrawBackgroundBlur(self.armorDescMenu, CurTime())
+		surface.SetDrawColor(0, 0, 0, 220)
+        surface.DrawRect(0, 0, self.armorDescMenu:GetWide(), self.armorDescMenu:GetTall())
+    end
+	self.armorDescMenu.Think = function()
+		if self.armorDescMenu then
+			self.armorDescMenu:MakePopup()
+		end
+	end
+
+	self.armorDescMenuButtonWidth = self.armorDescMenu:GetWide() / 3
+	for k, v in pairs(self.Armor) do
+		local but = vgui.Create("ArmorDescriptionButton", self.armorDescMenu)
+		but:SetSize(self.armorDescMenuButtonWidth, self.armorDescMenu:GetTall() / 4)
+		but:SetPos(0, self.armorDescMenu:GetTall() / 4 * (k - 1))
+		but:SetText(v.armorName)
+		if armor == k then
+			but:DoClick()
+		end
+	end
+
+	self.armorDescMenuInfo = vgui.Create("DPanel", self.armorDescMenu)
+	self.armorDescMenuInfo:SetSize(self.armorDescMenu:GetWide() - self.armorDescMenuButtonWidth, self.armorDescMenu:GetTall())
+	self.armorDescMenuInfo:SetPos(self.armorDescMenuButtonWidth, 0)
+	self.armorDescMenuInfo.Paint = function()
+		local w, h = self:GetSize()
+
+		surface.SetDrawColor(255, 255, 255)
+		surface.DrawLine(0, 0, w, 0)
+		surface.DrawLine(w, 0, w, h)
+		surface.DrawLine(w, h, 0, h)
+		surface.DrawLine(0, 0, 0, self.armorDescMenuButtonY)
+		surface.DrawLine(0, self.armorDescMenuButtonY + self.armorDescMenuButtonTall, 0, h)
+
+		draw.SimpleText("Damage Scaling %", "DermaLarge", Color(255, 255, 255), self.roleDescMenuInfo:GetWide() / 4, 6, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
+		surface.DrawLine(self.armorDescMenuInfo:GetWide() / 2, 4, self.armorDescMenuInfo:GetWide() / 2, self.armorDescMenuInfo:GetTall() - 4)
+		draw.SimpleText("Health and Movement Scaling %", "DermaLarge", Color(255, 255, 255), self.roleDescMenuInfo:GetWide() * 0.75, 6, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
+	end
+
+	self.armorNumberToIcon = {
+		damageScaling = {"menu/headpic.png", "menu/chestpic2.png", "menu/armpic.png", "menu/legpic.png"},
+		movementScaling = {"menu/walkpic.png", "menu/runpic.png", "menu/jumppic2.png"}
+	}
+
+	for k, v in pairs(self.Armor.armor.damageScaling) do
+		local but = vgui.Create("ArmorInfoIcon", self.armorDescMenuInfo)
+		but:SetPos(0, self.armorDescMenuInfo:GetTall() / 4 * (k - 1))
+		but:SetSize(self.armorDescMenuInfo:GetWide() / 2, self.armorDescMenuInfo:GetTall() / 4)
+		but:SetText(v)
+		but:SetImage(self.armorNumberToIcon.damageScaling.k)
+		but:SetArmor(armor)
+		but:SetWhatScale("damageScaling", k)
+		but:Finish()
+	end
+
+	self.armorDescMenuInfoHealth = vgui.Create("ArmorInfoIcon", self.armorDescMenuInfo)
+	self.armorDescMenuInfoHealth:SetPos(self.armorDescMenuInfo:GetWide() / 2, 0)
+	self.armorDescMenuInfoHealth:SetSize(self.armorDescMenuInfo:GetWide() / 2, self.armorDescMenuInfo:GetTall() / 4)
+	self.armorDescMenuInfoHealth:SetText(self.Armor.armor.healthScaling)
+	self.armorDescMenuInfoHealth:SetImage("menu/healthpic.png")
+	self.armorDescMenuInfoHealth:SetArmor(armor)
+	self.armorDescMenuInfoHealth:SetWhatScale("healthScaling")
+	self.armorDescMenuInfoHealth:Finish()
+
+	for k, v in pairs(self.Armor.armor.movementScaling) do
+		local but = vgui.Create("ArmorInfoIcon", self.armorDescMenuInfo)
+		but:SetPos(self.armorDescMenuInfo:GetWide() / 2, self.armorDescMenuInfo:GetTall() / 4 * k)
+		but:SetSize(self.armorDescMenuInfo:GetWide() / 2, self.armorDescMenuInfo:GetTall() / 4)
+		but:SetText(v)
+		but:SetImage(self.armorNumberToIcon.movementScaling.k)
+		but:SetArmor(armor)
+		but:SetWhatScale("movementScaling", k)
+		but:Finish()
+	end
+
+	self.armorDescMenuExit = vgui.Create("DFrame")
+	self.armorDescMenuExit:SetSize(50, 50)
+	self.armorDescMenuExit:SetPos(self.armorDescMenuX + self.armorDescMenu:GetWide() + 2, self.armorDescMenuExitY)
+	self.armorDescMenuExit:SetTitle("")
+	self.armorDescMenuExit:SetVisible(true)
+	self.armorDescMenuExit:SetDraggable(false)
+	self.armorDescMenuExit:ShowCloseButton(false)
+	self.armorDescMenuExit:MakePopup()
+	self.armorDescMenuExitX, self.armorDescMenuExitY = self.armorDescMenuExit:GetPos()
+	self.armorDescMenuExit.Think = function()
+		if not self.roleDescMenu then
+			self.armorDescMenuExit:Close()
+		end
+	end
+
+	self.armorDescMenuExitButton = vgui.Create("DButton", self.armorDescMenuExit)
+	self.armorDescMenuExitButton:SetPos(0, 0)
+	self.armorDescMenuExitButton:SetSize(self.armorDescMenuExit:GetWide(), self.armorDescMenuExit:GetTall())
+	self.armorDescMenuExitButton:SetText("X")
+	self.armorDescMenuExitButton.DoClick = function()
+		surface.PlaySound("buttons/button22.wav")
+		self.armorDescMenu:Close()
+		self.armorDescMenuExit:Close()
+		self:RoleSelectionMenu()
 	end
 end

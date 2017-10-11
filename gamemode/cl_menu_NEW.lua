@@ -72,6 +72,18 @@ function GM:LoadoutMenu()
 		end
 	end
 
+	self.playerInfoMain = vgui.Create("DPanel")
+	self.playerInfoMain:SetPos()
+	self.playerInfoMain:SetSize()
+	self.playerInfoMain.Paint = function()
+
+	end
+
+	self.playerInfoMainPicture = vgui.Create("AvatarImage", self.playerInfoMain)
+	self.playerInfoMainPicture:SetPos(2, 2)
+	self.playerInfoMainPicture:SetSize(32, 32)
+	self.playerInfoMainPicture:SetPlayer(LocalPlayer(), 64)
+
 end
 
 --//Similar to the menu system of Insurgency, players will select their roles in a separate menu
@@ -79,6 +91,14 @@ end
 --//I would like the teammate and enemy role roster update dynamically
 function GM:RoleSelectionMenu()
 	if self.roleMain then return end
+
+	if not self.playerLevel then
+        net.Start("RequestLevel")
+		net.SendToServer()
+		net.Receive("RequestLevelCallback", function(len, ply)
+			self.playerLevel = tonumber(net.ReadString())
+		end)
+    end
 
 	self.roleMain = vgui.Create("DFrame")
 	self.roleMain:SetSize(800, 600)
@@ -100,7 +120,7 @@ function GM:RoleSelectionMenu()
 		end
 	end
 
-	self.roleMainBottomBarHeight = 100
+	self.roleMainBottomBarHeight = 50
 
 	self.roleMainDesc = vgui.Create("DButton", self.roleMain)
 	self.roleMainDesc:SetPos(0, self.roleMain:GetTall() - self.roleMainBottomBarHeight)
@@ -195,7 +215,7 @@ function GM:RoleSelectionMenu()
 	self.roleTeam:MakePopup()
     self.roleTeam.Paint = function()
         draw.RoundedBoxEx(4, 0, 0, self.roleTeam:GetWide(), self.roleTeam:GetTall(), Color(0, 0, 0, 220), true, false, true, false)
-		draw.SimpleText("Your Team", "DermaDefault", self.roleTeamScroll:GetWide() - 2, 2, Color(255, 255, 255), TEXT_ALIGN_RIGHT, TEXT_ALIGN_TOP)
+		draw.SimpleText("Your Team", "DermaDefault", self.roleTeam:GetWide() - 2, 2, Color(255, 255, 255), TEXT_ALIGN_RIGHT, TEXT_ALIGN_TOP)
     end
 	self.roleTeam.Think = function()
 		if not self.roleMain then

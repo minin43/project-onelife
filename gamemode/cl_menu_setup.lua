@@ -1,4 +1,5 @@
 --//This file is strictly for creating/registering custom vgui elements
+--//Never done this before so I apologize now if I make some mistakes
 
 local roleSelectionButton = {}
 roleSelectionButton.font = "DermaLarge"
@@ -7,7 +8,7 @@ roleSelectionButton.imgsrc = ""
 roleSelectionButton.img = Material(roleSelectionButton.imgsrc)
 roleSelectionButton.title = false
 roleSelectionButton.locked = false
-roleSelectionButton.Role = 1 --Default value, always unlocked
+roleSelectionButton.role = 1 --Default value, always unlocked
 
 function roleSelectionButton:SetFont(font)
     self.font = font
@@ -37,6 +38,12 @@ end
 function roleSelectionButton:DoClick()
     if not roleSelectionButton.locked then
         GM.roleMainButtonNumber = self.role
+    elseif GM.roleMainButtonNumber == self.role then
+        net.Start("SendRoleToServer")
+            net.WriteString(tostring(self.role))
+        net.SendToServer()
+        self:GetParent():Close()
+        GM:LoadoutMenu() --It is assumed this button will close its parent and open up the Loadout Menu
     end
 end
 

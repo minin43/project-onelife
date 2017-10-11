@@ -4,8 +4,10 @@ util.AddNetworkString("RequestTeamRoles")
 util.AddNetworkString("RequestTeamRolesCallback")
 util.AddNetworkString("RequestEnemyRoles")
 util.AddNetworkString("RequestEnemyRolesCallback")
+util.AddNetworkString("SendRoleToServer")
+util.AddNetworkString("")
 
-net.Receive("RequestTeamRoles", function(len, ply)
+function GM:SortTeamRoles(len, ply)
     local tableToSend
     for k, v in pairs(player.GetAll()) do
         if ply.Team() == v.Team() then
@@ -16,9 +18,10 @@ net.Receive("RequestTeamRoles", function(len, ply)
     net.Start("RequestTeamRolesCallback")
         net.WriteTable(tableToSend)
     net.Send(ply)
-end)
+end
+net.Receive("RequestTeamRoles", GM:SortTeamRoles())
 
-net.Receive("RequestEnemyRoles", function(len, ply)
+function GM:SortEnemyRoles(len, ply)
     local tableToSend
     for k, v in pairs(player.GetAll()) do
         if ply.Team() != v.Team() and v.Team() != 0 then
@@ -30,4 +33,12 @@ net.Receive("RequestEnemyRoles", function(len, ply)
     net.Start("RequestEnemyRolesCallback")
         net.WriteTable(tableToSend)
     net.Send(ply)
+end
+net.Receive("RequestEnemyRoles", GM:SortEnemyRoles())
+
+net.Receive("SendRoleToServer", function(len, ply)
+    ply.Role = tonumber(net.ReadString())
+    for k, v in pairs(player.GetAll()) do
+
+    end
 end)

@@ -102,12 +102,12 @@ end
 --Round preperation stuff
 function GM:RoundPrep( round ) 
     print( "We are starting round: ", round)
-    if !self:allteamsvalid() then 
+    if not GAMEMODE:allteamsvalid() then 
         print( "Not all teams are valid, preventing round preperation." ) 
-        self.GameInProgress = false ) 
+        self.GameInProgress = false
         self.gameType = "none"
-        self.GameInProgress = false )
-        self.RoundInProgress = false )
+        self.GameInProgress = false
+        self.RoundInProgress = false
         SetGlobalInt( "RoundTime", 0 ) 
         return 
     end

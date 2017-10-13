@@ -1,167 +1,3 @@
---// Refer to this for future descriptions: http://insurgency.wikia.com/wiki/Insurgency
-GM.Roles = {
-    {
-        redTeamName = "Militant",
-        blueTeamName = "Rifleman",
-        soloTeamName = "Rifleman",
-        roleDescription = "Standard armored fighter. Granted access to most weapon types and frag grenades.",
-        roleDescriptionExpanded = { --All values are strings: true, false, or partial (used to describe availability) - ONLY USED IN ROLE DESCRIPTION
-            "Assault Rifles" = "Full",
-            "Sub-Machine Guns" = "Partial",
-            "Shotguns" = "No",
-            "Heavy Machine Guns" = "No",
-            "D.M.R.s" = "Partial",
-            "Snipers" = "No",
-            "Frag Grenades" = "Full",
-            "Flash Grenades" = "No",
-            "Smoke Grenades" = "No",
-            "Remote Explosives" = "No",
-            "Explosive Launchers" = "No"
-        }
-        armorRating = self.Armor[2]
-    },
-    {
-        redTeamName = "Scout",
-        blueTeamName = "Reconnaissance",
-        soloTeamName = "Recon",
-        roleDescription = "Lightly armored but fast-moving fighter. Granted access to all short-range weaponry and flash grenades.",
-        roleDescriptionExpanded = {
-            "Assault Rifles" = "No",
-            "Sub-Machine Guns" = "Full",
-            "Shotguns" = "Full",
-            "Heavy Machine Guns" = "No",
-            "D.M.R.s" = "No",
-            "Snipers" = "No",
-            "Frag Grenades" = "No",
-            "Flash Grenades" = "Full",
-            "Smoke Grenades" = "No",
-            "Remote Explosives" = "No",
-            "Explosive Launchers" = "No"
-        }
-        armorRating = self.Armor[1]
-    },
-    {
-        redTeamName = "Gunner",
-        blueTeamName = "Support",
-        soloTeamName = "Gunner",
-        roleDescription = "Super heavily armored supportive fighter. Granted access to LMGs, some long-distance DMRs, and smoke grenades.",
-        roleDescriptionExpanded = {
-            "Assault Rifles" = "Partial",
-            "Sub-Machine Guns" = "No",
-            "Shotguns" = "No",
-            "Heavy Machine Guns" = "Full",
-            "D.M.R.s" = "Partial",
-            "Snipers" = "No",
-            "Frag Grenades" = "No",
-            "Flash Grenades" = "No",
-            "Smoke Grenades" = "Full",
-            "Remote Explosives" = "No",
-            "Explosive Launchers" = "No"
-        }
-        armorRating = self.Armor[4]
-    },
-    {
-        redTeamName = "Sharpshooter",
-        blueTeamName = "Designated Marksman",
-        soloTeamName = "Marksman",
-        roleDescription = "Lightly armored supportive fighter. Granted access to all DMRs but no sniper rifle.",
-        roleDescriptionExpanded = {
-            "Assault Rifles" = "Partial",
-            "Sub-Machine Guns" = "No",
-            "Shotguns" = "No",
-            "Heavy Machine Guns" = "No",
-            "D.M.R.s" = "Full",
-            "Snipers" = "No",
-            "Frag Grenades" = "No",
-            "Flash Grenades" = "No",
-            "Smoke Grenades" = "Full",
-            "Remote Explosives" = "No",
-            "Explosive Launchers" = "No"
-        }
-        armorRating = self.Armor[1]
-    },
-    {
-        redTeamName = "Striker",
-        blueTeamName = "Demolitions",
-        soloTeamName = "Demolitions",
-        roleDescription = "Super heavily armored fighter. Granted access to all launchers and Assault Rifles, but no grenades.",
-        roleDescriptionExpanded = {
-            "Assault Rifles" = "Full",
-            "Sub-Machine Guns" = "No",
-            "Shotguns" = "No",
-            "Heavy Machine Guns" = "No",
-            "D.M.R.s" = "No",
-            "Snipers" = "No",
-            "Frag Grenades" = "No",
-            "Flash Grenades" = "No",
-            "Smoke Grenades" = "No",
-            "Remote Explosives" = "No",
-            "Explosive Launchers" = "Full"
-        }
-        armorRating = self.Armor[4]
-    },
-    {
-        redTeamName = "Sniper",
-        blueTeamName = "Sniper",
-        soloTeamName = "Sniper",
-        roleDescription = "Lightly armored supportive fighter. Granted access to all sniper rifles but no grenades.",
-        roleDescriptionExpanded = {
-            "Assault Rifles" = "No",
-            "Sub-Machine Guns" = "No",
-            "Shotguns" = "No",
-            "Heavy Machine Guns" = "No",
-            "D.M.R.s" = "No",
-            "Snipers" = "Full",
-            "Frag Grenades" = "No",
-            "Flash Grenades" = "No",
-            "Smoke Grenades" = "No",
-            "Remote Explosives" = "No",
-            "Explosive Launchers" = "No"
-        }
-        armorRating = self.Armor[1]
-    },
-    {
-        redTeamName = "Sapper",
-        blueTeamName = "Breacher",
-        soloTeamName = "Breacher",
-        roleDescription = "Heavily armored supportive fighter. Granted access to all throwable and remotely detonated explosives.",
-        roleDescriptionExpanded = {
-            "Assault Rifles" = "Partial",
-            "Sub-Machine Guns" = "Partial",
-            "Shotguns" = "Partial",
-            "Heavy Machine Guns" = "No",
-            "D.M.R.s" = "No",
-            "Snipers" = "No",
-            "Frag Grenades" = "Full",
-            "Flash Grenades" = "Full",
-            "Smoke Grenades" = "Full",
-            "Remote Explosives" = "Full",
-            "Explosive Launchers" = "No"
-        }
-        armorRating = self.Armor[3]
-    },
-    {
-        redTeamName = "Expert",
-        blueTeamName = "Specialist",
-        soloTeamName = "Specialist",
-        roleDescription = "Special armored fighter. Granted access to extra, unique weapons for proving themselves in combat.",
-        roleDescriptionExpanded = {
-            "Assault Rifles" = "Full",
-            "Sub-Machine Guns" = "Full",
-            "Shotguns" = "Full",
-            "Heavy Machine Guns" = "Full",
-            "D.M.R.s" = "Full",
-            "Snipers" = "No",
-            "Frag Grenades" = "Full",
-            "Flash Grenades" = "Full",
-            "Smoke Grenades" = "Full",
-            "Remote Explosives" = "No",
-            "Explosive Launchers" = "No"
-        }
-        armorRating = self.Armor[2]
-    },
-}
-
 --//Default damage scaling: head = 1.5, chest & stomach = 1, arms = 0.9, legs = 0.85
 --//Gmod move speeds: walkSpeed = 200, runSpeed = 400, jumpPower = 200
 --//My move speeds: walkSpeed = 140, runSpeed = 260, jumpStrength = 170
@@ -170,26 +6,190 @@ GM.Armor = {
         armorName = "Light",
         healthScaling = 85,
         damageScaling = {2.0, 1.2, 1, 0.9}, --Order: head, chest, arms, legs
-        movementScaling = {140, 260, 170}, --Order: walkSpeed, runSpeed, jumpPower
+        movementScaling = {140, 260, 170} --Order: walkSpeed, runSpeed, jumpPower
     },
     {
-        armorName = "Standard"
+        armorName = "Standard",
         healthScaling = 100,
         damageScaling = {2.0, 1.1, 0.9, 0.85},
-        movementScaling = {120, 240, 160},
+        movementScaling = {120, 240, 160}
     },
     {
-        armorName = "Heavy"
+        armorName = "Heavy",
         healthScaling = 100,
         damageScaling = {2.0, 1.0, 0.9, 0.85},
-        movementScaling = {120, 230, 150},
+        movementScaling = {120, 230, 150}
     },
     {
-        armorName = "Super Heavy"
-        healthScaling = 115
-        damageScaling = {1.5, 0.9, 0.7, 0.65}
-        movementScaling = { 100= 220= 13 }
+        armorName = "Super Heavy",
+        healthScaling = 115,
+        damageScaling = {1.5, 0.9, 0.7, 0.65},
+        movementScaling = {100, 220, 130}
     }
+}
+
+--// Refer to this for future descriptions: http://insurgency.wikia.com/wiki/Insurgency
+GM.Roles = {
+    [1] = {
+        redTeamName = "Militant",
+        blueTeamName = "Rifleman",
+        soloTeamName = "Rifleman",
+        roleDescription = "Standard armored fighter. Granted access to most weapon types and frag grenades.",
+        roleDescriptionExpanded = {
+            ["Assault Rifles"] = "Full",
+            ["Sub-Machine Guns"] = "Partial",
+            ["Shotguns"] = "No",
+            ["Heavy Machine Guns"] = "No",
+            ["D.M.R.s"] = "Partial",
+            ["Snipers"] = "No",
+            ["Frag Grenades"] = "Full",
+            ["Flash Grenades"] = "No",
+            ["Smoke Grenades"] = "No",
+            ["Remote Explosives"] = "No",
+            ["Explosive Launchers"] = "No"
+        },
+        armorRating = GM.Armor[2]
+    },
+    [2] = {
+        redTeamName = "Scout",
+        blueTeamName = "Reconnaissance",
+        soloTeamName = "Recon",
+        roleDescription = "Lightly armored but fast-moving fighter. Granted access to all short-range weaponry and flash grenades.",
+        roleDescriptionExpanded = {
+            ["Assault Rifles"] = "No",
+            ["Sub-Machine Guns"] = "Full",
+            ["Shotguns"] = "Full",
+            ["Heavy Machine Guns"] = "No",
+            ["D.M.R.s"] = "No",
+            ["Snipers"] = "No",
+            ["Frag Grenades"] = "No",
+            ["Flash Grenades"] = "Full",
+            ["Smoke Grenades"] = "No",
+            ["Remote Explosives"] = "No",
+            ["Explosive Launchers"] = "No"
+        },
+        armorRating = GM.Armor[1]
+    },
+    [3] = {
+        redTeamName = "Gunner",
+        blueTeamName = "Support",
+        soloTeamName = "Gunner",
+        roleDescription = "Super heavily armored supportive fighter. Granted access to LMGs, some long-distance DMRs, and smoke grenades.",
+        roleDescriptionExpanded = {
+            ["Assault Rifles"] = "Partial",
+            ["Sub-Machine Guns"] = "No",
+            ["Shotguns"] = "No",
+            ["Heavy Machine Guns"] = "Full",
+            ["D.M.R.s"] = "Partial",
+            ["Snipers"] = "No",
+            ["Frag Grenades"] = "No",
+            ["Flash Grenades"] = "No",
+            ["Smoke Grenades"] = "Full",
+            ["Remote Explosives"] = "No",
+            ["Explosive Launchers"] = "No"
+        },
+        armorRating = GM.Armor[4]
+    },
+    [4] = {
+        redTeamName = "Sharpshooter",
+        blueTeamName = "Designated\nMarksman",
+        soloTeamName = "Marksman",
+        roleDescription = "Lightly armored supportive fighter. Granted access to all DMRs but no sniper rifle.",
+        roleDescriptionExpanded = {
+            ["Assault Rifles"] = "Partial",
+            ["Sub-Machine Guns"] = "No",
+            ["Shotguns"] = "No",
+            ["Heavy Machine Guns"] = "No",
+            ["D.M.R.s"] = "Full",
+            ["Snipers"] = "No",
+            ["Frag Grenades"] = "No",
+            ["Flash Grenades"] = "No",
+            ["Smoke Grenades"] = "Full",
+            ["Remote Explosives"] = "No",
+            ["Explosive Launchers"] = "No"
+        },
+        armorRating = GM.Armor[1]
+    },
+    [5] = {
+        redTeamName = "Striker",
+        blueTeamName = "Demolitions",
+        soloTeamName = "Demolitions",
+        roleDescription = "Super heavily armored fighter. Granted access to all launchers and Assault Rifles, but no grenades.",
+        roleDescriptionExpanded = {
+            ["Assault Rifles"] = "Full",
+            ["Sub-Machine Guns"] = "No",
+            ["Shotguns"] = "No",
+            ["Heavy Machine Guns"] = "No",
+            ["D.M.R.s"] = "No",
+            ["Snipers"] = "No",
+            ["Frag Grenades"] = "No",
+            ["Flash Grenades"] = "No",
+            ["Smoke Grenades"] = "No",
+            ["Remote Explosives"] = "No",
+            ["Explosive Launchers"] = "Full"
+        },
+        armorRating = GM.Armor[4]
+    },
+    [6] = {
+        redTeamName = "Sniper",
+        blueTeamName = "Sniper",
+        soloTeamName = "Sniper",
+        roleDescription = "Lightly armored supportive fighter. Granted access to all sniper rifles but no grenades.",
+        roleDescriptionExpanded = {
+            ["Assault Rifles"] = "No",
+            ["Sub-Machine Guns"] = "No",
+            ["Shotguns"] = "No",
+            ["Heavy Machine Guns"] = "No",
+            ["D.M.R.s"] = "No",
+            ["Snipers"] = "Full",
+            ["Frag Grenades"] = "No",
+            ["Flash Grenades"] = "No",
+            ["Smoke Grenades"] = "No",
+            ["Remote Explosives"] = "No",
+            ["Explosive Launchers"] = "No"
+        },
+        armorRating = GM.Armor[1]
+    },
+    [7] = {
+        redTeamName = "Sapper",
+        blueTeamName = "Breacher",
+        soloTeamName = "Breacher",
+        roleDescription = "Heavily armored supportive fighter. Granted access to all throwable and remotely detonated explosives.",
+        roleDescriptionExpanded = {
+            ["Assault Rifles"] = "Partial",
+            ["Sub-Machine Guns"] = "Partial",
+            ["Shotguns"] = "Partial",
+            ["Heavy Machine Guns"] = "No",
+            ["D.M.R.s"] = "No",
+            ["Snipers"] = "No",
+            ["Frag Grenades"] = "Full",
+            ["Flash Grenades"] = "Full",
+            ["Smoke Grenades"] = "Full",
+            ["Remote Explosives"] = "Full",
+            ["Explosive Launchers"] = "No"
+        },
+        armorRating = GM.Armor[3]
+    },
+    [8] = {
+        redTeamName = "Expert",
+        blueTeamName = "Specialist",
+        soloTeamName = "Specialist",
+        roleDescription = "Special armored fighter. Granted access to extra, unique weapons for proving themselves in combat.",
+        roleDescriptionExpanded = {
+            ["Assault Rifles"] = "Full",
+            ["Sub-Machine Guns"] = "Full",
+            ["Shotguns"] = "Full",
+            ["Heavy Machine Guns"] = "Full",
+            ["D.M.R.s"] = "Full",
+            ["Snipers"] = "No",
+            ["Frag Grenades"] = "Full",
+            ["Flash Grenades"] = "Full",
+            ["Smoke Grenades"] = "Full",
+            ["Remote Explosives"] = "No",
+            ["Explosive Launchers"] = "No"
+        },
+        armorRating = GM.Armor[2]
+    },
 }
 
 GM.playerModelByRole = {

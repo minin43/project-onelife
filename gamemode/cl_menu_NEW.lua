@@ -1,3 +1,18 @@
+--[[Sounds descriptions + name 
+(all in directory buttons/_.wav)
+- "Failure" sound - button2.wav
+- Another "failure" sound - button8.wav
+- High-pitched "success" sound - button24.wav
+- Lower-pitched "success" sound - button3.wav
+- Locked option sound - combine_button_locked.wav
+- Light "click" - lightswitch2.wav
+
+(all in directory ui/_.wav)
+- Basic Gmod menu "click" - buttonclick.wav
+- Basic Gmod menu "back" - buttonclickrelease.wav
+- Basic Gmod menu "hover" - buttonrollover.wav
+]]
+
 --[[
     surface.CreateFont( "", {
 	font = "",
@@ -23,22 +38,23 @@ local function comma_value( amount )
 	return formatted
 end
 
-hook.Add("InitPostEntity", "PrecacheWeaponModelsToPreventInitialMenuOpeningLag", function()
+--[[hook.Add("InitPostEntity", "PrecacheWeaponModelsToPreventInitialMenuOpeningLag", function() --DISABLED until I stop getting those client errors
     for k, v in pairs(weapons.GetList()) do
 		util.PrecacheModel( v.WorldModel )
 	end
-end)
+end)]]
 
-GM.teamNumberToName = {
-	1 = "redTeamName",
-	2 = "blueTeamName",
-	3 = "soloTeamName"
-}
+GM.teamNumberToName = {"redTeamName", "blueTeamName", "soloTeamName"}
 
 function GM:LoadoutMenu()
-    if self.Main then return end
+	if self.Main and self.Main:IsValid() then return end
 
-    if not self.playerLevel then
+	if not self.roleMainButtonNumber then
+		self:RoleSelectionMenu()
+		return
+	end
+
+	if not self.playerLevel then
         net.Start("RequestLevel")
 		net.SendToServer()
 		net.Receive("RequestLevelCallback", function(len, ply)
@@ -51,37 +67,45 @@ function GM:LoadoutMenu()
 		net.Receive("RequestMoneyCallback", function()
 			self.playerMoney = tonumber(net.ReadString())
 		end)
-    end
+	end
 
 	self.Main = vgui.Create("DFrame")
-	self.Main:SetSize(ScrW() - 70, ScrH() - 70)
+	self.Main:SetSize(600, 800)
 	self.Main:SetTitle("")
 	self.Main:SetVisible(true)
 	self.Main:SetDraggable(false)
-	self.Main:ShowCloseButton(false)
+	--self.Main:ShowCloseButton(false)
 	self.Main:MakePopup()
 	self.Main:Center()
     self.Main.Paint = function()
-		Derma_DrawBackgroundBlur(self.Main, CurTime())
+		--Derma_DrawBackgroundBlur(self.Main, CurTime())
 		surface.SetDrawColor(0, 0, 0, 250)
         surface.DrawRect(0, 0, self.Main:GetWide(), self.Main:GetTall())
     end
 	self.Main.Think = function()
-		if customizeself.Main then
-			customizeself.Main:MakePopup()
+		if self.Main:IsValid() then
+			self.Main:MakePopup()
 		end
 	end
 
-	self.playerInfoMain = vgui.Create("DPanel")
-	self.playerInfoMain:SetPos()
-	self.playerInfoMain:SetSize()
+	self.playerInfoMainPictureSize = 32
+	self.playerInfoMain = vgui.Create("DPanel", self.Main)
+	self.playerInfoMain:SetPos(0, 0)
+	self.playerInfoMain:SetSize(self.Main:GetWide(), self.playerInfoMainPictureSize + 4)
+	self.playerInfoMainHalf = self.playerInfoMain:GetWide() / 2
 	self.playerInfoMain.Paint = function()
+		draw.SimpleText(LocalPlayer():Nick(), "DermaDefault", self.playerInfoMainPictureSize + 4, self.playerInfoMainPictureSize / 4, Color(255, 255, 255), TEXT_ALIGN_LEFT, TEXT_ALIGN_CENTER)
+		draw.SimpleText(LocalPlayer():SteamID(), "DermaDefault", self.playerInfoMainPictureSize + 4, self.playerInfoMainPictureSize * (3 / 4), Color(255, 255, 255), TEXT_ALIGN_LEFT, TEXT_ALIGN_CENTER)
+		draw.SimpleText("Role: " .. self.Roles[self.roleMainButtonNumber][self.teamNumberToName[LocalPlayer():Team()]], "DermaDefault", self.playerInfoMain:GetWide() * (2 / 3), self.playerInfoMainPictureSize / 4, Color( 255, 255, 255), TEXT_ALIGN_LEFT, TEXT_ALIGN_CENTER)
+		draw.SimpleText("Armor: " .. self.Roles[self.roleMainButtonNumber].armorRating.armorName, "DermaDefault", self.playerInfoMain:GetWide() * (2 / 3), self.playerInfoMainPictureSize * (3 / 4), Color( 255, 255, 255), TEXT_ALIGN_LEFT, TEXT_ALIGN_CENTER)
 
+		surface.SetDrawColor(255, 255, 255)
+		surface.DrawLine(self.playerInfoMain:GetWide() * (2 / 3) - 2, 2,  self.playerInfoMain:GetWide() * (2 / 3) - 2, self.playerInfoMain:GetTall() - 2)
 	end
 
 	self.playerInfoMainPicture = vgui.Create("AvatarImage", self.playerInfoMain)
 	self.playerInfoMainPicture:SetPos(2, 2)
-	self.playerInfoMainPicture:SetSize(32, 32)
+	self.playerInfoMainPicture:SetSize(self.playerInfoMainPictureSize, self.playerInfoMainPictureSize)
 	self.playerInfoMainPicture:SetPlayer(LocalPlayer(), 64)
 
 end
@@ -90,32 +114,29 @@ end
 --//Plan: list all teammate's and their roles, and a summary of the enemy's roles
 --//I would like the teammate and enemy role roster update dynamically
 function GM:RoleSelectionMenu()
-	if self.roleMain then return end
+	if self.roleMain and self.roleMain:IsValid() then return end
 
 	if not self.playerLevel then
         net.Start("RequestLevel")
 		net.SendToServer()
-		net.Receive("RequestLevelCallback", function(len, ply)
-			self.playerLevel = tonumber(net.ReadString())
-		end)
-    end
+	end
 
 	self.roleMain = vgui.Create("DFrame")
 	self.roleMain:SetSize(800, 600)
 	self.roleMain:SetTitle("")
 	self.roleMain:SetVisible(true)
 	self.roleMain:SetDraggable(false)
-	self.roleMain:ShowCloseButton(false)
+	--self.roleMain:ShowCloseButton(false)
 	self.roleMain:MakePopup()
 	self.roleMain:Center()
 	self.roleMainX, self.roleMainY = self.roleMain:GetPos()
     self.roleMain.Paint = function()
-		Derma_DrawBackgroundBlur(self.roleMain, CurTime())
+		--Derma_DrawBackgroundBlur(self.roleMain, CurTime())
 		surface.SetDrawColor(0, 0, 0, 220)
         surface.DrawRect(0, 0, self.roleMain:GetWide(), self.roleMain:GetTall())
     end
 	self.roleMain.Think = function()
-		if self.roleMain then
+		if self.roleMain:IsValid() then
 			self.roleMain:MakePopup()
 		end
 	end
@@ -127,9 +148,14 @@ function GM:RoleSelectionMenu()
 	self.roleMainDesc:SetSize(self.roleMain:GetWide() / 2, self.roleMainBottomBarHeight)
 	self.roleMainDesc:SetText("")
 	self.roleMainDesc.Paint = function()
+		local w, h = self.roleMainDesc:GetSize()
 		surface.SetDrawColor(180, 180, 180)
-        surface.DrawRect(1, 1, w - 2, h - 2)
-		draw.SimpleText(self.Roles[self.roleMainButtonNumber]["roleDescription"] or "None.", "DermaDefault", w / 2, h / 2, Color(0, 0, 0), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
+		surface.DrawRect(1, 1, w - 2, h - 2)
+		if self.roleMainButtonNumber then
+			draw.SimpleText("Role Description: " .. self.Roles[self.roleMainButtonNumber]["roleDescription"], "DermaDefault", w / 2, h / 2, Color(0, 0, 0), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
+		else
+			draw.SimpleText("Role Description: None selected.", "DermaDefault", w / 2, h / 2, Color(0, 0, 0), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
+		end
 
 		if self.roleMainDescHover then
 			surface.SetDrawColor(255, 255, 255)
@@ -137,11 +163,13 @@ function GM:RoleSelectionMenu()
 		end
 	end
 	self.roleMainDesc.DoClick = function()
-		surface.PlaySound("buttons/button22.wav")
-		self.roleMain:Close()
+		if not self.roleMainButtonNumber then return end
+		surface.PlaySound("buttons/lightswitch2.wav")
+		self.roleMain:Remove()
 		self:RoleDescriptions(self.roleMainButtonNumber)
 	end
 	self.roleMainDesc.OnCursorEntered = function()
+		if not self.roleMainButtonNumber then return end
 		self.roleMainDescHover = true
 	end
 	self.roleMainDesc.OnCursorExited = function()
@@ -153,21 +181,27 @@ function GM:RoleSelectionMenu()
 	self.roleMainArmor:SetSize(self.roleMain:GetWide() / 2, self.roleMainBottomBarHeight)
 	self.roleMainArmor:SetText("")
 	self.roleMainArmor.Paint = function()
+		local w, h = self.roleMainArmor:GetSize()
 		surface.SetDrawColor(180, 180, 180)
-        surface.DrawRect(1, 1, w - 2, h - 2)
-		draw.SimpleText(self.Roles[self.roleMainButtonNumber]["armorRating"].armorName or "None", self.font, w / 2, h / 2, Color(0, 0, 0), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
-
+		surface.DrawRect(1, 1, w - 2, h - 2)
+		if self.roleMainButtonNumber then
+			draw.SimpleText("Armor Type: " .. self.Roles[self.roleMainButtonNumber]["armorRating"].armorName or "None", self.font, w / 2, h / 2, Color(0, 0, 0), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
+		else
+			draw.SimpleText("Armor type: None.", self.font, w / 2, h / 2, Color(0, 0, 0), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
+		end
 		if self.roleMainArmorHover then
 			surface.SetDrawColor(255, 255, 255)
             surface.DrawOutlinedRect(0, 0, w, h)
 		end
 	end
 	self.roleMainArmor.DoClick = function()
-		surface.PlaySound("buttons/button22.wav")
-		self.roleMain:Close()
+		if not self.roleMainButtonNumber then return end
+		surface.PlaySound("buttons/lightswitch2.wav")
+		self.roleMain:Remove()
 		self:ArmorDescription(self.roleMainButtonNumber)
 	end
 	self.roleMainArmor.OnCursorEntered = function()
+		if not self.roleMainButtonNumber then return end
 		self.roleMainArmorHover = true
 	end
 	self.roleMainArmor.OnCursorExited = function()
@@ -177,32 +211,39 @@ function GM:RoleSelectionMenu()
 	self.roleMainButtonWide = self.roleMain:GetWide() / 4
 	self.roleMainButtonWideSpacer = (self.roleMain:GetWide() - (self.roleMainButtonWide * 3)) / 4
 	self.roleMainButtonTall = (self.roleMain:GetTall() - self.roleMainBottomBarHeight) / 4
-	self.roleMainButtonTallSpacer = ((self.roleMain:GetTall() - 0) - (self.roleMainButtonTall * 3)) / 4
+	self.roleMainButtonTallSpacer = ((self.roleMain:GetTall() - self.roleMainBottomBarHeight) - (self.roleMainButtonTall * 3)) / 4
 	self.roleMainButtonPOS = {
-		{x = self.roleMainButtonWideSpacer, y = self.roleMainButtonTallSpacer},
-		{x = (self.roleMainButtonWideSpacer * 2) + self.roleMainButtonWide, y = self.roleMainButtonTallSpacer},
-		{x = (self.roleMainButtonWideSpacer * 3) + (self.roleMainButtonWide * 2), y = self.roleMainButtonTallSpacer},
-		{x = self.roleMainButtonWideSpacer, y = (self.roleMainButtonTallSpacer * 2) + self.roleMainButtonTall},
-		{x = (self.roleMainButtonWideSpacer * 2) + self.roleMainButtonWide, y = (self.roleMainButtonTallSpacer * 2) + self.roleMainButtonTall},
-		{x = (self.roleMainButtonWideSpacer * 3) + (self.roleMainButtonWide * 2), y = (self.roleMainButtonTallSpacer * 2) + self.roleMainButtonTall},
-		{x = self.roleMainButtonWideSpacer, y = (self.roleMainButtonTallSpacer * 2) + (self.roleMainButtonTall * 2)},
-		{x = (self.roleMainButtonWideSpacer * 2) + self.roleMainButtonWide, y = (self.roleMainButtonTallSpacer * 2) + (self.roleMainButtonTall * 2)},
-		{x = (self.roleMainButtonWideSpacer * 3) + (self.roleMainButtonWide * 2), y = (self.roleMainButtonTallSpacer * 2) + (self.roleMainButtonTall * 2)}
+		[1] = {x = self.roleMainButtonWideSpacer, 										y = self.roleMainButtonTallSpacer},
+		[2] = {x = (self.roleMainButtonWideSpacer * 2) + self.roleMainButtonWide, 		y = self.roleMainButtonTallSpacer},
+		[3] = {x = (self.roleMainButtonWideSpacer * 3) + (self.roleMainButtonWide * 2), y = self.roleMainButtonTallSpacer},
+		[4] = {x = self.roleMainButtonWideSpacer, 										y = (self.roleMainButtonTallSpacer * 2) + self.roleMainButtonTall},
+		[5] = {x = (self.roleMainButtonWideSpacer * 2) + self.roleMainButtonWide, 		y = (self.roleMainButtonTallSpacer * 2) + self.roleMainButtonTall},
+		[6] = {x = (self.roleMainButtonWideSpacer * 3) + (self.roleMainButtonWide * 2), y = (self.roleMainButtonTallSpacer * 2) + self.roleMainButtonTall},
+		[7] = {x = self.roleMainButtonWideSpacer, 										y = (self.roleMainButtonTallSpacer * 3) + (self.roleMainButtonTall * 2)},
+		[8] = {x = (self.roleMainButtonWideSpacer * 2) + self.roleMainButtonWide, 		y = (self.roleMainButtonTallSpacer * 3) + (self.roleMainButtonTall * 2)},
+		[9] = {x = (self.roleMainButtonWideSpacer * 3) + (self.roleMainButtonWide * 2), y = (self.roleMainButtonTallSpacer * 3) + (self.roleMainButtonTall * 2)}
 	}
-	for k, v in pairs(self.roleMainButtonPOS) do
-		local but = vgui.Create("RoleSelectionButton", self.roleMain, "but" .. k)
-		but:SetPos(self.roleMainButtonPOS[k].x, self.roleMainButtonPOS[k].y)
-		but:SetSize(self.roleMainButtonWide, self.roleMainButtonTall)
-		but:SetText(self.Roles[k][self.teamNumberToName[self.teamNumberToName[LocalPlayer():Team()]]])
-		but:SetRole(k)
-		if k == 2 then
-			but:IsTitle(true)
-		else
-			if k > self.playerLevel then 
-				but:IsLocked(true)
+	net.Receive("RequestLevelCallback", function(len, ply)
+		self.playerLevel = tonumber(net.ReadString()) or 1
+		local titleCounter = 0
+		for k, v in ipairs(self.roleMainButtonPOS) do
+			local but = vgui.Create("RoleSelectionButton", self.roleMain, "but" .. k)
+			but:SetPos(self.roleMainButtonPOS[k].x, self.roleMainButtonPOS[k].y)
+			but:SetSize(self.roleMainButtonWide, self.roleMainButtonTall)
+			but:SetText(self.Roles[k - titleCounter][self.teamNumberToName[LocalPlayer():Team()]])
+			but:SetRole(k - titleCounter)
+			if k == 2 then
+				but:IsTitle(true)
+				titleCounter = titleCounter + 1
+			else
+				print("roleMainButton DEBUG:", GAMEMODE.playerLevel, k, v)
+				if k > GAMEMODE.playerLevel then 
+					print("		Locking this option.")
+					but:IsLocked(true)
+				end
 			end
 		end
-	end
+	end)
 
 	self.roleTeam = vgui.Create("DFrame")
 	self.roleTeam:SetSize(200, 400)
@@ -214,16 +255,19 @@ function GM:RoleSelectionMenu()
 	self.roleTeam:ShowCloseButton(false)
 	self.roleTeam:MakePopup()
     self.roleTeam.Paint = function()
-        draw.RoundedBoxEx(4, 0, 0, self.roleTeam:GetWide(), self.roleTeam:GetTall(), Color(0, 0, 0, 220), true, false, true, false)
+        draw.RoundedBoxEx(16, 0, 0, self.roleTeam:GetWide(), self.roleTeam:GetTall(), Color(0, 0, 0, 220), true, false, true, false)
 		draw.SimpleText("Your Team", "DermaDefault", self.roleTeam:GetWide() - 2, 2, Color(255, 255, 255), TEXT_ALIGN_RIGHT, TEXT_ALIGN_TOP)
     end
 	self.roleTeam.Think = function()
-		if not self.roleMain then
-			self.roleTeam:Close()
+		if not self.roleMain:IsValid() then
+			self.roleTeam:Remove()
 			return
 		end
 		if self.roleTeam then
 			self.roleTeam:MakePopup()
+		end
+		if not self.roleTeam:HasFocus() then
+			self.roleTeam:RequestFocus()
 		end
 	end
 
@@ -232,7 +276,7 @@ function GM:RoleSelectionMenu()
 	self.roleTeamScroll:SetSize(self.roleTeam:GetWide(), self.roleTeam:GetTall() - 10)
 	self.roleTeamScroll.Paint = function()
 		if not IsValid(self.roleTeamScroll:GetChildren()) then
-			draw.RoundedBoxEx(4, 0, 0, self.roleTeam:GetWide(), self.roleTeam:GetTall(), Color(0, 0, 0, 100), true, false, true, false)
+			draw.RoundedBoxEx(16, 0, 0, self.roleTeam:GetWide(), self.roleTeam:GetTall(), Color(0, 0, 0, 100), true, false, true, false)
 			draw.SimpleText("Loading Teammate Information", "DermaDefault", self.roleTeamScroll:GetWide() / 2, self.roleTeamScroll:GetTall() / 2, Color(255, 255, 255), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
 		end
 	end
@@ -244,8 +288,17 @@ function GM:RoleSelectionMenu()
 	end]]
 
 	--//Clears and recreates the roleTeamScroll scroll panel
-	self:RefreshTeamRoles(teamTable)
+	function self:RefreshTeamRoles(teamTable)
 		self.roleTeamScroll:Clear()
+		if #teamTable == 0 then
+			local noPlayer = vgui.Create("DPanel", self.roleTeamScroll)
+			noPlayer:SetPos(0, 0)
+			noPlayer:SetSize(self.roleTeamScroll:GetWide(), self.roleTeamScroll:GetTall())
+			noPlayer.Paint = function()
+				draw.SimpleText("No Information To Display", "DermaLarge", noPlayer:GetWide() / 2, noPlayer:GetTall() / 2, Color(255, 255, 255), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
+			end
+			return
+		end
 
 		local spacerPanelHeight = 5
 		for k, v in pairs(teamTable) do
@@ -291,7 +344,7 @@ function GM:RoleSelectionMenu()
 	self.roleEnemy:MakePopup()
 		local textOffset = 10
     self.roleEnemy.Paint = function()
-        draw.RoundedBoxEx(4, 0, 0, self.roleEnemy:GetWide(), self.roleEnemy:GetTall(), Color(0, 0, 0, 220), false, true, false, true)
+        draw.RoundedBoxEx(16, 0, 0, self.roleEnemy:GetWide(), self.roleEnemy:GetTall(), Color(0, 0, 0, 220), false, true, false, true)
 		draw.SimpleText("Enemy Role Count", "DermaDefault", 2, 2, Color(255, 255, 255), TEXT_ALIGN_LEFT, TEXT_ALIGN_TOP)
 		--Currently commented out in case "if not IsValid(self.roleEnemyScroll:GetChildren()) then" does not function as intended below
 		--[[if not self.roleEnemyRoleCount then
@@ -300,22 +353,25 @@ function GM:RoleSelectionMenu()
 		end]]
     end
 	self.roleEnemy.Think = function()
-		if not self.roleMain then
-			self.roleEnemy:Close()
+		if not self.roleMain:IsValid() then
+			self.roleEnemy:Remove()
 			return
 		end
-		if self.roleEnemy then
+		if self.roleEnemy:IsValid() then
 			self.roleEnemy:MakePopup()
+		end
+		if not self.roleEnemy:HasFocus() then
+			self.roleEnemy:RequestFocus()
 		end
 	end
 
 	self.roleEnemyScroll = vgui.Create("DScrollPanel", self.roleEnemy)
-	self.roleEnemyScroll:SetPos(0, 10)
-	self.roleEnemyScroll:SetSize(self.roleEnemy:GetWide(), self.roleEnemy:GetTall() - 10)
+	self.roleEnemyScroll:SetPos(0, 15)
+	self.roleEnemyScroll:SetSize(self.roleEnemy:GetWide(), self.roleEnemy:GetTall() - 15)
 	self.roleEnemyScroll.Paint = function()
 		if not IsValid(self.roleEnemyScroll:GetChildren()) then
-			draw.RoundedBoxEx(4, 0, 0, self.roleEnemy:GetWide(), self.roleEnemy:GetTall(), Color(255, 252, 255, 220), false, true, false, true)
-			draw.SimpleText("Loading Enemy Role Count", "DermaDefault", self.roleEnemy:GetWide() / 2, self.roleEnemy:GetTall() / 2, Color(0, 0, 0), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
+			draw.RoundedBoxEx(16, 0, 0, self.roleEnemy:GetWide(), self.roleEnemy:GetTall(), Color(0, 0, 0, 220), false, true, false, true)
+			draw.SimpleText("Loading Enemy Role Count", "DermaDefault", self.roleEnemy:GetWide() / 2, self.roleEnemy:GetTall() / 2, Color(255, 255, 255), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
 		end
 	end
 	self.roleEnemyScrollPanelHeight = 50
@@ -326,8 +382,17 @@ function GM:RoleSelectionMenu()
 	end]]
 
 	--//Clears and recreates the roleEnemyScroll scroll panel
-	self:RefreshEnemyRoles(enemyTable)
+	function self:RefreshEnemyRoles(enemyTable)
 		self.roleEnemyScroll:Clear()
+		if #enemyTable == 0 then
+			local noPlayer = vgui.Create("DPanel", self.roleEnemyScroll)
+			noPlayer:SetPos(0, 0)
+			noPlayer:SetSize(self.roleEnemyScroll:GetWide(), self.roleEnemyScroll:GetTall())
+			noPlayer.Paint = function()
+				draw.SimpleText("No Information To Display", "DermaLarge", noPlayer:GetWide() / 2, noPlayer:GetTall() / 2, Color(255, 255, 255), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
+			end
+			return
+		end
 
 		local spacerPanelHeight = 5
 		local counter = 1 --Need a counter this time around because the role name is saved as the key value in enemyTable
@@ -364,6 +429,7 @@ function GM:RoleSelectionMenu()
 end
 
 function GM:RoleDescriptions(role)
+	if self.roleDescMenu and self.roleDescMenu:IsValid() then return end
 
 	self.roleDescMenu = vgui.Create("DFrame")
 	self.roleDescMenu:SetSize(400, 300)
@@ -375,14 +441,14 @@ function GM:RoleDescriptions(role)
 	self.roleDescMenu:Center()
 	self.roleDescMenuX, self.roleDescMenuY = self.roleDescMenu:GetPos()
     self.roleDescMenu.Paint = function()
-		Derma_DrawBackgroundBlur(self.roleDescMenu, CurTime())
+		--Derma_DrawBackgroundBlur(self.roleDescMenu, CurTime())
 		surface.SetDrawColor(0, 0, 0, 220)
         surface.DrawRect(0, 0, self.roleDescMenu:GetWide(), self.roleDescMenu:GetTall())
     end
 	self.roleDescMenu.Think = function()
-		if self.roleMain then
-			self.roleDescMenu:Close()
-		elseif self.roleDescMenu then
+		if self.roleMain:IsValid() then
+			self.roleDescMenu:Remove()
+		elseif self.roleDescMenu:IsValid() then
 			self.roleDescMenu:MakePopup()
 		end
 	end
@@ -390,8 +456,8 @@ function GM:RoleDescriptions(role)
 	self.roleDescMenuRoleWidth = self.roleDescMenu:GetWide() / 3
 	for k, v in pairs(self.Roles) do
 		local but = vgui.Create("RoleDescriptionButton", self.roleDescMenu)
-		but:SetSize(self.roleDescMenuRoleWidth, self.roleDescMenu / #self.Roles)
-		but:SetPos(0, (k - 1) * (self.roleDescMenu / #self.Roles))
+		but:SetSize(self.roleDescMenuRoleWidth, self.roleDescMenu:GetTall() / #self.Roles)
+		but:SetPos(0, (k - 1) * (self.roleDescMenu:GetTall() / #self.Roles))
 		but:SetText(v[self.teamNumberToName[LocalPlayer():Team()]])
 		if role == k then
 			but:DoClick()
@@ -402,16 +468,16 @@ function GM:RoleDescriptions(role)
 	self.roleDescMenuInfo:SetSize(self.roleDescMenu:GetWide() - self.roleDescMenuRoleWidth, self.roleDescMenu:GetTall())
 	self.roleDescMenuInfo:SetPos(self.roleDescMenuRoleWidth, 0)
 	self.roleDescMenuInfo.Paint = function()
-		local w, h = self:GetSize()
+		local w, h = self.roleDescMenuInfo:GetSize()
 
 		surface.SetDrawColor(255, 255, 255)
 		surface.DrawLine(0, 0, w, 0)
 		surface.DrawLine(w, 0, w, h)
 		surface.DrawLine(w, h, 0, h)
-		surface.DrawLine(0, 0, 0, self.roleDescMenuButtonY)
-		surface.DrawLine(0, self.roleDescMenuButtonY + self.roleDescMenuButtonTall, 0, h)
-		draw.SimpleText(self.Roles[self.roleDescMenuButtonNumber][self.teamNumberToName[self.teamNumberToName.armor]], "DermaLarge", Color(255, 255, 255), self.roleDescMenu:GetWide() / 2, 8, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
-		draw.SimpleText(self.Roles[self.roleDescMenuButtonNumber].roleDescription, "DermaDefault", Color(255, 255, 255), self.roleDescMenu:GetWide() / 2, 20, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
+		surface.DrawLine(0, 0, 0, self.roleDescMenuButtonDownY)
+		surface.DrawLine(0, self.roleDescMenuButtonDownY + self.roleDescMenuButtonDownTall, 0, h)
+		draw.SimpleText(self.Roles[self.roleDescMenuButtonNumber][self.teamNumberToName[LocalPlayer():Team()]], "DermaLarge", self.roleDescMenu:GetWide() / 2, 8, Color(255, 255, 255), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
+		draw.SimpleText(self.Roles[self.roleDescMenuButtonNumber].roleDescription, "DermaDefault", self.roleDescMenu:GetWide() / 2, 20, Color(255, 255, 255), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
 		
 		--Draw role information
 	end
@@ -426,8 +492,8 @@ function GM:RoleDescriptions(role)
 	self.roleDescMenuExit:MakePopup()
 	self.roleDescMenuExitX, self.roleDescMenuExitY = self.roleDescMenuExit:GetPos()
 	self.roleDescMenuExit.Think = function()
-		if not self.roleDescMenu then
-			self.roleDescMenuExit:Close()
+		if not self.roleDescMenu:IsValid() then
+			self.roleDescMenuExit:Remove()
 		end
 	end
 
@@ -436,16 +502,18 @@ function GM:RoleDescriptions(role)
 	self.roleDescMenuExitButton:SetSize(self.roleDescMenuExit:GetWide(), self.roleDescMenuExit:GetTall())
 	self.roleDescMenuExitButton:SetText("X")
 	self.roleDescMenuExitButton.DoClick = function()
-		surface.PlaySound("buttons/button22.wav")
-		self.roleDescMenu:Close()
-		self.roleDescMenuExit:Close()
+		surface.PlaySound("buttons/lightswitch2.wav")
+		self.roleDescMenu:Remove()
+		self.roleDescMenuExit:Remove()
 		self:RoleSelectionMenu()
 	end
 end
 
 function GM:ArmorDescription(armor)
+	if self.armorDescMenu and self.armorDescMenu:IsValid() then return end
+
 	self.armorDescMenu = vgui.Create("DFrame")
-	self.armorDescMenu:SetSize(400, 200)
+	self.armorDescMenu:SetSize(600, 200)
 	self.armorDescMenu:SetTitle("")
 	self.armorDescMenu:SetVisible(true)
 	self.armorDescMenu:SetDraggable(false)
@@ -454,12 +522,12 @@ function GM:ArmorDescription(armor)
 	self.armorDescMenu:Center()
 	self.armorDescMenuX, self.armorDescMenuY = self.armorDescMenu:GetPos()
     self.armorDescMenu.Paint = function()
-		Derma_DrawBackgroundBlur(self.armorDescMenu, CurTime())
+		--Derma_DrawBackgroundBlur(self.armorDescMenu, CurTime())
 		surface.SetDrawColor(0, 0, 0, 220)
         surface.DrawRect(0, 0, self.armorDescMenu:GetWide(), self.armorDescMenu:GetTall())
     end
 	self.armorDescMenu.Think = function()
-		if self.armorDescMenu then
+		if self.armorDescMenu:IsValid() then
 			self.armorDescMenu:MakePopup()
 		end
 	end
@@ -479,18 +547,18 @@ function GM:ArmorDescription(armor)
 	self.armorDescMenuInfo:SetSize(self.armorDescMenu:GetWide() - self.armorDescMenuButtonWidth, self.armorDescMenu:GetTall())
 	self.armorDescMenuInfo:SetPos(self.armorDescMenuButtonWidth, 0)
 	self.armorDescMenuInfo.Paint = function()
-		local w, h = self:GetSize()
+		local w, h = self.armorDescMenuInfo:GetSize()
 
 		surface.SetDrawColor(255, 255, 255)
 		surface.DrawLine(0, 0, w, 0)
 		surface.DrawLine(w, 0, w, h)
 		surface.DrawLine(w, h, 0, h)
-		surface.DrawLine(0, 0, 0, self.armorDescMenuButtonY)
-		surface.DrawLine(0, self.armorDescMenuButtonY + self.armorDescMenuButtonTall, 0, h)
+		surface.DrawLine(0, 0, 0, self.armorDescMenuButtonDownY)
+		surface.DrawLine(0, self.armorDescMenuButtonDownY + self.armorDescMenuButtonDownTall, 0, h)
 
-		draw.SimpleText("Damage Scaling %", "DermaLarge", Color(255, 255, 255), self.roleDescMenuInfo:GetWide() / 4, 6, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
+		draw.SimpleText("Damage Scaling %", "DermaDefault", self.armorDescMenuInfo:GetWide() / 4, 6, Color(255, 255, 255), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
 		surface.DrawLine(self.armorDescMenuInfo:GetWide() / 2, 4, self.armorDescMenuInfo:GetWide() / 2, self.armorDescMenuInfo:GetTall() - 4)
-		draw.SimpleText("Health and Movement Scaling %", "DermaLarge", Color(255, 255, 255), self.roleDescMenuInfo:GetWide() * 0.75, 6, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
+		draw.SimpleText("Health and Movement Scaling %", "DermaDefault", self.armorDescMenuInfo:GetWide() * 0.75, 6, Color(255, 255, 255), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
 	end
 
 	self.armorNumberToIcon = {
@@ -498,7 +566,7 @@ function GM:ArmorDescription(armor)
 		movementScaling = {"menu/walkpic.png", "menu/runpic.png", "menu/jumppic2.png"}
 	}
 
-	for k, v in pairs(self.Armor.armor.damageScaling) do
+	for k, v in pairs(self.Armor[armor].damageScaling) do
 		local but = vgui.Create("ArmorInfoIcon", self.armorDescMenuInfo)
 		but:SetPos(0, self.armorDescMenuInfo:GetTall() / 4 * (k - 1))
 		but:SetSize(self.armorDescMenuInfo:GetWide() / 2, self.armorDescMenuInfo:GetTall() / 4)
@@ -512,13 +580,13 @@ function GM:ArmorDescription(armor)
 	self.armorDescMenuInfoHealth = vgui.Create("ArmorInfoIcon", self.armorDescMenuInfo)
 	self.armorDescMenuInfoHealth:SetPos(self.armorDescMenuInfo:GetWide() / 2, 0)
 	self.armorDescMenuInfoHealth:SetSize(self.armorDescMenuInfo:GetWide() / 2, self.armorDescMenuInfo:GetTall() / 4)
-	self.armorDescMenuInfoHealth:SetText(self.Armor.armor.healthScaling)
+	self.armorDescMenuInfoHealth:SetText(self.Armor[armor].healthScaling)
 	self.armorDescMenuInfoHealth:SetImage("menu/healthpic.png")
 	self.armorDescMenuInfoHealth:SetArmor(armor)
 	self.armorDescMenuInfoHealth:SetWhatScale("healthScaling")
 	self.armorDescMenuInfoHealth:Finish()
 
-	for k, v in pairs(self.Armor.armor.movementScaling) do
+	for k, v in pairs(self.Armor[armor].movementScaling) do
 		local but = vgui.Create("ArmorInfoIcon", self.armorDescMenuInfo)
 		but:SetPos(self.armorDescMenuInfo:GetWide() / 2, self.armorDescMenuInfo:GetTall() / 4 * k)
 		but:SetSize(self.armorDescMenuInfo:GetWide() / 2, self.armorDescMenuInfo:GetTall() / 4)
@@ -539,8 +607,8 @@ function GM:ArmorDescription(armor)
 	self.armorDescMenuExit:MakePopup()
 	self.armorDescMenuExitX, self.armorDescMenuExitY = self.armorDescMenuExit:GetPos()
 	self.armorDescMenuExit.Think = function()
-		if not self.roleDescMenu then
-			self.armorDescMenuExit:Close()
+		if not self.roleDescMenu:IsValid() then
+			self.armorDescMenuExit:Remove()
 		end
 	end
 
@@ -549,9 +617,9 @@ function GM:ArmorDescription(armor)
 	self.armorDescMenuExitButton:SetSize(self.armorDescMenuExit:GetWide(), self.armorDescMenuExit:GetTall())
 	self.armorDescMenuExitButton:SetText("X")
 	self.armorDescMenuExitButton.DoClick = function()
-		surface.PlaySound("buttons/button22.wav")
-		self.armorDescMenu:Close()
-		self.armorDescMenuExit:Close()
+		surface.PlaySound("buttons/lightswitch2.wav")
+		self.armorDescMenu:Remove()
+		self.armorDescMenuExit:Remove()
 		self:RoleSelectionMenu()
 	end
 end

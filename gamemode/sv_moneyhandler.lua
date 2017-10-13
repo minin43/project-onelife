@@ -55,12 +55,12 @@ end
 
 hook.Add( "PlayerSpawn", "tdm_initialspawn", function( ply )
 	net.Start( "SendInitialMoney" )
-		net.WriteString( GM:GetMoney( ply ) )
+		net.WriteString( GAMEMODE:GetMoney( ply ) )
 	net.Send( ply )
 end )
 
 net.Receive( "RequestMoney", function( len, ply )
-	local num = GM:GetMoney( ply )
+	local num = GAMEMODE:GetMoney( ply )
 	
 	net.Start( "RequestMoneyCallback" )
 		net.WriteString( tostring( num ) )

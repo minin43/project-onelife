@@ -80,7 +80,7 @@ function GM:StartVoting()
             end
         end
     end)
-end )
+end
 
 function GM:SetVoteWinner( type, winner )
     if type == "mode" then

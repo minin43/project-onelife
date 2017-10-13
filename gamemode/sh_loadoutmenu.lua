@@ -1,7 +1,7 @@
 print( "sh_loadoutmenu initialization..." )
 --Red team: 3 ARs, 3 SMGs, 3 DMRs, 1 SR, 1 HMG, 1 SG	Blue team: 6 ARs, 2 SMGs, 2 DMRs, 1 SR, 1 HMG, 1 SG
 --//Table format: GM.weaponsPerRole[Chosen role (assigned and sorted numerically)][Weapon Type][Chosen team (sorted numerically)][Weapon's classname] = {price in shop, extra magazines}
-GM.weaponsPerRole = {
+--[[GM.weaponsPerRole = {
 	{ --Militant/Rifleman
 		primary = {
 			{"cw_kk_ins2_akm" = {0, 0}, "cw_kk_ins2_m1a1" = {0, 0}, "cw_kk_ins2_mp40" = {0, 0}},
@@ -114,74 +114,73 @@ GM.weaponsPerRole = {
 			{"weapon_class" = {0, 0}, "weapon_class" = {0, 0}, "weapon_class" = {0, 0}}
 		},
 	}
-}
+}]]
 
---//This is for clients, primarily, for when I list out the weapons. I could use weapons.Get for all of them, but that utilizes precious system resources.
 GM.menuDisplayName = {
 		--Red Primaries
-		"cw_kk_ins2_ak74" = 		"AK74",
-		"cw_kk_ins2_akm" = 			"AKM",
-		"cw_kk_ins2_aks74u" = 		"AKs-74u",
-		"cw_kk_ins2_fnfal" = 		"FN FAL",
-		"cw_kk_ins2_m1a1" = 		"M1A1",
-		"cw_kk_ins2_m1a1_para" = 	"M1A1 Elite",
-		"cw_kk_ins2_mosin" = 		"Mosin Nagant",
-		"cw_kk_ins2_mp40" = 		"MP-40",
-		"cw_kk_ins2_rpk" = 			"RPK",
-		"cw_kk_ins2_sks" = 			"SKS",
-		"cw_kk_ins2_sterling" = 	"Sterling",
-		"cw_kk_ins2_toz" = 			"TOZ",
+		["cw_kk_ins2_ak74"] = 			"AK74",
+		["cw_kk_ins2_akm"] = 			"AKM",
+		["cw_kk_ins2_aks74u"] = 		"AKs-74u",
+		["cw_kk_ins2_fnfal"] = 			"FN FAL",
+		["cw_kk_ins2_m1a1"] = 			"M1A1",
+		["cw_kk_ins2_m1a1_para"] = 		"M1A1 Elite",
+		["cw_kk_ins2_mosin"] = 			"Mosin Nagant",
+		["cw_kk_ins2_mp40"] = 			"MP-40",
+		["cw_kk_ins2_rpk"] = 			"RPK",
+		["cw_kk_ins2_sks"] = 			"SKS",
+		["cw_kk_ins2_sterling"] = 		"Sterling",
+		["cw_kk_ins2_toz"] = 			"TOZ",
 		--Blue Primaires
-		"cw_kk_ins2_mini14" = 		"AC-556", --AR
-		"cw_kk_ins2_galil" = 		"Galil", --AR
-		"cw_kk_ins2_cstm_galil_ace" = "Galil ACE", --AR
-		"cw_kk_ins2_mp5k" = 		"HK MP5K", --SMG
-		"cw_kk_ins2_ump45" = 		"HK UMP .45", --SMG
-		"cw_kk_ins2_l1a1" = 		"L1A1", --DMR
-		"cw_kk_ins2_m14" = 			"M14 EBR", --DMR
-		"cw_kk_ins2_m16a4" = 		"M16A4", --AR
-		"cw_kk_ins2_m249" = 		"M249", --HMG
-		"cw_kk_ins2_m40a1" = 		"M40A1", --SR
-		"cw_kk_ins2_m4a1" = 		"M4A1", --AR
-		"cw_kk_ins2_m590" = 		"M590", --SG
-		"cw_kk_ins2_mk18" = 		"MK18", --AR
+		["cw_kk_ins2_mini14"] = 		"AC-556", --AR
+		["cw_kk_ins2_galil"] = 			"Galil", --AR
+		["cw_kk_ins2_cstm_galil_ace"] = "Galil ACE", --AR
+		["cw_kk_ins2_mp5k"] = 			"HK MP5K", --SMG
+		["cw_kk_ins2_ump45"] = 			"HK UMP .45", --SMG
+		["cw_kk_ins2_l1a1"] = 			"L1A1", --DMR
+		["cw_kk_ins2_m14"] = 			"M14 EBR", --DMR
+		["cw_kk_ins2_m16a4"] = 			"M16A4", --AR
+		["cw_kk_ins2_m249"] = 			"M249", --HMG
+		["cw_kk_ins2_m40a1"] = 			"M40A1", --SR
+		["cw_kk_ins2_m4a1"] = 			"M4A1", --AR
+		["cw_kk_ins2_m590"] = 			"M590", --SG
+		["cw_kk_ins2_mk18"] = 			"MK18", --AR
 		--Extra Primaries
-		"cw_kk_ins2_cstm_aug" = 	"AUG",
-		"cw_kk_ins2_cstm_colt" = 	"Colt",
-		"cw_kk_ins2_cstm_famas" = 	"Famas",
-		"cw_kk_ins2_cstm_g36c" = 	"G36C",
-		"cw_kk_ins2_cstm_kriss" = 	"Kriss Vector",
-		"cw_kk_ins2_cstm_ksg" = 	"KSG-12",
-		"cw_kk_ins2_cstm_l85" = 	"L85A2",
-		"cw_kk_ins2_cstm_m14" = 	"M14 Classic",
-		"cw_kk_ins2_cstm_m500" = 	"M500",
-		"cw_kk_ins2_cstm_mp5a4" = 	"MP5A4",
-		"cw_kk_ins2_cstm_mp7" = 	"MP7",
-		"cw_kk_ins2_cstm_scar" = 	"Scar-H",
-		"cw_kk_ins2_cstm_spas12" = 	"Spas-12",
-		"cw_kk_ins2_cstm_uzi" = 	"Uzi",
+		["cw_kk_ins2_cstm_aug"] = 		"AUG",
+		["cw_kk_ins2_cstm_colt"] = 		"Colt",
+		["cw_kk_ins2_cstm_famas"] = 	"Famas",
+		["cw_kk_ins2_cstm_g36c"] = 		"G36C",
+		["cw_kk_ins2_cstm_kriss"] = 	"Kriss Vector",
+		["cw_kk_ins2_cstm_ksg"] = 		"KSG-12",
+		["cw_kk_ins2_cstm_l85"] = 		"L85A2",
+		["cw_kk_ins2_cstm_m14"] = 		"M14 Classic",
+		["cw_kk_ins2_cstm_m500"] = 		"M500",
+		["cw_kk_ins2_cstm_mp5a4"] = 	"MP5A4",
+		["cw_kk_ins2_cstm_mp7"] = 		"MP7",
+		["cw_kk_ins2_cstm_scar"] = 		"Scar-H",
+		["cw_kk_ins2_cstm_spas12"] = 	"Spas-12",
+		["cw_kk_ins2_cstm_uzi"] = 		"Uzi",
 		--Secondaries
-		"cw_kk_ins2_m1911" = 		"M1911",
-		"cw_kk_ins2_makarov" = 		"Makarov",
-		"cw_kk_ins2_revolver" = 	"Model 10",
-		"cw_kk_ins2_m9" = 			"Beretta M9",
-		"cw_kk_ins2_m45" = 			"M45",
+		["cw_kk_ins2_m1911"] = 			"M1911",
+		["cw_kk_ins2_makarov"] = 		"Makarov",
+		["cw_kk_ins2_revolver"] = 		"Model 10",
+		["cw_kk_ins2_m9"] = 			"Beretta M9",
+		["cw_kk_ins2_m45"] = 			"M45",
 		--Extra Secondaries
-		"cw_kk_ins2_cstm_cobra" = 	"S&W Cobra",
-		"cw_kk_ins2_cstm_g19" = 	"Glock 19",
+		["cw_kk_ins2_cstm_cobra"] = 	"S&W Cobra",
+		["cw_kk_ins2_cstm_g19"] = 		"Glock 19",
 		--Equipment
-		"cw_kk_ins2_nade_f1" = 		"F1 Frag",
-		"cw_kk_ins2_nade_m67" = 	"M67 Frag",
-		"cw_kk_ins2_nade_m18" = 	"M18 Smoke",
-		"cw_kk_ins2_nade_m84" = 	"M84 Flash",
-		"cw_kk_ins2_nade_anm14" = 	"ANM-14",
-		"cw_kk_ins2_nade_molotov" = "Molotov",
-		"cw_kk_ins2_nade_c4" = 		"C4",
-		"cw_kk_ins2_nade_ied" = 	"IED",
-		"cw_kk_ins2_rpg" = 			"RPG-7",
-		"cw_kk_ins2_at4" = 			"AT-4",
-		--"cw_kk_ins2_gp25" = 		"GP-25 Grenade Launcher",
-		"cw_kk_ins2_p2a1" = 		"P2A1 Flare Gun" --This is the flare gun, for night maps, I guess
+		["cw_kk_ins2_nade_f1"] = 		"F1 Frag",
+		["cw_kk_ins2_nade_m67"] = 		"M67 Frag",
+		["cw_kk_ins2_nade_m18"] = 		"M18 Smoke",
+		["cw_kk_ins2_nade_m84"] = 		"M84 Flash",
+		["cw_kk_ins2_nade_anm14"] = 	"ANM-14",
+		["cw_kk_ins2_nade_molotov"] = 	"Molotov",
+		["cw_kk_ins2_nade_c4"] = 		"C4",
+		["cw_kk_ins2_nade_ied"] = 		"IED",
+		["cw_kk_ins2_rpg"] = 			"RPG-7",
+		["cw_kk_ins2_at4"] = 			"AT-4",
+		--"cw_kk_ins2_gp25" = 			"GP-25 Grenade Launcher",
+		["cw_kk_ins2_p2a1"] = 			"P2A1 Flare Gun" --This is the flare gun, for night maps, I guess
 }
 
 if CLIENT then

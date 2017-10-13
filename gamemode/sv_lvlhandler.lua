@@ -24,23 +24,23 @@ end
 GM.lvl.maxlevel = #GM.lvl.levels
 GM.lvl.maxlevelexp = GM.lvl.levels[ GM.lvl.maxlevel ]
 	
-function GM:lvl.GetLevel( ply )
+function GM.lvl:GetLevel( ply )
 	return tonumber( ply:GetPData( "level" ) )
 end
 	
-function GM:lvl.GetEXP( ply )
+function GM.lvl:GetEXP( ply )
 	return tonumber( ply:GetPData( "exp" ) )
 end
 
 --I would delete this but it's useful for making an "experience bar"
-function GM:lvl.GetAmountForLevel( num )
-	return self.lvl.levels[ num ]
+function GM.lvl:GetAmountForLevel( num )
+	return self.levels[ num ]
 end
 	
-function GM:lvl.SendUpdate( ply )
-	local curlvl = self.lvl.GetLevel( ply )
-	local curexp = self.lvl.GetEXP( ply )
-	local nextexp = self.lvl.GetAmountForLevel( curlvl )
+function GM.lvl:SendUpdate( ply )
+	local curlvl = self:GetLevel( ply )
+	local curexp = self:GetEXP( ply )
+	local nextexp = self:GetAmountForLevel( curlvl )
 	net.Start( "SendUpdate" )
 		net.WriteString( tostring( curlvl ) )
 		net.WriteString( tostring( curexp ) )
@@ -48,60 +48,59 @@ function GM:lvl.SendUpdate( ply )
 	net.Send( ply )
 end
 
-function GM:lvl.SetLevel( ply, num )
+function GM.lvl:SetLevel( ply, num )
 	ply:SetPData( "level", tostring( num ) )
 	ply:SetPData( "exp", "0" )
 	ply:SetNWString( "level", tostring( num ) )
 end
 
-function GM:lvl.SetEXP( ply, num )
+function GM.lvl:SetEXP( ply, num )
 	ply:SetPData( "exp", tostring( num ) )
 end
 	
-function GM:lvl.AddEXP( ply, num )
+function GM.lvl:AddEXP( ply, num )
 	local group = ply:GetUserGroup()
-	local exp = self.lvl.GetEXP( ply )
+	local exp = self:GetEXP( ply )
 	local mult = 1
-	for k, v in next, self.lvl.VIPGroups do
+	for k, v in next, selfVIPGroups do
 		if v[ 1 ] == group then
 			mult = v[ 2 ]
 		end
 	end
-	self.lvl.SetEXP( ply, ( ( num * mult ) + exp ) )
-	self.lvl.CheckLvlUp( ply )
-	ply:SetNWString( "level", self.lvl.GetLevel( ply ) ) --Is this needed?
+	self:SetEXP( ply, ( ( num * mult ) + exp ) )
+	self:CheckLvlUp( ply )
+	ply:SetNWString( "level", self:GetLevel( ply ) ) --Is this needed?
 end
 
-function GM:lvl.CheckLvlUp( ply )
-	local exp = self.lvl.GetEXP( ply )
-	local level = self.lvl.GetLevel( ply )
-	if exp > self.lvl.levels[ level ] then
-		self.lvl.SetEXP( ply, ( exp - lvl.levels[ level ] ) )
-		self.lvl.SetLevel( ply, ( level + 1 ) )
+function GM.lvl:CheckLvlUp( ply )
+	local exp = self:GetEXP( ply )
+	local level = self:GetLevel( ply )
+	if exp > self.levels[ level ] then
+		self:SetEXP( ply, ( exp - lvl.levels[ level ] ) )
+		self:SetLevel( ply, ( level + 1 ) )
 		hook.Run( "LevelUp", ply, level + 1 )
-		if self.lvl.GetEXP( ply ) > self.lvl.levels[ self.lvl.GetLevel( ply ) ] then
-			self.lvl.CheckLvlUp( ply )
+		if self:GetEXP( ply ) > self.levels[ self:GetLevel( ply ) ] then
+			self:CheckLvlUp( ply )
 		end
 	end
 end
 
 net.Receive( "RequestLevel", function( len, ply )
-	local level = GM.lvl.GetLevel( ply ) or 1
+	local level = GAMEMODE.lvl:GetLevel( ply ) or 1
 	net.Start( "RequestLevelCallback" )
 		net.WriteString( tostring( level ) )
 	net.Send( ply )
 end )
 
-
 hook.Add( "PlayerInitialSpawn", "lvl.SendInitialLevel", function( ply )
 	timer.Simple( 5, function()
 		if not ply:GetPData( "level" ) then
-			GM.lvl.SetLevel( ply, 1 )
-			GM.lvl.SetEXP( ply, 0 )
+			GAMEMODE.lvl:SetLevel( ply, 1 )
+			GAMEMODE.lvl:SetEXP( ply, 0 )
 		end
 		
-		GM.lvl.SendUpdate( ply )
-		ply:SetNWString( "level", GM.lvl.GetLevel( ply ) )
+		GAMEMODE.lvl:SendUpdate( ply )
+		ply:SetNWString( "level", GAMEMODE.lvl:GetLevel( ply ) )
 	end )
 end )
 	
@@ -109,7 +108,7 @@ hook.Add( "LevelUp", "OnLevelUp", function( ply, newlv )
 	local color_green = Color( 102, 255, 51 )
 	local color_white = Color( 255, 255, 255 )
 
-	if GM.lvl.GetLevel( ply ) >= #roles then
+	if GAMEMODE.lvl:GetLevel( ply ) >= #roles then
 		ULib.tsayColor( nil, true, color_green, ply:Nick(), color_white, " leveled up to ", color_green, "Level " .. tostring( newlv ), color_white, "." )
 		for k, v in next, player.GetAll() do
 			--v:ChatPrint( tostring( ply:Nick() ) .. " leveled up to level " .. tostring( newlv ) )
@@ -123,10 +122,10 @@ hook.Add( "LevelUp", "OnLevelUp", function( ply, newlv )
 end )
 	
 concommand.Add( "lvl_refresh", function( ply )
-	GM.lvl.SendUpdate( ply )
+	GM.lvl:SendUpdate( ply )
 end )
 	
-concommand.Add( "lvl_debug_reset", function( ply )
+concommand.Add( "lvl_debug_global_reset", function( ply )
 	if ply:IsValid() and not ply:IsSuperAdmin() then 
 		return 
 	end
@@ -134,8 +133,8 @@ concommand.Add( "lvl_debug_reset", function( ply )
 	for k, v in next, player.GetAll() do
 		v:RemovePData( "level" )
 		v:RemovePData( "exp" )
-		GM.lvl.SetLevel( v, 1 )
-		GM.lvl.SetEXP( v, 0 )
-		GM.lvl.SendUpdate( v )
+		GAMEMODE.lvl:SetLevel( v, 1 )
+		GAMEMODE.lvl:SetEXP( v, 0 )
+		GAMEMODE.lvl:SendUpdate( v )
 	end
 end )

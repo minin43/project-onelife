@@ -27,27 +27,37 @@ function roleSelectionButton:IsTitle(bool)
 end
 
 function roleSelectionButton:IsLocked(bool)
-    roleSelectionButton.locked = bool
+    self.locked = bool
 end
 
 function roleSelectionButton:SetImage(img)
     self.imgsrc = img
-    self.img = Material(roleSelectionButton.imgsrc)
+    self.img = Material(self.imgsrc)
 end
 
 function roleSelectionButton:DoClick()
-    if not roleSelectionButton.locked then
-        GM.roleMainButtonNumber = self.role
-    elseif GM.roleMainButtonNumber == self.role then
+    print("Role Selection Button Click on button:", self)
+    print("     DEBUG Information:", self.locked, self.role, GAMEMODE.roleMainButtonNumber)
+    print("     Is button locked:", self.locked)
+    print("     Is button a title:", self.title)
+
+    if self.title or self.locked then print("BUTTON DEBUG: button is a title button or locked, disallowing DoClick function") return end
+    if GAMEMODE.roleMainButtonNumber != self.role then
+        print("GAMEMODE.roleMainButtonNumber != self.role, setting GAMEMODE.roleMainButtonNumber = self.role")
+        GAMEMODE.roleMainButtonNumber = self.role
+        surface.PlaySound("buttons/lightswitch2.wav")
+    else
+        print("GAMEMODE.roleMainButtonNumber == self.role, DEBUG information:", GAMEMODE.roleMainButtonNumber, self.role)
         net.Start("SendRoleToServer")
             net.WriteString(tostring(self.role))
         net.SendToServer()
         self:GetParent():Close()
-        GM:LoadoutMenu() --It is assumed this button will close its parent and open up the Loadout Menu
+        GAMEMODE:LoadoutMenu() --It is assumed this button will close its parent and open up the Loadout Menu
     end
 end
 
 function roleSelectionButton:OnCursorEntered()
+    if self.title or self.locked then return end
     surface.PlaySound("garrysmod/ui_hover.wav")
     self.cursorEntered = true
 end
@@ -71,19 +81,19 @@ function roleSelectionButton:Paint()
     if self.title then
         draw.SimpleText("Select a role", self.font, w / 2, h / 2, Color(0, 0, 0), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
     else
-        draw.SimpleText(self.text, self.font, w / 2, h / 2, Color(0, 0, 0), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
-        local hover = self:IsHovered()
         if self.locked then
             surface.SetDrawColor(100, 0, 0, 150)
             surface.DrawRect(1, 1, w - 2, h - 2)
-            draw.SimpleText("LOCKED", self.font, w / 2, h / 2, Color(255, 255, 255), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
+            draw.SimpleTextOutlined("LOCKED", self.font, w / 2, h / 2, Color(255, 255, 255), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER, 1, Color(0, 0, 0))
         else
-            if self.cursorEntered or GM.roleMainButtonNumber == self then
+            draw.SimpleTextOutlined(self.text, self.font, w / 2, h / 2, Color(0, 0, 0), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER, 1, Color(255, 255, 255))
+            if self.cursorEntered or GAMEMODE.roleMainButtonNumber == self then
                 surface.SetDrawColor(255, 255, 255)
                 surface.DrawOutlinedRect(0, 0, w, h)
             end
         end
     end
+    return true
 end
 
 --//
@@ -119,23 +129,27 @@ function roleDescriptionButton:Paint()
     local w, h = self:GetSize()
 
     draw.SimpleText(self.text, self.font, w / 2, h / 2, Color(175, 175, 175), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
-    if self.cursorEntered or GM.roleDescMenuButtonDown == self.role then
+    if self.cursorEntered or GAMEMODE.roleDescMenuButtonDown == self.role then
         draw.SimpleText(self.text, self.font, w / 2, h / 2, Color(255, 255, 255), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
         surface.SetDrawColor(255, 255, 255)
         surface.DrawLine(0, 0, w, 0)
         surface.DrawLine(0, 0, 0, h)
         surface.DrawLine(0, h, w, h)
     end
+    return true
 end
 
 function roleDescriptionButton:DoClick()
-    GM.roleDescMenuButtonNumber = self.role
+    GAMEMODE.roleDescMenuButtonNumber = self.role
+    surface.PlaySound("buttons/lightswitch2.wav")
+    GAMEMODE.armorDescMenuButtonDownX, GAMEMODE.armorDescMenuButtonDownY = self:GetPos()
+    GAMEMODE.armorDescMenuButtonDownWide, GAMEMODE.armorDescMenuButtonDownTall = self:GetSize()
 end
 
-function roleDescriptionButton:Think()
-    GM.roleDescMenuButtonX, GM.roleDescMenuButtonY = self:GetPos()
-    GM.roleDesMenuButtonWide, GM.roleDescMenuButtonTall = self:GetSize()
-end
+--[[function roleDescriptionButton:Think()
+    GAMEMODE.roleDescMenuButtonX, GAMEMODE.roleDescMenuButtonY = self:GetPos()
+    GAMEMODE.roleDesMenuButtonWide, GAMEMODE.roleDescMenuButtonTall = self:GetSize()
+end]]
 
 vgui.Register("RoleDescriptionButton", roleDescriptionButton, "DButton")
 
@@ -148,25 +162,24 @@ function armorDescriptionButton:SetArmor(num)
 end
 
 function armorDescriptionButton:DoClick()
-    GM.armorDescMenuButtonDown = self.armor
+    surface.PlaySound("buttons/lightswitch2.wav")
+    GAMEMODE.armorDescMenuButtonDown = self.armor
+    GAMEMODE.armorDescMenuButtonDownX, GAMEMODE.armorDescMenuButtonDownY = self:GetPos()
+    GAMEMODE.armorDescMenuButtonDownWide, GAMEMODE.armorDescMenuButtonDownTall = self:GetSize()
 end
 
-function armorDescMenuButtonDown:Paint()
+function armorDescriptionButton:Paint()
     local w, h = self:GetSize()
 
     draw.SimpleText(self.text, self.font, w / 2, h / 2, Color(175, 175, 175), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
-    if self.cursorEntered or GM.armorDescMenuButtonDown == self.armor then
+    if self.cursorEntered or GAMEMODE.armorDescMenuButtonDown == self.armor then
         draw.SimpleText(self.text, self.font, w / 2, h / 2, Color(255, 255, 255), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
         surface.SetDrawColor(255, 255, 255)
         surface.DrawLine(0, 0, w, 0)
         surface.DrawLine(0, 0, 0, h)
         surface.DrawLine(0, h, w, h)
     end
-end
-
-function roleDescriptionButton:Think()
-    GM.armorDescMenuButtonDownX, GM.armorDescMenuButtonDownY = self:GetPos()
-    GM.armorDescMenuButtonDownWide, GM.armorDescMenuButtonDownTall = self:GetSize()
+    return true
 end
 
 vgui.Register("ArmorDescriptionButton", armorDescriptionButton, "DButton")
@@ -182,10 +195,6 @@ armorInfoIcon.scale = 0
 
 function armorInfoIcon:SetFont(font)
     self.font = font
-end
-
-function armorInfoIcon:SetNum(num)
-    self.scale = num
 end
 
 function armorInfoIcon:SetImage(img)
@@ -206,15 +215,15 @@ function armorInfoIcon:Finish() --I can't quite think of where to put this code,
     if self.armor == 2 then return end
 
     if self.scaleType == "healthScaling" then
-        if self.scale > GM.Armor[2].scaleType then
+        if GAMEMODE.Armor[self.armor][self.scaleType] > GAMEMODE.Armor[2][self.scaleType] then
             self.color = Color(0, 160, 0)
-        elseif self.scale < GM.Armor[2].scaleType then
+        elseif GAMEMODE.Armor[self.armor][self.scaleType] < GAMEMODE.Armor[2].scaleType then
             self.color = Color(170, 0, 0)
         end
     else
-        if self.scale > GM.Armor[2].scaleType.scaleNum then
+        if GAMEMODE.Armor[self.armor][self.scaleType][self.scaleNum] > GAMEMODE.Armor[2][self.scaleType][self.scaleNum] then
             self.color = Color(0, 160, 0)
-        elseif tonumber(text) < GM.Armor[2].scaleType.scaleNum then
+        elseif GAMEMODE.Armor[self.armor][self.scaleType][self.scaleNum] < GAMEMODE.Armor[2][self.scaleType][self.scaleNum] then
             self.color = Color(170, 0, 0)
         end
     end
@@ -237,6 +246,7 @@ function armorInfoIcon:Paint()
             surface.DrawTexturedRect(0, 0, w, h)
         end
     end
+    return true
 end
 
 vgui.Register("ArmorInfoIcon", armorInfoIcon, "DPanel")

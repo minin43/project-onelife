@@ -4,6 +4,8 @@ GM.Author = "Logan"
 GM.Email = "lobsterlogan43@yahoo.com"
 GM.Website = "egncommunity.com"
 GM.Version = "09092017"
+GM.redTeam = {}
+GM.blueTeam = {}
 
 if SERVER then
 
@@ -24,8 +26,8 @@ if SERVER then
 
 	net.Receive( "AskTeams", function( len, ply )
 		net.Start( "AskTeamsCallback" )
-			net.WriteString( GM.redTeam.Name )
-			net.WriteString( GM.blueTeam.Name )
+			net.WriteString( GAMEMODE.redTeam.Name )
+			net.WriteString( GAMEMODE.blueTeam.Name )
 		net.Send( ply )
 	end )
 
@@ -67,8 +69,10 @@ if CLIENT then
 	net.Start( "AskTeams" )
 	net.SendToServer()
 	net.Receive( "AskTeamsCallback", function()
-		team.SetUp( 1, net.ReadString(), Color( 255, 0, 0 ) )
-		team.SetUp( 2, net.ReadString(), Color( 0, 0, 255 ) )
+		GAMEMODE.redTeam.Name = net.ReadString()
+		GAMEMODE.blueTeam.Name = net.ReadString()
+		team.SetUp( 1, GAMEMODE.redTeam.Name, Color( 255, 0, 0 ) )
+		team.SetUp( 2, GAMEMODE.blueTeam.Name, Color( 0, 0, 255 ) )
 		team.SetUp( 3, "Solo", Color( 0, 255, 0 ) )
 	end )
 end

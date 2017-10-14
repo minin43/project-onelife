@@ -566,35 +566,45 @@ function GM:ArmorDescription(armor)
 		movementScaling = {"menu/walkpic.png", "menu/runpic.png", "menu/jumppic2.png"}
 	}
 
-	for k, v in pairs(self.Armor[armor].damageScaling) do
-		local but = vgui.Create("ArmorInfoIcon", self.armorDescMenuInfo)
-		but:SetPos(0, self.armorDescMenuInfo:GetTall() / 4 * (k - 1))
-		but:SetSize(self.armorDescMenuInfo:GetWide() / 2, self.armorDescMenuInfo:GetTall() / 4)
-		but:SetText(v)
-		but:SetImage(self.armorNumberToIcon.damageScaling.k)
-		but:SetArmor(armor)
-		but:SetWhatScale("damageScaling", k)
-		but:Finish()
-	end
+	self:DrawDescriptionPanel(armor) --TO TEST
+		if IsValid(self.armorDescMenuInfo:GetChildren()) then
+			for k, v in pairs(self.armorDescMenuInfo:GetChildren()) do
+				if v[3] == "aii*" then
+					v[1]:Remove()
+				end
+			end
+		end
 
-	self.armorDescMenuInfoHealth = vgui.Create("ArmorInfoIcon", self.armorDescMenuInfo)
-	self.armorDescMenuInfoHealth:SetPos(self.armorDescMenuInfo:GetWide() / 2, 0)
-	self.armorDescMenuInfoHealth:SetSize(self.armorDescMenuInfo:GetWide() / 2, self.armorDescMenuInfo:GetTall() / 4)
-	self.armorDescMenuInfoHealth:SetText(self.Armor[armor].healthScaling)
-	self.armorDescMenuInfoHealth:SetImage("menu/healthpic.png")
-	self.armorDescMenuInfoHealth:SetArmor(armor)
-	self.armorDescMenuInfoHealth:SetWhatScale("healthScaling")
-	self.armorDescMenuInfoHealth:Finish()
+		for k, v in pairs(self.Armor[armor].damageScaling) do
+			local but = vgui.Create("ArmorInfoIcon", self.armorDescMenuInfo, "aii" .. k)
+			but:SetPos(0, self.armorDescMenuInfo:GetTall() / 4 * (k - 1))
+			but:SetSize(self.armorDescMenuInfo:GetWide() / 2, self.armorDescMenuInfo:GetTall() / 4)
+			but:SetText(v)
+			but:SetImage(self.armorNumberToIcon.damageScaling.k)
+			but:SetArmor(armor)
+			but:SetWhatScale("damageScaling", k)
+			but:Finish()
+		end
 
-	for k, v in pairs(self.Armor[armor].movementScaling) do
-		local but = vgui.Create("ArmorInfoIcon", self.armorDescMenuInfo)
-		but:SetPos(self.armorDescMenuInfo:GetWide() / 2, self.armorDescMenuInfo:GetTall() / 4 * k)
-		but:SetSize(self.armorDescMenuInfo:GetWide() / 2, self.armorDescMenuInfo:GetTall() / 4)
-		but:SetText(v)
-		but:SetImage(self.armorNumberToIcon.movementScaling.k)
-		but:SetArmor(armor)
-		but:SetWhatScale("movementScaling", k)
-		but:Finish()
+		self.armorDescMenuInfoHealth = vgui.Create("ArmorInfoIcon", self.armorDescMenuInfo, "aii" .. tostring(#self.Armor[armor].damageScaling + 1))
+		self.armorDescMenuInfoHealth:SetPos(self.armorDescMenuInfo:GetWide() / 2, 0)
+		self.armorDescMenuInfoHealth:SetSize(self.armorDescMenuInfo:GetWide() / 2, self.armorDescMenuInfo:GetTall() / 4)
+		self.armorDescMenuInfoHealth:SetText(self.Armor[armor].healthScaling)
+		self.armorDescMenuInfoHealth:SetImage("menu/healthpic.png")
+		self.armorDescMenuInfoHealth:SetArmor(armor)
+		self.armorDescMenuInfoHealth:SetWhatScale("healthScaling")
+		self.armorDescMenuInfoHealth:Finish()
+
+		for k, v in pairs(self.Armor[armor].movementScaling, "aii" .. (#self.Armor[armor].damageScaling + 1 + k)) do
+			local but = vgui.Create("ArmorInfoIcon", self.armorDescMenuInfo)
+			but:SetPos(self.armorDescMenuInfo:GetWide() / 2, self.armorDescMenuInfo:GetTall() / 4 * k)
+			but:SetSize(self.armorDescMenuInfo:GetWide() / 2, self.armorDescMenuInfo:GetTall() / 4)
+			but:SetText(v)
+			but:SetImage(self.armorNumberToIcon.movementScaling.k)
+			but:SetArmor(armor)
+			but:SetWhatScale("movementScaling", k)
+			but:Finish()
+		end
 	end
 
 	self.armorDescMenuExit = vgui.Create("DFrame")

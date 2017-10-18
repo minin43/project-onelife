@@ -7,12 +7,12 @@ util.AddNetworkString("RequestEnemyRolesCallback")
 util.AddNetworkString("SendRoleToServer")
 util.AddNetworkString("")
 
-function GM:SortTeamRoles(len, ply)
+function GM:SortTeamRoles(ply, len)
     if not IsValid(ply) then return end
     local tableToSend = {}
     for k, v in pairs(player.GetAll()) do
-        if ply.Team() == v.Team() then
-            tableToSend[#tableToSend + 1] = {Nick = v.Nick(), Role = v.Role}
+        if ply:Team() == v:Team() and ply != v then
+            tableToSend[#tableToSend + 1] = {Nick = v:Nick(), Role = v.Role or "None"}
         end
     end
     
@@ -20,13 +20,13 @@ function GM:SortTeamRoles(len, ply)
         net.WriteTable(tableToSend)
     net.Send(ply)
 end
-net.Receive("RequestTeamRoles", GM:SortTeamRoles())
+net.Receive("RequestTeamRoles", GM.SortTeamRoles)
 
-function GM:SortEnemyRoles(len, ply)
+function GM:SortEnemyRoles(ply, len)
     if not IsValid(ply) then return end
     local tableToSend = {}
     for k, v in pairs(player.GetAll()) do
-        if ply.Team() != v.Team() and v.Team() != 0 then
+        if ply:Team() != v:Team() and v:Team() != 0 then
             tableToSend[v.Role] = tableToSend[v.Role] or 0
             tableToSend[v.Role] = tableToSend[v.Role] + 1
         end
@@ -36,9 +36,9 @@ function GM:SortEnemyRoles(len, ply)
         net.WriteTable(tableToSend)
     net.Send(ply)
 end
-net.Receive("RequestEnemyRoles", GM:SortEnemyRoles())
+net.Receive("RequestEnemyRoles", GM.SortEnemyRoles)
 
-net.Receive("SendRoleToServer", function(len, ply)
+net.Receive("SendRoleToServer", function(ply, len)
     ply.Role = tonumber(net.ReadString())
     localTeam = ply:Team()
     for k, v in pairs(player.GetAll()) do

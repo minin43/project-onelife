@@ -118,7 +118,7 @@ print( "sh_loadoutmenu initialization..." )
 
 GM.menuDisplayName = {
 		--Red Primaries
-		["cw_kk_ins2_ak74"] = 			"AK74",
+		["cw_kk_ins2_ak74"] = 			"AK-74",
 		["cw_kk_ins2_akm"] = 			"AKM",
 		["cw_kk_ins2_aks74u"] = 		"AKs-74u",
 		["cw_kk_ins2_fnfal"] = 			"FN FAL",

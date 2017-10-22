@@ -4,8 +4,24 @@ GM.Author = "Logan"
 GM.Email = "lobsterlogan43@yahoo.com"
 GM.Website = "egncommunity.com"
 GM.Version = "09092017"
-GM.redTeam = {}
-GM.blueTeam = {}
+GM.redTeam = {
+	menuTeamColor = {r = 183, g = 28, b = 28},
+	menuTeamColorLightAccent = {r = 240, g = 85, b = 69},
+	menuTeamColorDarkAccent = {r = 127, g = 0, b = 0},
+	menuTeamColorAccent = {r = 255, g = 255, b = 255}
+}
+GM.blueTeam = {
+	menuTeamColor = {r = 13, g = 71, b = 161},
+	menuTeamColorLightAccent = {r = 84, g = 114, b = 211},
+	menuTeamColorDarkAccent = {r = 0, g = 33, b = 113},
+	menuTeamColorAccent = {r = 255, g = 255, b = 255}
+}
+GM.soloTeam = {
+	menuTeamColor = {r = 27, g = 94, b = 32},
+	menuTeamColorLightAccent = {r = 76, g = 140, b = 74},
+	menuTeamColorDarkAccent = {r = 0, g = 51, b = 0},
+	menuTeamColorAccent = {r = 255, g = 255, b = 255}
+}
 
 if SERVER then
 

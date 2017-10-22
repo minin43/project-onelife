@@ -49,6 +49,14 @@ GM.teamNumberToName = {"redTeamName", "blueTeamName", "soloTeamName"}
 function GM:LoadoutMenu()
 	if self.Main and self.Main:IsValid() then return end
 
+	if LocalPlayer():Team() == 1 then
+		self.myTeam = self.redTeam
+	elseif LocalPlayer():Team() == 2 then
+		self.myTeam = self.blueTeam
+	else
+		self.myTeam = self.soloTeam
+	end
+
 	if not self.roleMainButtonNumber then
 		self:RoleSelectionMenu()
 		return
@@ -177,7 +185,7 @@ function GM:RoleSelectionMenu()
 	self.roleMainX, self.roleMainY = self.roleMain:GetPos()
     self.roleMain.Paint = function()
 		--Derma_DrawBackgroundBlur(self.roleMain, CurTime())
-		surface.SetDrawColor(0, 0, 0, 220)
+		surface.SetDrawColor(self.myTeam.menuTeamColor.r, self.myTeam.menuTeamColor.g, self.myTeam.menuTeamColor.b, 220)
         surface.DrawRect(0, 0, self.roleMain:GetWide(), self.roleMain:GetTall())
     end
 	self.roleMain.Think = function()
@@ -194,10 +202,10 @@ function GM:RoleSelectionMenu()
 	self.roleMainDesc:SetText("")
 	self.roleMainDesc.Paint = function()
 		local w, h = self.roleMainDesc:GetSize()
-		surface.SetDrawColor(180, 180, 180)
+		surface.SetDrawColor(self.myTeam.menuTeamColorLightAccent.r, self.myTeam.menuTeamColorLightAccent.g, self.myTeam.menuTeamColorLightAccent.b)
 		surface.DrawRect(1, 1, w - 2, h - 2)
 		if self.roleMainButtonNumber then
-			draw.SimpleText("Role Description: " .. self.Roles[self.roleMainButtonNumber]["roleDescription"], "DermaDefault", w / 2, h / 2, Color(0, 0, 0), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
+			draw.SimpleText(self.Roles[self.roleMainButtonNumber]["roleDescription"], "DermaDefault", w / 2, h / 2, Color(0, 0, 0), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
 		else
 			draw.SimpleText("Role Description: None selected.", "DermaDefault", w / 2, h / 2, Color(0, 0, 0), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
 		end
@@ -228,7 +236,7 @@ function GM:RoleSelectionMenu()
 	self.roleMainArmor:SetText("")
 	self.roleMainArmor.Paint = function()
 		local w, h = self.roleMainArmor:GetSize()
-		surface.SetDrawColor(180, 180, 180)
+		surface.SetDrawColor(self.myTeam.menuTeamColorLightAccent.r, self.myTeam.menuTeamColorLightAccent.g, self.myTeam.menuTeamColorLightAccent.b)
 		surface.DrawRect(1, 1, w - 2, h - 2)
 		if self.roleMainButtonNumber then
 			draw.SimpleText("Armor Type: " .. self.Roles[self.roleMainButtonNumber]["armorRating"].armorName or "None", self.font, w / 2, h / 2, Color(0, 0, 0), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
@@ -300,10 +308,10 @@ function GM:RoleSelectionMenu()
 	self.roleTeam:ShowCloseButton(false)
 	self.roleTeam:MakePopup()
     self.roleTeam.Paint = function()
-        draw.RoundedBoxEx(16, 0, 0, self.roleTeam:GetWide(), self.roleTeam:GetTall(), Color(0, 0, 0, 220), true, false, true, false)
+        draw.RoundedBoxEx(16, 0, 0, self.roleTeam:GetWide(), self.roleTeam:GetTall(), Color(self.myTeam.menuTeamColor.r, self.myTeam.menuTeamColor.g, self.myTeam.menuTeamColor.b, 220), true, false, true, false)
 		draw.SimpleText("Your Team", "DermaDefault", self.roleTeam:GetWide() - 4, 2, Color(255, 255, 255), TEXT_ALIGN_RIGHT, TEXT_ALIGN_TOP)
 		if not self.roleTeamScrollTeamInfo then
-			draw.RoundedBoxEx(16, 0, 0, self.roleTeam:GetWide(), self.roleTeam:GetTall(), Color(0, 0, 0, 100), true, false, true, false)
+			draw.RoundedBoxEx(16, 0, 0, self.roleTeam:GetWide(), self.roleTeam:GetTall(), Color(self.myTeam.menuTeamColorLightAccent.r, self.myTeam.menuTeamColorLightAccent.g, self.myTeam.menuTeamColorLightAccent.b, 100), true, false, true, false)
 			draw.SimpleText("Loading Teammate Information", "DermaDefault", self.roleTeamScroll:GetWide() / 2, self.roleTeamScroll:GetTall() / 2, Color(255, 255, 255), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
 		end
     end
@@ -393,10 +401,10 @@ function GM:RoleSelectionMenu()
 	self.roleEnemy:MakePopup()
 		local textOffset = 10
     self.roleEnemy.Paint = function()
-        draw.RoundedBoxEx(16, 0, 0, self.roleEnemy:GetWide(), self.roleEnemy:GetTall(), Color(0, 0, 0, 220), false, true, false, true)
+        draw.RoundedBoxEx(16, 0, 0, self.roleEnemy:GetWide(), self.roleEnemy:GetTall(), Color(self.myTeam.menuTeamColor.r, self.myTeam.menuTeamColor.g, self.myTeam.menuTeamColor.b, 220), false, true, false, true)
 		draw.SimpleText("Enemy Role Count", "DermaDefault", 4, 2, Color(255, 255, 255), TEXT_ALIGN_LEFT, TEXT_ALIGN_TOP)
 		if not self.roleEnemyRoleCount then
-			draw.RoundedBoxEx(4, 0, 0, self.roleEnemy:GetWide(), self.roleEnemy:GetTall(), Color(0, 0, 0, 220), false, true, false, true)
+			draw.RoundedBoxEx(4, 0, 0, self.roleEnemy:GetWide(), self.roleEnemy:GetTall(), Color(self.myTeam.menuTeamColorLightAccent.r, self.myTeam.menuTeamColorLightAccent.g, self.myTeam.menuTeamColorLightAccent.b, 100), false, true, false, true)
 			draw.SimpleText("Loading Enemy Role Count", "DermaDefault", self.roleEnemy:GetWide() / 2, self.roleEnemy:GetTall() / 2, Color(0, 0, 0), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
 		end
     end
@@ -490,7 +498,7 @@ function GM:RoleDescriptions(role)
 	self.roleDescMenuX, self.roleDescMenuY = self.roleDescMenu:GetPos()
     self.roleDescMenu.Paint = function()
 		--Derma_DrawBackgroundBlur(self.roleDescMenu, CurTime())
-		surface.SetDrawColor(0, 0, 0, 220)
+		surface.SetDrawColor(self.myTeam.menuTeamColor.r, self.myTeam.menuTeamColor.g, self.myTeam.menuTeamColor.b, 220)
         surface.DrawRect(0, 0, self.roleDescMenu:GetWide(), self.roleDescMenu:GetTall())
     end
 	self.roleDescMenu.Think = function()
@@ -535,7 +543,7 @@ function GM:RoleDescriptions(role)
 	self.roleDescMenuInfo.Paint = function()
 		local w, h = self.roleDescMenuInfo:GetSize()
 
-		surface.SetDrawColor(255, 255, 255)
+		surface.SetDrawColor(self.myTeam.menuTeamColorDarkAccent.r, self.myTeam.menuTeamColorDarkAccent.g, self.myTeam.menuTeamColorDarkAccent.b)
 		surface.DrawLine(0, 0, w, 0)
 		surface.DrawLine(w - 1, 0, w - 1, h)
 		surface.DrawLine(w, h - 1, 0, h - 1)
@@ -600,7 +608,7 @@ function GM:ArmorDescription(armor)
 	self.armorDescMenuX, self.armorDescMenuY = self.armorDescMenu:GetPos()
     self.armorDescMenu.Paint = function()
 		--Derma_DrawBackgroundBlur(self.armorDescMenu, CurTime())
-		surface.SetDrawColor(0, 0, 0, 220)
+		surface.SetDrawColor(self.myTeam.menuTeamColor.r, self.myTeam.menuTeamColor.g, self.myTeam.menuTeamColor.b, 220)
         surface.DrawRect(0, 0, self.armorDescMenu:GetWide(), self.armorDescMenu:GetTall())
     end
 	self.armorDescMenu.Think = function()
@@ -616,7 +624,7 @@ function GM:ArmorDescription(armor)
 	self.armorDescMenuInfo.Paint = function()
 		local w, h = self.armorDescMenuInfo:GetSize()
 
-		surface.SetDrawColor(255, 255, 255)
+		surface.SetDrawColor(self.myTeam.menuTeamColorDarkAccent.r, self.myTeam.menuTeamColorDarkAccent.g, self.myTeam.menuTeamColorDarkAccent.b)
 		surface.DrawLine(0, 0, w, 0)
 		surface.DrawLine(w - 1, 0, w - 1, h)
 		surface.DrawLine(w, h - 1, 0, h - 1)

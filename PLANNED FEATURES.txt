@@ -1,0 +1,17 @@
+From the readme
+ - 8 distinct classes each with a unique set of weapons and class progression
+ - Weapons shop where players can buy new weapons and attachments for them (shop items and bought attachments are class-based, each class will have a different-looking shop selection)
+ - Immersive combat audio dependent on the amount of players alive at the time
+ - Utilization of Knife Kitty's INS2 weapon pack, a modified Customizable Weaponry 2.0 base
+ - Teams, playermodels, and player dialogue ripped from MW2 multiplayer
+ - 5 (planned) game types, all centered around players only getting 1 life
+ - End-match accolades and awards based on game performance
+ - Game stats saved across your career time (on a given server)
+ - An end-match MVP screen where the top player performs a preselected taunt
+ - A not-shitty UI (I hope)
+
+ Personal entries:
+I'd like to save all game information when a game is finished and display it back to the player. Things like:
+    - Most used weapon (based on time wielded or shots fired)
+    - Most use role (based on time selected)
+    - # of game victories and losses

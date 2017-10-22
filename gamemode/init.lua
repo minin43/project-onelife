@@ -233,7 +233,6 @@ function changeTeam(ply, cmd, args)
 	end
 end
 
-
 concommand.Add("pol_setteam", changeTeam)
 
 --[[local function GetValid()

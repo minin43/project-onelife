@@ -358,8 +358,8 @@ function weaponPanel:SetWep(wep, type)
             end
         end
     else
-        local spawnedEnt = ents.Create(temptable.projectileClass)
-        --[[
+        --[[local spawnedEnt = ents.Create(temptable.projectileClass)
+        
         Fire grenades:
             -Burn Duration (ExplodeRadius)
             -Explosion Radius (ExplodeDamage)
@@ -387,19 +387,18 @@ function weaponPanel:SetWep(wep, type)
         Flare Gun:
             -Flare duration (TimeToLive)
             -Light Radius (BurnRadius)
-]]
+        ]]
     end
 end
 
 function weaponPanel:SetAttach(sight, barrel, under, laser, mod, ammo, contract)
     local temptable = table.Copy(self.copiedWeaponTable)
-
     if CustomizableWeaponry.registeredAttachmentsSKey[sight] then
         self.attachments[1] = {sight, true}
-        if CustomizableWeaponry.registeredAttachmentsSKey[sight].statModifiers then
+        if CustomizableWeaponry.registeredAttachmentsSKey[sight].statModifiers and #CustomizableWeaponry.registeredAttachmentsSKey[sight].statModifiers > 0 then
             for k, v in pairs(CustomizableWeaponry.registeredAttachmentsSKey[sight].statModifiers) do
                 for k2, v2 in pairs(self.copiedWeaponTable) do
-                    if v2[1] == k then
+                    if string.StartWith(k, v2[1]) then
                         v2[3] = v2[3] + v
                         if v2[3] > temptable[k2][3] then
                             v2[4] = self.betterColor
@@ -418,7 +417,7 @@ function weaponPanel:SetAttach(sight, barrel, under, laser, mod, ammo, contract)
         if CustomizableWeaponry.registeredAttachmentsSKey[barrel].statModifiers then
             for k, v in pairs(CustomizableWeaponry.registeredAttachmentsSKey[barrel].statModifiers) do
                 for k2, v2 in pairs(self.copiedWeaponTable) do
-                    if v2[1] == k then
+                    if string.StartWith(k, v2[1]) then
                         v2[3] = v2[3] + v
                         if v2[3] > temptable[k2][3] then
                             v2[4] = self.betterColor
@@ -437,7 +436,7 @@ function weaponPanel:SetAttach(sight, barrel, under, laser, mod, ammo, contract)
         if CustomizableWeaponry.registeredAttachmentsSKey[under].statModifiers then
             for k, v in pairs(CustomizableWeaponry.registeredAttachmentsSKey[under].statModifiers) do
                 for k2, v2 in pairs(self.copiedWeaponTable) do
-                    if v2[1] == k then
+                    if string.StartWith(k, v2[1]) then
                         v2[3] = v2[3] + v
                         if v2[3] > temptable[k2][3] then
                             v2[4] = self.betterColor
@@ -456,7 +455,7 @@ function weaponPanel:SetAttach(sight, barrel, under, laser, mod, ammo, contract)
         if CustomizableWeaponry.registeredAttachmentsSKey[laser].statModifiers then
             for k, v in pairs(CustomizableWeaponry.registeredAttachmentsSKey[laser].statModifiers) do
                 for k2, v2 in pairs(self.copiedWeaponTable) do
-                    if v2[1] == k then
+                    if string.StartWith(k, v2[1]) then
                         v2[3] = v2[3] + v
                         if v2[3] > temptable[k2][3] then
                             v2[4] = self.betterColor
@@ -475,7 +474,7 @@ function weaponPanel:SetAttach(sight, barrel, under, laser, mod, ammo, contract)
         if CustomizableWeaponry.registeredAttachmentsSKey[mod].statModifiers then
             for k, v in pairs(CustomizableWeaponry.registeredAttachmentsSKey[mod].statModifiers) do
                 for k2, v2 in pairs(self.copiedWeaponTable) do
-                    if v2[1] == k then
+                    if string.StartWith(k, v2[1]) then
                         v2[3] = v2[3] + v
                         if v2[3] > temptable[k2][3] then
                             v2[4] = self.betterColor
@@ -494,7 +493,7 @@ function weaponPanel:SetAttach(sight, barrel, under, laser, mod, ammo, contract)
         if CustomizableWeaponry.registeredAttachmentsSKey[ammo].statModifiers then
             for k, v in pairs(CustomizableWeaponry.registeredAttachmentsSKey[ammo].statModifiers) do
                 for k2, v2 in pairs(self.copiedWeaponTable) do
-                    if v2[1] == k then
+                    if string.StartWith(k, v2[1]) then
                         v2[3] = v2[3] + v
                         if v2[3] > temptable[k2][3] then
                             v2[4] = self.betterColor
@@ -514,11 +513,12 @@ function weaponPanel:SetAttach(sight, barrel, under, laser, mod, ammo, contract)
 end
 
 function weaponPanel:Paint()
-    surface.SetDrawColor(175, 175, 175)
-    draw.RoundedBoxEx(16, 1, 1, self:GetWide() - 2, self:GetTall() - 1, Color(100, 100, 100), true, true, true, true)
+    draw.RoundedBoxEx(16, 0, 0, self:GetWide(), self:GetTall(), Color(255, 255, 255), true, true, true, true)
+    draw.RoundedBoxEx(16, 4, 4, self:GetWide() - 8, self:GetTall() - 8, Color(0, 0, 0), true, true, true, true)
+    draw.RoundedBoxEx(16, 5, 5, self:GetWide() - 10, self:GetTall() - 10, Color(100, 100, 100), true, true, true, true)
     for k, v in pairs(self.copiedWeaponTable) do
         if k < 4 then
-            draw.SimpleText(v[2] .. v[3], self.font, self.weaponModelWide + 4, 15 * k, v[4], TEXT_ALIGN_LEFT, TEXT_ALIGN_CENTER)
+            draw.SimpleText(v[2] .. v[3], self.font, self.weaponModelWide + 6, 15 * k, v[4], TEXT_ALIGN_LEFT, TEXT_ALIGN_CENTER)
         elseif k < 7 then
             draw.SimpleText(v[2] .. v[3], self.font, self.weaponModelWide + (self:GetWide() - self.weaponModelWide) / 3, 15 * (k - 3), v[4], TEXT_ALIGN_LEFT, TEXT_ALIGN_CENTER)
         elseif k < 10 then
@@ -530,21 +530,8 @@ end
 
 function weaponPanel:Finish() --I can't think of a function to otherwise put this in and I don't care to test for another one
     self.attachmentButtonSpacer = (self:GetWide() - (self.attachmentButtonSize * #self.attachments)) / (#self.attachments + 1)
-    --print("DEBUG: self.attachmentButtonSpacer =", self.attachmentButtonSpacer)
-    --print(self:GetWide(), self.attachmentButtonSize, #self.attachments, self.attachmentButtonSize * #self.attachments)
     for k, v in pairs(self.attachments) do
         local but = vgui.Create("DButton", self)
-        --[[if v[1] == "am_flechetterounds" then
-            but.iconMaterial = Material("atts/flechetterounds")
-        elseif v[1] == "am_magnum" then
-            but.iconMaterial = Material("atts/magnumrounds")
-        elseif v[1] == "am_matchgrade" then
-            but.iconMaterial = Material("atts/matchgradeammo")
-        elseif v[1] == "am_slugrounds" then
-            but.iconMaterial = Material("atts/slugrounds")
-        else]]
-            --but.iconMaterial = Material("atts/" .. CustomizableWeaponry.registeredAttachmentsSKey[v[1]].name)
-        --end
         but:SetSize(self.attachmentButtonSize, self.attachmentButtonSize)
         but:SetPos(self.attachmentButtonSpacer * k + (self.attachmentButtonSize * (k - 1)), self:GetTall() - self.attachmentButtonSize - 6)
         but:SetText("")
@@ -587,20 +574,33 @@ function weaponPanel:Finish() --I can't think of a function to otherwise put thi
         end
     end
 
-    local but = vgui.Create("DButton", self)
-    but:SetSize(self.weaponModelWide, 70)
-    but:SetPos(2, 2)
+    local weaponModelPanel = vgui.Create("DModelPanel", self)
+    weaponModelPanel:SetPos(2, 2)
+    weaponModelPanel:SetSize(self.weaponModelWide, 70)
+    weaponModelPanel:SetModel(weapons.GetStored(self.wepClass).WorldModel)
+    weaponModelPanel:SetCamPos(Vector(0, 35, 0)) --Courtesy of Spy
+    weaponModelPanel:SetLookAt(Vector(0, 0, 0)) --Courtesy of Spy
+    weaponModelPanel:SetFOV(90) --Courtesy of Spy
+    --weaponModelPanel:GetEntity():SetAngles
+    weaponModelPanel:GetEntity():SetPos(Vector(-6, 13.5, -1))
+    weaponModelPanel:SetAmbientLight(Color(255, 255, 255))
+    weaponModelPanel.LayoutEntity = function() return true end --Disables rotation
+
+    local but = vgui.Create("DButton", weaponModelPanel)
+    but:SetSize(weaponModelPanel:GetWide(), weaponModelPanel:GetTall())
+    but:SetPos(0, 0)
     but:SetText("")
     but.DoClick = function()
         surface.PlaySound("buttons/lightswitch2.wav")
         --Opens weapon selection menu, can quick-purchase weapons from here instead of from the shop
     end
     but.Paint = function()
+        draw.SimpleTextOutlined(self.wepName, "DermaDefault", but:GetWide() / 2, but:GetTall() / 2, Color(255, 255, 255), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER, 1, Color(0, 0, 0))
         surface.SetDrawColor(175, 175, 175)
         surface.DrawOutlinedRect(1, 1, but:GetWide() - 1, but:GetTall() - 1)
         if but.hover then
             surface.SetDrawColor(255, 255, 255)
-            surface.DrawOutlinedRect(1, 1, self.attachmentButtonSize - 1, self.attachmentButtonSize - 1)
+            surface.DrawOutlinedRect(1, 1, but:GetWide() - 1, but:GetTall() - 1)
         end
         return true
     end
@@ -611,28 +611,6 @@ function weaponPanel:Finish() --I can't think of a function to otherwise put thi
     but.OnCursorExited = function()
         but.hover = false
     end
-
-    local weaponModelPanel = vgui.Create("DModelPanel", but)
-    weaponModelPanel:SetSize(but:GetWide(), but:GetTall())
-    weaponModelPanel:SetModel(weapons.GetStored(self.wepClass).WorldModel)
-    weaponModelPanel:SetCamPos(Vector(0, 35, 0)) --Courtesy of Spy
-    weaponModelPanel:SetLookAt(Vector(0, 0, 0)) --Courtesy of Spy
-    weaponModelPanel:SetFOV(90) --Courtesy of Spy
-    --weaponModelPanel:GetEntity():SetAngles
-    --weaponModelPanel:GetEntity():SetPos(Vector(-6, 13.5, -1))
-    weaponModelPanel:SetAmbientLight(Color(255, 255, 255))
-    weaponModelPanel.LayoutEntity = function() return true end --Disables rotation
-    --local mdlpnl = vgui.Create( "DModelPanel" )
-    
-    --[[local mn, mx = weaponModelPanel.Entity:GetRenderBounds()
-    local size = 0
-    size = math.max( size, math.abs( mn.x ) + math.abs( mx.x ) )
-    size = math.max( size, math.abs( mn.y ) + math.abs( mx.y ) )
-    size = math.max( size, math.abs( mn.z ) + math.abs( mx.z ) )
-    
-    weaponModelPanel:SetFOV( 45 )
-    weaponModelPanel:SetCamPos( Vector( size, size, size ) )
-    weaponModelPanel:SetLookAt( ( mn + mx ) * 0.5 )]]
 end
 
 vgui.Register("WeaponMenuPanel", weaponPanel, "DPanel")

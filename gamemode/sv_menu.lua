@@ -5,6 +5,14 @@ util.AddNetworkString("RequestTeamRolesCallback")
 util.AddNetworkString("RequestEnemyRoles")
 util.AddNetworkString("RequestEnemyRolesCallback")
 util.AddNetworkString("SendRoleToServer")
+util.AddNetworkString("RequestEntData")
+util.AddNetworkString("RequestEntDataCallback")
+util.AddNetworkString("")
+util.AddNetworkString("")
+util.AddNetworkString("")
+util.AddNetworkString("")
+util.AddNetworkString("")
+util.AddNetworkString("")
 util.AddNetworkString("")
 
 function GM:SortTeamRoles(ply, len)
@@ -50,4 +58,25 @@ net.Receive("SendRoleToServer", function(ply, len)
             end
         end
     end
+end)
+
+net.Receive("RequestEntData", function(len, ply)
+    print("SERVER RECEIVED RequestEntData")
+    local weaponClass = net.ReadString()
+    local neededInfo = net.ReadTable()
+    local tableToSend = {}
+    print(weaponClass, neededInfo, weapons.GetStored(weaponClass).projectileClass)
+    
+    local spawnedEnt = ents.Create(weapons.GetStored(weaponClass).projectileClass)
+    for k, v in pairs(neededInfo) do
+        print(k, v, "\n") if istable(v) then PrintTable(v) end
+        print("info to save:", v[1], spawnedEnt[v[1]])
+        if not v[5] then
+            tableToSend[v[1]] = spawnedEnt[v[1]]
+        end
+    end
+    
+    net.Start("RequestEntDataCallback")
+        net.WriteTable(tableToSend)
+    net.Send(ply)
 end)

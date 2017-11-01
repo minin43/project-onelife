@@ -117,25 +117,26 @@ print( "sh_loadoutmenu initialization..." )
 }]]
 
 GM.menuDisplayName = {
+	primaries = {
 		--Red Primaries
 		["cw_kk_ins2_ak74"] = 			"AK-74",
 		["cw_kk_ins2_akm"] = 			"AKM",
 		["cw_kk_ins2_aks74u"] = 		"AKs-74u",
 		["cw_kk_ins2_fnfal"] = 			"FN FAL",
-		["cw_kk_ins2_m1a1"] = 			"M1A1",
+		["cw_kk_ins2_m1a1"] = 			"M1A1 Carbine",
 		["cw_kk_ins2_m1a1_para"] = 		"M1A1 Elite",
 		["cw_kk_ins2_mosin"] = 			"Mosin Nagant",
 		["cw_kk_ins2_mp40"] = 			"MP-40",
 		["cw_kk_ins2_rpk"] = 			"RPK",
 		["cw_kk_ins2_sks"] = 			"SKS",
-		["cw_kk_ins2_sterling"] = 		"Sterling",
-		["cw_kk_ins2_toz"] = 			"TOZ",
+		["cw_kk_ins2_sterling"] = 		"Sterling L2A3",
+		["cw_kk_ins2_toz"] = 			"TOZ-194",
 		--Blue Primaires
 		["cw_kk_ins2_mini14"] = 		"AC-556", --AR
-		["cw_kk_ins2_galil"] = 			"Galil", --AR
-		["cw_kk_ins2_cstm_galil_ace"] = "Galil ACE", --AR
-		["cw_kk_ins2_mp5k"] = 			"HK MP5K", --SMG
-		["cw_kk_ins2_ump45"] = 			"HK UMP .45", --SMG
+		["cw_kk_ins2_galil"] = 			"IMI Galil", --AR
+		["cw_kk_ins2_cstm_galil_ace"] = "IMI Galil ACE", --AR
+		["cw_kk_ins2_mp5k"] = 			"H&K MP5K", --SMG
+		["cw_kk_ins2_ump45"] = 			"H&K UMP .45", --SMG
 		["cw_kk_ins2_l1a1"] = 			"L1A1", --DMR
 		["cw_kk_ins2_m14"] = 			"M14 EBR", --DMR
 		["cw_kk_ins2_m16a4"] = 			"M16A4", --AR
@@ -145,29 +146,33 @@ GM.menuDisplayName = {
 		["cw_kk_ins2_m590"] = 			"M590", --SG
 		["cw_kk_ins2_mk18"] = 			"MK18", --AR
 		--Extra Primaries
-		["cw_kk_ins2_cstm_aug"] = 		"AUG",
+		["cw_kk_ins2_cstm_aug"] = 		"Steyr AUG",
 		["cw_kk_ins2_cstm_colt"] = 		"Colt",
-		["cw_kk_ins2_cstm_famas"] = 	"Famas",
+		["cw_kk_ins2_cstm_famas"] = 	"F1 Famas",
 		["cw_kk_ins2_cstm_g36c"] = 		"G36C",
 		["cw_kk_ins2_cstm_kriss"] = 	"Kriss Vector",
 		["cw_kk_ins2_cstm_ksg"] = 		"KSG-12",
 		["cw_kk_ins2_cstm_l85"] = 		"L85A2",
 		["cw_kk_ins2_cstm_m14"] = 		"M14 Classic",
-		["cw_kk_ins2_cstm_m500"] = 		"M500",
-		["cw_kk_ins2_cstm_mp5a4"] = 	"MP5A4",
-		["cw_kk_ins2_cstm_mp7"] = 		"MP7",
-		["cw_kk_ins2_cstm_scar"] = 		"Scar-H",
-		["cw_kk_ins2_cstm_spas12"] = 	"Spas-12",
-		["cw_kk_ins2_cstm_uzi"] = 		"Uzi",
+		["cw_kk_ins2_cstm_m500"] = 		"Mossberg 500",
+		["cw_kk_ins2_cstm_mp5a4"] = 	"H&K MP5A4",
+		["cw_kk_ins2_cstm_mp7"] = 		"H&K MP7",
+		["cw_kk_ins2_cstm_scar"] = 		"SCAR-H",
+		["cw_kk_ins2_cstm_spas12"] = 	"SPAS-12",
+		["cw_kk_ins2_cstm_uzi"] = 		"Mini Uzi"
+	},
+	secondaries = {
 		--Secondaries
 		["cw_kk_ins2_m1911"] = 			"M1911",
 		["cw_kk_ins2_makarov"] = 		"Makarov",
-		["cw_kk_ins2_revolver"] = 		"Model 10",
+		["cw_kk_ins2_revolver"] = 		"M&W Model 10",
 		["cw_kk_ins2_m9"] = 			"Beretta M9",
-		["cw_kk_ins2_m45"] = 			"M45",
+		["cw_kk_ins2_m45"] = 			"MEU(SOC) .45",
 		--Extra Secondaries
 		["cw_kk_ins2_cstm_cobra"] = 	"S&W Cobra",
 		["cw_kk_ins2_cstm_g19"] = 		"Glock 19",
+	},
+	equipment = {
 		--Equipment
 		["cw_kk_ins2_nade_f1"] = 		"F1 Frag",
 		["cw_kk_ins2_nade_m67"] = 		"M67 Frag",
@@ -181,6 +186,7 @@ GM.menuDisplayName = {
 		["cw_kk_ins2_at4"] = 			"AT-4",
 		--"cw_kk_ins2_gp25" = 			"GP-25 Grenade Launcher",
 		["cw_kk_ins2_p2a1"] = 			"P2A1 Flare Gun" --This is the flare gun, for night maps, I guess
+	}
 }
 
 if CLIENT then

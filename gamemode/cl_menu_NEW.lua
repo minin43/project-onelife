@@ -22,9 +22,66 @@
 } )
 https://wiki.garrysmod.com/page/surface/CreateFont
 
-local bought = Material( "tdm/ic_done_white_24dp.png", "noclamp smooth" )
+local bought = Material( "tdm/ic_done_white_24dp.png", "noclamp "smooth"" )
 https://wiki.garrysmod.com/page/Global/Material
 ]]
+
+surface.CreateFont("TestFont1", {
+	font = "Emotion Engine",
+	size = 13,
+	weight = 500,
+	antialias = true
+})
+
+surface.CreateFont("TestFont2", {
+	font = "Gamestation Display",
+	size = 13,
+	weight = 500,
+	antialias = true
+})
+
+surface.CreateFont("TestFont3", {
+	font = "BankGothic",
+	size = 18,
+	weight = 500,
+	antialias = true
+})
+
+surface.CreateFont("TestFont3Small", {
+	font = "BankGothic",
+	size = 12,
+	weight = 500,
+	antialias = true
+})
+
+surface.CreateFont("TestFont3Underlined", {
+	font = "BankGothic",
+	size = 18,
+	weight = 500,
+	antialias = true,
+	underline = true
+})
+
+surface.CreateFont("TestFont3Large", {
+	font = "BankGothic",
+	size = 30,
+	weight = 500,
+	antialias = true
+})
+
+surface.CreateFont("TestFont4", {
+	font = "Imagine Font",
+	size = 13,
+	weight = 500,
+	antialias = true
+})
+
+surface.CreateFont("TestFont5", {
+	font = "BF4 Numbers",
+	size = 20,
+	weight = 500,
+	antialias = true
+})
 
 -- http://lua-users.org/wiki/FormattingNumbers
 local function comma_value( amount )
@@ -38,15 +95,50 @@ local function comma_value( amount )
 	return formatted
 end
 
---[[hook.Add("InitPostEntity", "PrecacheWeaponModelsToPreventInitialMenuOpeningLag", function() --DISABLED until I stop getting those client errors
-    for k, v in pairs(weapons.GetList()) do
-		util.PrecacheModel( v.WorldModel )
+hook.Add("InitPostEntity", "PrecacheWeaponModelsToPreventInitialMenuOpeningLag", function() --DISABLED until I stop getting those client errors
+	for k, v in pairs(weapons.GetList()) do
+		if v.WorldModel then
+			util.PrecacheModel( v.WorldModel )
+		end
 	end
-end)]]
+end)
 
-GM.teamNumberToName = {"redTeamName", "blueTeamName", "soloTeamName"}
+GM.teamNumberToName = {"redTeamName", "blueTeamName", "soloTeamName"} --This could be a part of the team table...
 
-function GM:LoadoutMenu()
+hook.Add("PostGamemodeLoaded", "AddIcons", function()
+	--Have to do this in a post-gamemode-loaded hook because apparently our Roles table wouldn't have been created at this point otherwise
+	GAMEMODE.weaponToIcon = {}
+	GAMEMODE.weaponToIcon[GAMEMODE.Roles[1].roleDescriptionExpanded[1][1]] = Material("menu/weapon_icons/assaultrifle_icon.png", "smooth")
+	GAMEMODE.weaponToIcon[GAMEMODE.Roles[1].roleDescriptionExpanded[2][1]] = Material("menu/weapon_icons/smg_icon.png", "smooth")
+	GAMEMODE.weaponToIcon[GAMEMODE.Roles[1].roleDescriptionExpanded[3][1]] = Material("menu/weapon_icons/shotgun_icon.png", "smooth")
+	GAMEMODE.weaponToIcon[GAMEMODE.Roles[1].roleDescriptionExpanded[4][1]] = Material("menu/role_icons/role_support_icon_fixed.png", "smooth")
+	GAMEMODE.weaponToIcon[GAMEMODE.Roles[1].roleDescriptionExpanded[5][1]] = Material("menu/weapon_icons/dmr_icon.png", "smooth")
+	GAMEMODE.weaponToIcon[GAMEMODE.Roles[1].roleDescriptionExpanded[6][1]] = Material("menu/weapon_icons/sniper_icon.png", "smooth")
+	GAMEMODE.weaponToIcon[GAMEMODE.Roles[1].roleDescriptionExpanded[7][1]] = Material("menu/weapon_icons/frag_grenade_icon.png", "smooth")
+	GAMEMODE.weaponToIcon[GAMEMODE.Roles[1].roleDescriptionExpanded[8][1]] = Material("menu/weapon_icons/flash_grenade_icon.png", "smooth")
+	GAMEMODE.weaponToIcon[GAMEMODE.Roles[1].roleDescriptionExpanded[9][1]] = Material("menu/weapon_icons/smoke_grenade_icon.png", "smooth")
+	GAMEMODE.weaponToIcon[GAMEMODE.Roles[1].roleDescriptionExpanded[10][1]] = Material("menu/weapon_icons/fire_grenade_icon.png", "smooth")
+	GAMEMODE.weaponToIcon[GAMEMODE.Roles[1].roleDescriptionExpanded[11][1]] = Material("menu/weapon_icons/remote_icon.png", "smooth")
+	GAMEMODE.weaponToIcon[GAMEMODE.Roles[1].roleDescriptionExpanded[12][1]] = Material("menu/weapon_icons/launcher_icon.png", "smooth")
+	
+	--Doesn't need to be here but for kept here anyway
+	GAMEMODE.armorToIcon = {
+		healthScaling = Material("menu/armor_icons/health_icon.png", "smooth"),
+		movementScaling = {
+			{"Walk Speed", Material("menu/armor_icons/walk_icon.png", "smooth")},
+			{"Run Speed", Material("menu/armor_icons/run_icon.png", "smooth")},
+			{"Jump Power", Material("menu/armor_icons/jump_icon.png", "smooth")}
+		},
+		damageScaling = {
+			{"Head Damage", Material("menu/armor_icons/head_icon.png", "smooth")},
+			{"Chest Damage", Material("menu/armor_icons/chest_icon.png", "smooth")},
+			{"Arm Damage", Material("menu/armor_icons/arm_icon.png", "smooth")},
+			{"Leg Damage", Material("menu/armor_icons/leg_icon.png", "smooth")}
+		}
+	}
+end)
+
+function GM:LoadoutMenu(role, roleNotNeeded)
 	if self.Main and self.Main:IsValid() then return end
 
 	if LocalPlayer():Team() == 1 then
@@ -57,16 +149,20 @@ function GM:LoadoutMenu()
 		self.myTeam = self.soloTeam
 	end
 
-	if not self.roleMainButtonNumber then
+	if role then
+		self.myRole = role
+	end
+	if not self.myRole then
 		self:RoleSelectionMenu()
 		return
 	end
 
-	if not self.playerLevel then
+	--[[if not self.playerLevel then
         net.Start("RequestLevel")
 		net.SendToServer()
 		net.Receive("RequestLevelCallback", function(len, ply)
 			self.playerLevel = tonumber(net.ReadString())
+			self.playerInfoMainLevelText = markup.Parse("<font=TestFont3Large>Level: <colour=" .. self.myTeam.menuTeamColorLightAccent.r .. "," .. self.myTeam.menuTeamColorLightAccent.g .. "," .. self.myTeam.menuTeamColorLightAccent.b .. ">" .. self.playerLevel .. "</colour></font>")			
 		end)
     end
     if not self.playerMoney then
@@ -74,45 +170,137 @@ function GM:LoadoutMenu()
 		net.SendToServer()
 		net.Receive("RequestMoneyCallback", function()
 			self.playerMoney = tonumber(net.ReadString())
+			self.playerInfoMainMoneyText = markup.Parse(("<font=TestFont3Large>Cash: $<colour=" .. self.myTeam.menuTeamColorLightAccent.r .. "," .. self.myTeam.menuTeamColorLightAccent.g .. "," .. self.myTeam.menuTeamColorLightAccent.b .. ">" .. self.playerMoney .. "</colour></font>"))
 		end)
-	end
+	end]]
+
+	net.Start("RequestLevel")
+	net.SendToServer()
+	net.Receive("RequestLevelCallback", function(len, ply)
+		self.playerLevel = tonumber(net.ReadString())
+		self.playerInfoMainLevelText = markup.Parse("<font=DermaLarge>Level: <colour=" .. self.myTeam.menuTeamColorLightAccent.r .. "," .. self.myTeam.menuTeamColorLightAccent.g .. "," .. self.myTeam.menuTeamColorLightAccent.b .. ">" .. self.playerLevel .. "</colour></font>")			
+	end)
+
+	net.Start("RequestMoney")
+	net.SendToServer()
+	net.Receive("RequestMoneyCallback", function()
+		self.playerMoney = tonumber(net.ReadString())
+		self.playerInfoMainMoneyText = markup.Parse(("<font=DermaLarge>Cash: $<colour=" .. self.myTeam.menuTeamColorLightAccent.r .. "," .. self.myTeam.menuTeamColorLightAccent.g .. "," .. self.myTeam.menuTeamColorLightAccent.b .. ">" .. comma_value(self.playerMoney) .. "</colour></font>"))
+	end)
 
 	self.Main = vgui.Create("DFrame")
-	self.Main:SetSize(800, 600)
+	self.Main:SetSize(800, 400)
 	self.Main:SetTitle("")
 	self.Main:SetVisible(true)
 	self.Main:SetDraggable(false)
 	self.Main:ShowCloseButton(false)
 	self.Main:MakePopup()
 	self.Main:Center()
+	self.MainX, self.MainY = self.Main:GetPos()
     self.Main.Paint = function()
-		--Derma_DrawBackgroundBlur(self.Main, CurTime())
-		surface.SetDrawColor(0, 0, 0, 250)
-        surface.DrawRect(0, 0, self.Main:GetWide(), self.Main:GetTall())
+		surface.SetDrawColor(self.myTeam.menuTeamColorLightAccent.r, self.myTeam.menuTeamColorLightAccent.g, self.myTeam.menuTeamColorLightAccent.b)
+		surface.DrawRect(0, 0, self.Main:GetWide(), self.Main:GetTall())
+
+		--surface.SetDrawColor(self.myTeam.menuTeamColorDarkAccent.r, self.myTeam.menuTeamColorDarkAccent.g, self.myTeam.menuTeamColorDarkAccent.b)
+		--surface.DrawRect(0, 0, self.Main:GetWide(), 50 + 64 + 4)
+		draw.RoundedBox(8, 0, 0, self.Main:GetWide(), 50 + 64 + 4, Color(self.myTeam.menuTeamColorDarkAccent.r, self.myTeam.menuTeamColorDarkAccent.g, self.myTeam.menuTeamColorDarkAccent.b))
+
+		draw.SimpleText("Customize Your Loadout", "TestFont3Large", 13 / 2, 25, Color(self.myTeam.menuTeamColor.r, self.myTeam.menuTeamColor.g, self.myTeam.menuTeamColor.b), TEXT_ALIGN_LEFT, TEXT_ALIGN_CENTER)
+		surface.SetDrawColor(self.myTeam.menuTeamColor.r, self.myTeam.menuTeamColor.g, self.myTeam.menuTeamColor.b)
+		surface.DrawLine(6, 50, self.Main:GetWide() - 6, 50)
+
+		surface.SetDrawColor(self.myTeam.menuTeamColorAccent.r, self.myTeam.menuTeamColorAccent.g, self.myTeam.menuTeamColorAccent.b)
+		surface.DrawOutlinedRect(0, 0, self.Main:GetWide(), self.Main:GetTall())
     end
 	self.Main.Think = function()
+		self.MainX, self.MainY = self.Main:GetPos()
 		if self.Main:IsValid() then
 			self.Main:MakePopup()
 		end
 	end
+	print("MainX and MainY started:", self.MainX, self.MainY)
 
-	self.playerInfoMainPictureSize = 64
-	self.playerInfoMain = vgui.Create("DPanel", self.Main)
-	self.playerInfoMain:SetPos(0, 0)
+	self:LoadoutMenuExt()
+
+	surface.SetFont("TestFont3")
+	self.mainNewRoletextWide, self.mainNewRoletextTall = surface.GetTextSize(self.Roles[self.myRole][self.teamNumberToName[LocalPlayer():Team()]])
+	self.mainNewRole = vgui.Create("DButton", self.Main)
+	self.mainNewRole:SetSize(12 + self.mainNewRoletextWide, self.mainNewRoletextTall)
+	self.mainNewRole:SetPos(self.Main:GetWide() / 4 * 3 - self.mainNewRole:GetWide() / 2 - 10, 25 - self.mainNewRole:GetTall() / 2)
+	self.mainNewRole:SetText("")
+	self.mainNewRole.Paint = function()
+		local w, h = self.mainNewRole:GetSize()
+		
+		surface.SetDrawColor(self.myTeam.menuTeamColor.r, self.myTeam.menuTeamColor.g, self.myTeam.menuTeamColor.b)
+		surface.SetTexture(surface.GetTextureID("gui/center_gradient"))
+		surface.DrawTexturedRect(0, 0, w, h)
+		draw.SimpleText(self.Roles[self.myRole][self.teamNumberToName[LocalPlayer():Team()]], "TestFont3", w / 2, h / 2, Color(255, 255, 255, 150), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
+		
+		if self.mainNewRoleHover then
+			draw.SimpleText(self.Roles[self.myRole][self.teamNumberToName[LocalPlayer():Team()]], "TestFont3", w / 2, h / 2, Color(255, 255, 255), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
+			surface.SetDrawColor(self.myTeam.menuTeamColorAccent.r, self.myTeam.menuTeamColorAccent.g, self.myTeam.menuTeamColorAccent.b, 50)
+			surface.SetTexture(surface.GetTextureID("gui/center_gradient"))
+			surface.DrawTexturedRect(0, 0, w, h)
+		end
+	end
+	self.mainNewRole.DoClick = function()
+		surface.PlaySound("buttons/lightswitch2.wav")
+		self:RoleSelectionMenu()
+		self.Main:Remove()
+		self.mainNewRoleHover = false
+	end
+	self.mainNewRole.OnCursorEntered = function()
+		surface.PlaySound("garrysmod/ui_hover.wav")
+		self.mainNewRoleHover = true
+	end
+	self.mainNewRole.OnCursorExited = function()
+		self.mainNewRoleHover = false
+	end
+
+	self.mainExitButton = vgui.Create("DButton", self.Main)
+	self.mainExitButton:SetSize(20, 30)
+	self.mainExitButton:SetPos(self.Main:GetWide() - self.mainExitButton:GetWide() - 12, 25 - self.mainExitButton:GetTall() / 2)
+	self.mainExitButton:SetText("")
+	self.mainExitButton.Paint = function()
+		draw.SimpleText("X", "TestFont3Large", 0, 0, Color(175, 175, 175))
+		if self.mainExitButtonHover then
+			draw.SimpleText("X", "TestFont3Large", 0, 0, Color(self.myTeam.menuTeamColorLightAccent.r, self.myTeam.menuTeamColorLightAccent.g, self.myTeam.menuTeamColorLightAccent.b))
+		end
+	end
+	self.mainExitButton.DoClick = function() --Need to include functionality that disables this for first-joining players
+		self.Main:Remove()
+		surface.PlaySound("buttons/lightswitch2.wav")
+		self.mainExitButtonHover = false
+	end
+	self.mainExitButton.OnCursorEntered = function()
+		surface.PlaySound("garrysmod/ui_hover.wav")
+		self.mainExitButtonHover = true
+	end
+	self.mainExitButton.OnCursorExited = function()
+		self.mainExitButtonHover = false
+	end
+
+	self.playerInfoMainPictureSize = 64 --The font we're using for the Name and SteamID is 30 pixels tall, so with both rows together it's a base size of 60
+	self.playerInfoMain = vgui.Create("DPanel", self.Main) --This is the top bar panel below the title
+	self.playerInfoMain:SetPos(0, 50)
 	self.playerInfoMain:SetSize(self.Main:GetWide(), self.playerInfoMainPictureSize + 4)
 	self.playerInfoMainHalf = self.playerInfoMain:GetWide() / 2
 	self.playerInfoMain.Paint = function()
-		draw.SimpleText(LocalPlayer():Nick(), "DermaLarge", self.playerInfoMainPictureSize + 6, self.playerInfoMainPictureSize / 4, Color(255, 255, 255), TEXT_ALIGN_LEFT, TEXT_ALIGN_CENTER)
-		draw.SimpleText(LocalPlayer():SteamID(), "DermaLarge", self.playerInfoMainPictureSize + 6, self.playerInfoMainPictureSize * (3 / 4), Color(255, 255, 255), TEXT_ALIGN_LEFT, TEXT_ALIGN_CENTER)
-		draw.SimpleText("Role: " .. self.Roles[self.roleMainButtonNumber][self.teamNumberToName[LocalPlayer():Team()]], "DermaLarge", self.playerInfoMain:GetWide() / 2, self.playerInfoMainPictureSize / 4, Color( 255, 255, 255), TEXT_ALIGN_LEFT, TEXT_ALIGN_CENTER)
-		draw.SimpleText("Armor: " .. self.Roles[self.roleMainButtonNumber].armorRating.armorName, "DermaLarge", self.playerInfoMain:GetWide() / 2, self.playerInfoMainPictureSize * (3 / 4), Color( 255, 255, 255), TEXT_ALIGN_LEFT, TEXT_ALIGN_CENTER)
+		draw.SimpleText(LocalPlayer():Nick(), "DermaLarge", self.playerInfoMainPictureSize + 12, 2, Color(255, 255, 255), TEXT_ALIGN_LEFT, TEXT_ALIGN_TOP)
+		draw.SimpleText(LocalPlayer():SteamID(), "DermaLarge", self.playerInfoMainPictureSize + 12, self.playerInfoMain:GetTall() / 2 + 2, Color(255, 255, 255), TEXT_ALIGN_LEFT, TEXT_ALIGN_TOP)
+		if self.playerInfoMainLevelText then
+			self.playerInfoMainLevelText:Draw(self.playerInfoMain:GetWide() / 2, 2, TEXT_ALIGN_LEFT, TEXT_ALIGN_TOP)
+		end
+		if self.playerInfoMainMoneyText then
+			self.playerInfoMainMoneyText:Draw(self.playerInfoMain:GetWide() / 2, self.playerInfoMain:GetTall() / 2 + 2, TEXT_ALIGN_LEFT, TEXT_ALIGN_TOP)
+		end
 
-		surface.SetDrawColor(255, 255, 255)
+		surface.SetDrawColor(self.myTeam.menuTeamColor.r, self.myTeam.menuTeamColor.g, self.myTeam.menuTeamColor.b)
 		surface.DrawLine(self.playerInfoMain:GetWide() / 2 - 6, 2,  self.playerInfoMain:GetWide() / 2 - 6, self.playerInfoMain:GetTall() - 2)
 	end
 
 	self.playerInfoMainPicture = vgui.Create("AvatarImage", self.playerInfoMain)
-	self.playerInfoMainPicture:SetPos(2, 2)
+	self.playerInfoMainPicture:SetPos(6, 2)
 	self.playerInfoMainPicture:SetSize(self.playerInfoMainPictureSize, self.playerInfoMainPictureSize)
 	self.playerInfoMainPicture:SetPlayer(LocalPlayer(), 64)
 
@@ -122,18 +310,17 @@ function GM:LoadoutMenu()
 	self.playerInfoMainShop:SetText("")
 	self.playerInfoMainShop.DoClick = function()
 		surface.PlaySound("buttons/lightswitch2.wav")
-		--Insert shop menu function here
-		self.Main:Remove() --Just here temporarily
+		--self:ShopMenu()
 	end
 	self.playerInfoMainShop.Paint = function()
 		surface.SetDrawColor(175, 175, 175)
-		surface.SetMaterial(Material("something"))
+		surface.SetMaterial(Material("menu/shop_icon_fixed.png", "smooth")) --I know it's expensive but performance isn't a problem
 		surface.DrawTexturedRect(1, 1, self.playerInfoMainShop:GetWide() - 1, self.playerInfoMainShop:GetTall() - 1)
 		
 		if self.playerInfoMainShop.hover then
-			surface.SetDrawColor(255, 255, 255)
+			surface.SetDrawColor(self.myTeam.menuTeamColorLightAccent.r, self.myTeam.menuTeamColorLightAccent.g, self.myTeam.menuTeamColorLightAccent.b)
 			surface.DrawTexturedRect(1, 1, self.playerInfoMainShop:GetWide() - 1, self.playerInfoMainShop:GetTall() - 1)
-			surface.DrawOutlinedRect(0, 0, self.playerInfoMainShop:GetWide(), self.playerInfoMainShop:GetTall())
+			--surface.DrawOutlinedRect(0, 0, self.playerInfoMainShop:GetWide(), self.playerInfoMainShop:GetTall())
 		end
 	end
 	self.playerInfoMainShop.OnCursorEntered = function()
@@ -144,25 +331,92 @@ function GM:LoadoutMenu()
 		self.playerInfoMainShop.hover = false
 	end
 
-	self.weaponPanelHeight = 150
+	--self.weaponPanelHeight = 50 + self.playerInfoMain:GetTall()
+	self.weaponPanelHeight = (self.Main:GetTall() - self.playerInfoMain:GetTall() - 50) / 2 --= 
 	self.playerInfoMainPrimary = vgui.Create("WeaponMenuPanel", self.Main)
-	self.playerInfoMainPrimary:SetSize(self.Main:GetWide(), self.weaponPanelHeight)
-	self.playerInfoMainPrimary:SetPos(0, self.weaponPanelHeight)
-	self.playerInfoMainPrimary:SetWep("cw_kk_ins2_ak74", "primary")
-	self.playerInfoMainPrimary:SetAttach("kk_ins2_aimpoint", "kk_ins2_pbs5", nil, nil, "kk_ins2_fnfal_skins")
+	self.playerInfoMainPrimary:SetSize(self.Main:GetWide() - 4, self.weaponPanelHeight)
+	self.playerInfoMainPrimary:SetPos(2, self.playerInfoMain:GetTall() + 50 + 1)
+	self.playerInfoMainPrimary:SetAttachmentWide(65)
+	self.playerInfoMainPrimary:SetModelWide(225)
+	self.playerInfoMainPrimary:SetFont("TestFont3Small")
+	self.playerInfoMainPrimary:SetWep("cw_kk_ins2_ak74")
+	self.playerInfoMainPrimary:SetAttach({"kk_ins2_aimpoint", "kk_ins2_pbs5", "kk_ins2_fnfal_skins"})
 	self.playerInfoMainPrimary:Finish()
 
 	self.playerInfoMainSecondary = vgui.Create("WeaponMenuPanel", self.Main)
-	self.playerInfoMainSecondary:SetSize(self.Main:GetWide(), self.weaponPanelHeight)
-	self.playerInfoMainSecondary:SetPos(0, self.weaponPanelHeight * 2 + 1)
-	self.playerInfoMainSecondary:SetWep("cw_kk_ins2_m9", "secondary")
+	self.playerInfoMainSecondary:SetSize(self.Main:GetWide() / 3 * 2 - 4, self.weaponPanelHeight - 4)
+	self.playerInfoMainSecondary:SetPos(2, self.playerInfoMain:GetTall() + 50 + self.weaponPanelHeight + 2)
+	self.playerInfoMainSecondary:SetAttachmentWide(65)
+	self.playerInfoMainSecondary:SetFont("TestFont3Small")
+	self.playerInfoMainSecondary:SetWep("cw_kk_ins2_m9")
+	self.playerInfoMainSecondary:SetAttach({"kk_ins2_suppressor_pistol", "kk_ins2_lam", "am_matchgrade"})
 	self.playerInfoMainSecondary:Finish()
 
 	self.playerInfoMainEquipment = vgui.Create("WeaponMenuPanel", self.Main)
-	self.playerInfoMainEquipment:SetSize(self.Main:GetWide(), self.weaponPanelHeight)
-	self.playerInfoMainEquipment:SetPos(0, self.weaponPanelHeight * 3 + 2)
-	self.playerInfoMainEquipment:SetWep("cw_kk_ins2_nade_m67", "equipment")
+	self.playerInfoMainEquipment:SetSize(self.Main:GetWide() / 3, self.weaponPanelHeight - 4)
+	self.playerInfoMainEquipment:SetPos(self.Main:GetWide() / 3 * 2 - 1, self.playerInfoMain:GetTall() + 50 + self.weaponPanelHeight + 2)
+	self.playerInfoMainEquipment:SetModelWide(100)
+	self.playerInfoMainEquipment:SetFont("TestFont3Small")
+	self.playerInfoMainEquipment:SetWep("cw_kk_ins2_nade_c4", "equipment")
 	self.playerInfoMainEquipment:Finish()
+end
+
+function GM:LoadoutMenuExt()
+
+	self.weaponMain = vgui.Create("DFrame")
+	self.weaponMain:SetSize(self.Main:GetWide(), 300)
+	self.weaponMain:SetPos(self.MainX, self.MainY + self.Main:GetTall() + 6)
+	self.weaponMain:SetTitle("")
+	self.weaponMain:SetVisible(true)
+	self.weaponMain:SetDraggable(false)
+	self.weaponMain:ShowCloseButton(false)
+	self.weaponMain:MakePopup()
+	self.Main:MoveTo(self.MainX, self.MainY - (self.weaponMain:GetTall() / 2), 0, 0, 0)
+	self.weaponMain:MoveTo(self.MainX, self.MainY + self.Main:GetTall() - (self.weaponMain:GetTall() / 2) + 6, 0, 0, 0)
+	self.weaponMain.Paint = function()
+		surface.SetDrawColor(self.myTeam.menuTeamColorDarkAccent.r, self.myTeam.menuTeamColorDarkAccent.g, self.myTeam.menuTeamColorDarkAccent.b)
+		surface.DrawRect(0, 0, self.weaponMain:GetWide(), self.weaponMain:GetTall())
+
+		--surface.SetDrawColor(self.myTeam.menuTeamColorDarkAccent.r, self.myTeam.menuTeamColorDarkAccent.g, self.myTeam.menuTeamColorDarkAccent.b)
+		--surface.DrawRect(0, 0, self.weaponMain:GetWide(), 50 + 64 + 4)
+
+		surface.SetDrawColor(self.myTeam.menuTeamColor.r, self.myTeam.menuTeamColor.g, self.myTeam.menuTeamColor.b)
+		draw.SimpleText("Available Unlocked Weapons", "TestFont3Large", 13 / 2, 25, Color(self.myTeam.menuTeamColor.r, self.myTeam.menuTeamColor.g, self.myTeam.menuTeamColor.b), TEXT_ALIGN_LEFT, TEXT_ALIGN_CENTER)
+		surface.DrawLine(6, 50, self.weaponMain:GetWide() - 6, 50) --horizontal underline for frame title
+
+		draw.SimpleText("Primary Weapons", "TestFont3", self.weaponMain:GetWide() / 3 / 2, 50 + 9 + 2, Color(self.myTeam.menuTeamColor.r, self.myTeam.menuTeamColor.g, self.myTeam.menuTeamColor.b), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
+		surface.DrawLine(12, 50 + 18 + 4, self.weaponMain:GetWide() / 3 - 12, 50 + 18 + 4) --horizontal underline for Primary Weapons title
+
+		draw.SimpleText("Secondary Weapons", "TestFont3", self.weaponMain:GetWide() / 3 + (self.weaponMain:GetWide() / 3 / 2), 50 + 9 + 2, Color(self.myTeam.menuTeamColor.r, self.myTeam.menuTeamColor.g, self.myTeam.menuTeamColor.b), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
+		surface.DrawLine(self.weaponMain:GetWide() / 3 + 12, 50 + 18 + 4, self.weaponMain:GetWide() / 3 * 2 - 12, 50 + 18 + 4) --horizontal underline for Secondary Weapons title
+
+		draw.SimpleText("Equipment", "TestFont3", self.weaponMain:GetWide() / 3 * 2 + (self.weaponMain:GetWide() / 3 / 2), 50 + 9 + 2, Color(self.myTeam.menuTeamColor.r, self.myTeam.menuTeamColor.g, self.myTeam.menuTeamColor.b), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
+		surface.DrawLine(self.weaponMain:GetWide() / 3 * 2 + 12, 50 + 18 + 4, self.weaponMain:GetWide() - 12, 50 + 18 + 4) --horizontal underline for Equipment title
+
+		surface.SetDrawColor(self.myTeam.menuTeamColorAccent.r, self.myTeam.menuTeamColorAccent.g, self.myTeam.menuTeamColorAccent.b)
+		surface.DrawLine(self.weaponMain:GetWide() / 3, 50 + 6, self.weaponMain:GetWide() / 3, self.weaponMain:GetTall() - 6) --vertical line separating primary/secondary weapons list
+		surface.DrawLine(self.weaponMain:GetWide() / 3 * 2, 50 + 6, self.weaponMain:GetWide() / 3 * 2, self.weaponMain:GetTall() - 6) --vertical line separating secondary/equipment weapons list
+
+		surface.SetDrawColor(self.myTeam.menuTeamColorAccent.r, self.myTeam.menuTeamColorAccent.g, self.myTeam.menuTeamColorAccent.b)
+		surface.DrawOutlinedRect(0, 0, self.weaponMain:GetWide(), self.weaponMain:GetTall())
+	end
+	self.weaponMain.Think = function()
+		if not self.Main or not self.Main:IsValid() then
+			self.weaponMain:Remove()
+		end
+		if self.weaponMain:IsValid() then
+			self.weaponMain:MakePopup()
+		end
+	end
+
+	self.weaponMainPrimaryList = vgui.Create("DScrollPanel", self.weaponMain)
+	self.weaponMainPrimaryList:SetSize()
+	self.weaponMainPrimaryList:SetPos()
+
+	self.weaponMainSecondaryList = vgui.Create("DScrollPanel", self.weaponMain)
+
+	self.weaponMainEquipmentList = vgui.Create("DScrollPanel", self.weaponMain)
+
 end
 
 --//Similar to the menu system of Insurgency, players will select their roles in a separate menu
@@ -175,7 +429,7 @@ function GM:RoleSelectionMenu()
 	net.SendToServer()
 
 	self.roleMain = vgui.Create("DFrame")
-	self.roleMain:SetSize(800, 600)
+	self.roleMain:SetSize(850, 170)
 	self.roleMain:SetTitle("")
 	self.roleMain:SetVisible(true)
 	self.roleMain:SetDraggable(false)
@@ -185,8 +439,15 @@ function GM:RoleSelectionMenu()
 	self.roleMainX, self.roleMainY = self.roleMain:GetPos()
     self.roleMain.Paint = function()
 		--Derma_DrawBackgroundBlur(self.roleMain, CurTime())
-		surface.SetDrawColor(self.myTeam.menuTeamColor.r, self.myTeam.menuTeamColor.g, self.myTeam.menuTeamColor.b, 220)
-        surface.DrawRect(0, 0, self.roleMain:GetWide(), self.roleMain:GetTall())
+		surface.SetDrawColor(self.myTeam.menuTeamColorDarkAccent.r, self.myTeam.menuTeamColorDarkAccent.g, self.myTeam.menuTeamColorDarkAccent.b)
+		surface.DrawRect(0, 0, self.roleMain:GetWide(), self.roleMain:GetTall())
+
+		draw.SimpleText("Select A Role", "TestFont3Large", 13 / 2, 25, Color(self.myTeam.menuTeamColor.r, self.myTeam.menuTeamColor.g, self.myTeam.menuTeamColor.b), TEXT_ALIGN_LEFT, TEXT_ALIGN_CENTER)
+		surface.SetDrawColor(self.myTeam.menuTeamColor.r, self.myTeam.menuTeamColor.g, self.myTeam.menuTeamColor.b)
+		surface.DrawLine(6, 50, self.roleMain:GetWide() - 6, 50)
+
+		surface.SetDrawColor(self.myTeam.menuTeamColorAccent.r, self.myTeam.menuTeamColorAccent.g, self.myTeam.menuTeamColorAccent.b)
+		surface.DrawOutlinedRect(0, 0, self.roleMain:GetWide(), self.roleMain:GetTall())
     end
 	self.roleMain.Think = function()
 		if self.roleMain:IsValid() then
@@ -194,530 +455,376 @@ function GM:RoleSelectionMenu()
 		end
 	end
 
-	self.roleMainBottomBarHeight = 50
+	self.roleMainInfo = vgui.Create("DButton", self.roleMain)
+	self.roleMainInfoSize = 50 - 12 --Top bar height - (spacer length * 2)
+	self.roleMainInfo:SetSize(self.roleMainInfoSize, self.roleMainInfoSize)
+	self.roleMainInfo:SetPos(self.roleMain:GetWide() - self.roleMainInfoSize - 6, 6) --6 = spacer length
+	self.roleMainInfo:SetText("")
+	self.roleMainInfoIcon = Material("menu/information_icon_fixed.png", "smooth")
+	self.roleMainInfo.Paint = function()
+		local w, h = self.roleMainInfo:GetSize()
 
-	self.roleMainDesc = vgui.Create("DButton", self.roleMain)
-	self.roleMainDesc:SetPos(0, self.roleMain:GetTall() - self.roleMainBottomBarHeight)
-	self.roleMainDesc:SetSize(self.roleMain:GetWide() / 2, self.roleMainBottomBarHeight)
-	self.roleMainDesc:SetText("")
-	self.roleMainDesc.Paint = function()
-		local w, h = self.roleMainDesc:GetSize()
-		surface.SetDrawColor(self.myTeam.menuTeamColorLightAccent.r, self.myTeam.menuTeamColorLightAccent.g, self.myTeam.menuTeamColorLightAccent.b)
-		surface.DrawRect(1, 1, w - 2, h - 2)
-		if self.roleMainButtonNumber then
-			draw.SimpleText(self.Roles[self.roleMainButtonNumber]["roleDescription"], "DermaDefault", w / 2, h / 2, Color(0, 0, 0), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
-		else
-			draw.SimpleText("Role Description: None selected.", "DermaDefault", w / 2, h / 2, Color(0, 0, 0), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
-		end
+		surface.SetDrawColor(175, 175, 175)
+		surface.SetMaterial(self.roleMainInfoIcon)
+		surface.DrawTexturedRect(0, 0, w, h)
 
-		if self.roleMainDescHover then
-			surface.SetDrawColor(255, 255, 255)
-            surface.DrawOutlinedRect(0, 0, w, h)
+		if self.roleMainInfoHover then
+			surface.SetDrawColor(self.myTeam.menuTeamColorLightAccent.r, self.myTeam.menuTeamColorLightAccent.g, self.myTeam.menuTeamColorLightAccent.b)
+			surface.DrawTexturedRect(0, 0, w, h)
 		end
 	end
-	self.roleMainDesc.DoClick = function()
-		if not self.roleMainButtonNumber then return end
+	self.roleMainInfoPanelText = "Select one of the available roles to see more information about it, and to confirm your selection. You'll next get to customize your loadout. A new role unlocks after every level-up, and each role is a bit different."
+	self.roleMainInfo.DoClick = function()
 		surface.PlaySound("buttons/lightswitch2.wav")
-		self.roleMain:Remove()
-		self:RoleDescriptions(self.roleMainButtonNumber)
+		if not self.roleMainInfoPanel or not self.roleMainInfoPanel:IsValid() then
+			local w, h = self.roleMain:GetPos()
+			self.roleMainInfoPanel = vgui.Create("InfoPanel")
+			self.roleMainInfoPanel:SetParent(self.roleMain)
+			self.roleMainInfoPanel:SetPos(w + self.roleMain:GetWide() + 6, h)
+			self.roleMainInfoPanel:SetSize(310, self.roleMain:GetTall())
+			self.roleMainInfoPanel:SetText(self.roleMainInfoPanelText, "How this works...")
+			self.roleMainInfoPanel:SetFont("TestFont3", "TestFont3Large")
+			self.roleMainInfoPanel:SetColor(self.myTeam)
+			self.roleMainInfoPanel:SetTitle("")
+			self.roleMainInfoPanel:SetVisible(true)
+			self.roleMainInfoPanel:SetDraggable(false)
+			self.roleMainInfoPanel:ShowCloseButton(false)
+			self.roleMainInfoPanel:MakePopup()
+		else
+			self.roleMainInfoPanel:Remove()
+			self.roleMainInfoPanel = nil
+		end
 	end
-	self.roleMainDesc.OnCursorEntered = function()
-		if not self.roleMainButtonNumber then return end
-		self.roleMainDescHover = true
+	self.roleMainInfo.OnCursorEntered = function()
 		surface.PlaySound("garrysmod/ui_hover.wav")
+		self.roleMainInfoHover = true
 	end
-	self.roleMainDesc.OnCursorExited = function()
-		self.roleMainDescHover = false
+	self.roleMainInfo.OnCursorExited = function()
+		self.roleMainInfoHover = false
 	end
 
-	self.roleMainArmor = vgui.Create("DButton", self.roleMain)
-	self.roleMainArmor:SetPos(self.roleMain:GetWide() / 2, self.roleMain:GetTall() - self.roleMainBottomBarHeight)
-	self.roleMainArmor:SetSize(self.roleMain:GetWide() / 2, self.roleMainBottomBarHeight)
-	self.roleMainArmor:SetText("")
-	self.roleMainArmor.Paint = function()
-		local w, h = self.roleMainArmor:GetSize()
-		surface.SetDrawColor(self.myTeam.menuTeamColorLightAccent.r, self.myTeam.menuTeamColorLightAccent.g, self.myTeam.menuTeamColorLightAccent.b)
-		surface.DrawRect(1, 1, w - 2, h - 2)
-		if self.roleMainButtonNumber then
-			draw.SimpleText("Armor Type: " .. self.Roles[self.roleMainButtonNumber]["armorRating"].armorName or "None", self.font, w / 2, h / 2, Color(0, 0, 0), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
-		else
-			draw.SimpleText("Armor type: None.", self.font, w / 2, h / 2, Color(0, 0, 0), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
-		end
-		if self.roleMainArmorHover then
-			surface.SetDrawColor(255, 255, 255)
-            surface.DrawOutlinedRect(0, 0, w, h)
-		end
-	end
-	self.roleMainArmor.DoClick = function()
-		if not self.roleMainButtonNumber then return end
-		surface.PlaySound("buttons/lightswitch2.wav")
-		self.roleMain:Remove()
-		self:ArmorDescription(self.roleMainButtonNumber)
-	end
-	self.roleMainArmor.OnCursorEntered = function()
-		if not self.roleMainButtonNumber then return end
-		self.roleMainArmorHover = true
-		surface.PlaySound("garrysmod/ui_hover.wav")
-	end
-	self.roleMainArmor.OnCursorExited = function()
-		self.roleMainArmorHover = false
-	end
-	
-	self.roleMainButtonWide = self.roleMain:GetWide() / 4
-	self.roleMainButtonWideSpacer = (self.roleMain:GetWide() - (self.roleMainButtonWide * 3)) / 4
-	self.roleMainButtonTall = (self.roleMain:GetTall() - self.roleMainBottomBarHeight) / 4
-	self.roleMainButtonTallSpacer = ((self.roleMain:GetTall() - self.roleMainBottomBarHeight) - (self.roleMainButtonTall * 3)) / 4
-	self.roleMainButtonPOS = {
-		[1] = {x = self.roleMainButtonWideSpacer, 										y = self.roleMainButtonTallSpacer},
-		[2] = {x = (self.roleMainButtonWideSpacer * 2) + self.roleMainButtonWide, 		y = self.roleMainButtonTallSpacer},
-		[3] = {x = (self.roleMainButtonWideSpacer * 3) + (self.roleMainButtonWide * 2), y = self.roleMainButtonTallSpacer},
-		[4] = {x = self.roleMainButtonWideSpacer, 										y = (self.roleMainButtonTallSpacer * 2) + self.roleMainButtonTall},
-		[5] = {x = (self.roleMainButtonWideSpacer * 2) + self.roleMainButtonWide, 		y = (self.roleMainButtonTallSpacer * 2) + self.roleMainButtonTall},
-		[6] = {x = (self.roleMainButtonWideSpacer * 3) + (self.roleMainButtonWide * 2), y = (self.roleMainButtonTallSpacer * 2) + self.roleMainButtonTall},
-		[7] = {x = self.roleMainButtonWideSpacer, 										y = (self.roleMainButtonTallSpacer * 3) + (self.roleMainButtonTall * 2)},
-		[8] = {x = (self.roleMainButtonWideSpacer * 2) + self.roleMainButtonWide, 		y = (self.roleMainButtonTallSpacer * 3) + (self.roleMainButtonTall * 2)},
-		[9] = {x = (self.roleMainButtonWideSpacer * 3) + (self.roleMainButtonWide * 2), y = (self.roleMainButtonTallSpacer * 3) + (self.roleMainButtonTall * 2)}
-	}
+	self.roleMainButtonWide = self.roleMain:GetWide() / (#self.Roles + 1)
+	self.roleMainButtonWideSpacer = (self.roleMain:GetWide() - (self.roleMainButtonWide * #self.Roles)) / (#self.Roles + 1)
+	self.roleMainButtonTall = self.roleMain:GetTall() - 50  - (6 * 2) -- 50 = top bar height, 6 = spacer length
+	self.roleMainButtonTallSpacer = 6
+
 	net.Receive("RequestLevelCallback", function(len, ply)
-		self.playerLevel = tonumber(net.ReadString()) or 1
-		local titleCounter = 0
-		for k, v in ipairs(self.roleMainButtonPOS) do
+		GAMEMODE.playerLevel = tonumber(net.ReadString()) or 1
+		for k, v in ipairs(GAMEMODE.Roles) do
 			local but = vgui.Create("RoleSelectionButton", self.roleMain, "but" .. k)
-			but:SetPos(self.roleMainButtonPOS[k].x, self.roleMainButtonPOS[k].y)
 			but:SetSize(self.roleMainButtonWide, self.roleMainButtonTall)
-			but:SetText(GAMEMODE.Roles[k - titleCounter][self.teamNumberToName[LocalPlayer():Team()]])
-			but:SetRole(k - titleCounter)
-			if k == 2 then
-				but:IsTitle(true)
-				titleCounter = titleCounter + 1
+			but:SetPos(self.roleMainButtonWideSpacer * k + self.roleMainButtonWide * (k - 1), self.roleMain:GetTall()  - self.roleMainButtonTall - self.roleMainButtonTallSpacer)
+			but:SetImageSize(self.roleMainButtonWide)
+			but:SetFont("TestFont3")
+			but:SetText(GAMEMODE.Roles[k][self.teamNumberToName[LocalPlayer():Team()]])
+			but:SetRole(k)
+			if k > GAMEMODE.playerLevel then 
+				but:IsLocked(true)
+			end
+		end
+	end)
+end
+
+function GM:RoleSelection(role, skipAnimation)
+	if (self.Main and self.Main:IsValid()) or (self.roleInfoMain and self.roleInfoMain:IsValid()) then return end
+
+	self.roleInfoMain = vgui.Create("DFrame")
+	self.roleInfoMain:SetSize(self.roleMain:GetWide(), 600)
+	if not skipAnimation then
+		self.roleInfoMain:SetPos(self.roleMainX, self.roleMainY + self.roleMain:GetTall() + 6) --6 = spacer length
+	else
+		self.roleInfoMain:SetPos(self.roleMainX, self.roleMainY - (self.roleInfoMain:GetTall() / 2) + self.roleMain:GetTall() + 6)
+	end
+	self.roleInfoMain:SetTitle("")
+	self.roleInfoMain:SetVisible(true)
+	self.roleInfoMain:SetDraggable(false)
+	self.roleInfoMain:ShowCloseButton(false)
+	self.roleInfoMain:MakePopup()
+	self.roleInfoMain.Paint = function()
+		surface.SetDrawColor(self.myTeam.menuTeamColorDarkAccent.r, self.myTeam.menuTeamColorDarkAccent.g, self.myTeam.menuTeamColorDarkAccent.b)
+		surface.DrawRect(0, 0, self.roleInfoMain:GetWide(), self.roleInfoMain:GetTall())
+
+		draw.SimpleText("Role Information:", "TestFont3Large", 13 / 2, 25, Color(self.myTeam.menuTeamColor.r, self.myTeam.menuTeamColor.g, self.myTeam.menuTeamColor.b), TEXT_ALIGN_LEFT, TEXT_ALIGN_CENTER)
+		surface.SetDrawColor(self.myTeam.menuTeamColor.r, self.myTeam.menuTeamColor.g, self.myTeam.menuTeamColor.b)
+		surface.DrawLine(6, 50, self.roleInfoMain:GetWide() - 6, 50)
+		surface.DrawLine(12, (self.roleInfoMain:GetTall() - 50) / 2 + 50, self.roleInfoMain:GetWide() - 12, (self.roleInfoMain:GetTall() - 50) / 2 + 50) --6 of course being the global spacer
+
+		surface.SetFont("TestFont3Large")
+		local titlewide, titletall = surface.GetTextSize("Role Information:")
+		draw.SimpleText(self.Roles[role][self.teamNumberToName[LocalPlayer():Team()]], "TestFont3Large", titlewide + 13 / 2 + 12, 25, Color(self.myTeam.menuTeamColorAccent.r, self.myTeam.menuTeamColorAccent.g, self.myTeam.menuTeamColorAccent.b), TEXT_ALIGN_LEFT, TEXT_ALIGN_CENTER)
+
+		surface.SetDrawColor(self.myTeam.menuTeamColorAccent.r, self.myTeam.menuTeamColorAccent.g, self.myTeam.menuTeamColorAccent.b)
+		surface.DrawOutlinedRect(0, 0, self.roleInfoMain:GetWide(), self.roleInfoMain:GetTall())
+
+		draw.SimpleText("Weapon Access", "TestFont3Underlined", 12, 50 + 6, Color(255, 255, 255), TEXT_ALIGN_LEFT, TEXT_ALIGN_TOP)
+		draw.SimpleText("Armor Information", "TestFont3Underlined", 12, (self.roleInfoMain:GetTall() - 50) / 2 + 50 + 6, Color(255, 255, 255), TEXT_ALIGN_LEFT, TEXT_ALIGN_TOP)
+	end
+	self.roleInfoMain.Think = function()
+		if not self.roleMain:IsValid() then
+			self.roleInfoMain:Remove()
+		end
+	end
+	if not skipAnimation then
+		self.roleMain:MoveTo(self.roleMainX, self.roleMainY - (self.roleInfoMain:GetTall() / 2), 1.5, 0, -1)
+		self.roleInfoMain:MoveTo(self.roleMainX, self.roleMainY - (self.roleInfoMain:GetTall() / 2) + self.roleMain:GetTall() + 6, 1.5, 0, -1)
+	end
+
+	self.roleInfoMainInfo = vgui.Create("DButton", self.roleInfoMain)
+	self.roleInfoMainInfoSize = 50 - 12 --Top bar height - (spacer length * 2)
+	self.roleInfoMainInfo:SetSize(self.roleInfoMainInfoSize, self.roleInfoMainInfoSize)
+	self.roleInfoMainInfo:SetPos(self.roleInfoMain:GetWide() - self.roleInfoMainInfoSize - 6, 6) --6 = spacer length
+	self.roleInfoMainInfo:SetText("")
+	self.roleInfoMainInfoIcon = Material("menu/information_icon_fixed.png", "smooth")
+	self.roleInfoMainInfo.Paint = function()
+		local w, h = self.roleInfoMainInfo:GetSize()
+
+		surface.SetDrawColor(175, 175, 175)
+		surface.SetMaterial(self.roleInfoMainInfoIcon)
+		surface.DrawTexturedRect(0, 0, w, h)
+
+		if self.roleInfoMainInfoHover then
+			surface.SetDrawColor(self.myTeam.menuTeamColorLightAccent.r, self.myTeam.menuTeamColorLightAccent.g, self.myTeam.menuTeamColorLightAccent.b)
+			surface.DrawTexturedRect(0, 0, w, h)
+		end
+	end
+	self.roleInfoMainInfo.DoClick = function()
+		surface.PlaySound("buttons/lightswitch2.wav")
+		if not self.roleInfoMainInfoPanel or not self.roleInfoMainInfoPanel:IsValid() then
+			local w, h = self.roleInfoMain:GetPos()
+			self.roleInfoMainInfoPanel = vgui.Create("InfoPanel")
+			self.roleInfoMainInfoPanel:SetPos(w + self.roleInfoMain:GetWide() + 6, h)
+			self.roleInfoMainInfoPanel:SetSize(310, self.roleInfoMain:GetTall() / 5)
+			self.roleInfoMainInfoPanel:SetText(self.Roles[role].roleDescription, "Role Description:")
+			self.roleInfoMainInfoPanel:SetFont("TestFont3", "TestFont3Large")
+			self.roleInfoMainInfoPanel:SetColor(self.myTeam)
+			self.roleInfoMainInfoPanel:SetParent(self.roleInfoMain)
+			self.roleInfoMainInfoPanel:SetTitle("")
+			self.roleInfoMainInfoPanel:SetVisible(true)
+			self.roleInfoMainInfoPanel:SetDraggable(false)
+			self.roleInfoMainInfoPanel:ShowCloseButton(false)
+			self.roleInfoMainInfoPanel:MakePopup()
+		else
+			self.roleInfoMainInfoPanel:Remove()
+			self.roleInfoMainInfoPanel = nil
+		end
+	end
+	self.roleInfoMainInfo.OnCursorEntered = function()
+		surface.PlaySound("garrysmod/ui_hover.wav")
+		self.roleInfoMainInfoHover = true
+	end
+	self.roleInfoMainInfo.OnCursorExited = function()
+		self.roleInfoMainInfoHover = false
+	end
+
+	self.roleInfoMainFinish = vgui.Create("DButton", self.roleInfoMain)
+	self.roleInfoMainFinish:SetSize(210, 20)
+	self.roleInfoMainFinish:SetPos(self.roleInfoMain:GetWide() / 2 - (self.roleInfoMainFinish:GetWide() / 2), self.roleInfoMain:GetTall() - self.roleInfoMainFinish:GetTall() - 12) --6 = spacer length
+	self.roleInfoMainFinish:SetText("")
+	self.roleInfoMainFinish.Paint = function()
+		local w, h = self.roleInfoMainFinish:GetSize()
+
+		surface.SetDrawColor(self.myTeam.menuTeamColor.r, self.myTeam.menuTeamColor.g, self.myTeam.menuTeamColor.b)
+		surface.SetTexture(surface.GetTextureID("gui/center_gradient"))
+		surface.DrawTexturedRect(0, 0, w, h)
+		draw.SimpleText("Confirm Role Choice", "TestFont3", w / 2, h / 2, Color(255, 255, 255, 150), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
+
+		if self.roleInfoMainFinishHover then
+			draw.SimpleText("Confirm Role Choice", "TestFont3", w / 2, h / 2, Color(255, 255, 255), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
+			surface.SetDrawColor(self.myTeam.menuTeamColorAccent.r, self.myTeam.menuTeamColorAccent.g, self.myTeam.menuTeamColorAccent.b, 50)
+			surface.SetTexture(surface.GetTextureID("gui/center_gradient"))
+			surface.DrawTexturedRect(0, 0, w, h)
+		end
+	end
+	self.roleInfoMainFinish.DoClick = function()
+		self:LoadoutMenu(role, true)
+		surface.PlaySound("buttons/lightswitch2.wav")
+		self.roleInfoMainFinishHover = false
+		self.roleMain:Remove()
+	end
+	self.roleInfoMainFinish.OnCursorEntered = function()
+		surface.PlaySound("garrysmod/ui_hover.wav")
+		self.roleInfoMainFinishHover = true
+	end
+	self.roleInfoMainFinish.OnCursorExited = function()
+		self.roleInfoMainFinishHover = false
+	end
+
+	--Not the best way to draw my icons for weapon availablility and armor information, but I didn't like working with custom vgui elements
+	for k, v in ipairs(self.Roles[role].roleDescriptionExpanded) do
+		local icon = vgui.Create("InfoIcon", self.roleInfoMain)
+		icon:SetSize(self.roleInfoMain:GetWide() / 4 - 6, ((self.roleInfoMain:GetTall() / 2 - 50) - 18 - 12) / 3)
+		icon:SetFont("TestFont3Small")
+		icon:SetText(v[1], v[2])
+		icon:SetColor(v[3])
+		icon:SetImg(self.weaponToIcon[v[1]], 64)
+		local baseYOffset = 50 + 12 + 18 --top bar + spacer + Section header height
+		if k < 4 then
+			icon:SetPos(12, baseYOffset + (6  * (k - 1)) + (icon:GetTall() * (k - 1)))
+		elseif k < 7 then
+			icon:SetPos(self.roleInfoMain:GetWide() / 4 + 6, baseYOffset + (6  * (k - 4)) + (icon:GetTall() * (k - 4)))
+		elseif k < 10 then
+			icon:SetPos(self.roleInfoMain:GetWide() / 4 * 2 + 6, baseYOffset + (6  * (k - 7)) + (icon:GetTall() * (k - 7)))
+		else
+			icon:SetPos(self.roleInfoMain:GetWide() / 4 * 3, baseYOffset + (6  * (k - 10)) + (icon:GetTall() * (k - 10)))
+		end
+	end
+
+	for k, v in pairs(self.Roles[role].armorRating) do
+		local baseYOffset = ((self.roleInfoMain:GetTall() - 50) / 2) + 50 + 12 + 18 --top half of self.roleInfoMain + top bar + spacer + Section header height
+		if isstring(v) then
+			local armorName = vgui.Create("DPanel", self.roleInfoMain)
+			armorName:SetSize(80, 12)
+			armorName:SetPos(self.roleInfoMain:GetWide() / 2 - armorName:GetWide() / 2, self.roleInfoMain:GetTall() - 52 - self.roleInfoMainFinish:GetTall() - 22)
+			armorName.Paint = function()
+				draw.SimpleText("Armor Type:", "TestFont3Small", 0, armorName:GetTall() / 2 + 2, Color(self.myTeam.menuTeamColor.r, self.myTeam.menuTeamColor.g, self.myTeam.menuTeamColor.b), TEXT_ALIGN_LEFT, TEXT_ALIGN_CENTER)
+			end
+		elseif istable(v) then
+			if k == "damageScaling" then
+				for k2, v2 in pairs(v) do
+					local icon = vgui.Create("InfoIcon", self.roleInfoMain)
+					icon:SetSize(self.roleInfoMain:GetWide() / 4 - 6, ((self.roleInfoMain:GetTall() / 2 - 50) - 18 - 12) / 3)
+					icon:SetFont("TestFont3Small")
+					icon:SetPos(12 + ((self.roleInfoMain:GetWide() / 4) * (k2 - 1)), baseYOffset)
+					icon:SetImg(self.armorToIcon[k][k2][2])
+					icon:SetText(self.armorToIcon[k][k2][1], tostring(v2 * 100) .. "%")
+					if v2 < self.Armor[2][k][k2] then
+						icon:SetColor(Color(0, 160, 0))
+					elseif v2 > self.Armor[2][k][k2] then
+						icon:SetColor(Color(238, 210, 2))
+					end
+				end
 			else
-				if k > GAMEMODE.playerLevel then 
-					but:IsLocked(true)
+				for k2, v2 in pairs(v) do
+					local icon = vgui.Create("InfoIcon", self.roleInfoMain)
+					icon:SetSize(self.roleInfoMain:GetWide() / 4 - 6, ((self.roleInfoMain:GetTall() / 2 - 50) - 18 - 12) / 3)
+					icon:SetFont("TestFont3Small")
+					icon:SetPos(12 + ((self.roleInfoMain:GetWide() / 4) * (k2 - 1)), baseYOffset + icon:GetTall() + 6)
+					icon:SetImg(self.armorToIcon[k][k2][2])
+					icon:SetText(self.armorToIcon[k][k2][1], v2)
+					if v2 > self.Armor[2][k][k2] then
+						icon:SetColor(Color(0, 160, 0))
+					elseif v2 < self.Armor[2][k][k2] then
+						icon:SetColor(Color(238, 210, 2))
+					end
 				end
 			end
-		end
-	end)
-
-	self.roleTeam = vgui.Create("DFrame")
-	self.roleTeam:SetSize(200, 400)
-	self.roleTeam:SetPos(self.roleMainX - self.roleTeam:GetWide(), self.roleMainY + 100)
-	self.roleTeamX, self.roleTeamY = self.roleTeam:GetPos()
-	self.roleTeam:SetTitle("")
-	self.roleTeam:SetVisible(true)
-	self.roleTeam:SetDraggable(false)
-	self.roleTeam:ShowCloseButton(false)
-	self.roleTeam:MakePopup()
-    self.roleTeam.Paint = function()
-        draw.RoundedBoxEx(16, 0, 0, self.roleTeam:GetWide(), self.roleTeam:GetTall(), Color(self.myTeam.menuTeamColor.r, self.myTeam.menuTeamColor.g, self.myTeam.menuTeamColor.b, 220), true, false, true, false)
-		draw.SimpleText("Your Team", "DermaDefault", self.roleTeam:GetWide() - 4, 2, Color(255, 255, 255), TEXT_ALIGN_RIGHT, TEXT_ALIGN_TOP)
-		if not self.roleTeamScrollTeamInfo then
-			draw.RoundedBoxEx(16, 0, 0, self.roleTeam:GetWide(), self.roleTeam:GetTall(), Color(self.myTeam.menuTeamColorLightAccent.r, self.myTeam.menuTeamColorLightAccent.g, self.myTeam.menuTeamColorLightAccent.b, 100), true, false, true, false)
-			draw.SimpleText("Loading Teammate Information", "DermaDefault", self.roleTeamScroll:GetWide() / 2, self.roleTeamScroll:GetTall() / 2, Color(255, 255, 255), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
-		end
-    end
-	self.roleTeam.Think = function()
-		if not self.roleMain:IsValid() then
-			self.roleTeam:Remove()
-			return
-		end
-		if self.roleTeam then
-			self.roleTeam:MakePopup()
-		end
-		if not self.roleTeam:HasFocus() then
-			self.roleTeam:RequestFocus()
-		end
-	end
-
-	self.roleTeamScroll = vgui.Create("DScrollPanel", self.roleTeam)
-	self.roleTeamScroll:SetPos(0, 18)
-	self.roleTeamScroll:SetSize(self.roleTeam:GetWide(), self.roleTeam:GetTall() - 18)
-	--[[self.roleTeamScroll.Paint = function()
-		if not IsValid(self.roleTeamScroll:GetChildren()) then
-			draw.RoundedBoxEx(16, 0, 0, self.roleTeam:GetWide(), self.roleTeam:GetTall(), Color(0, 0, 0, 100), true, false, true, false)
-			draw.SimpleText("Loading Teammate Information", "DermaDefault", self.roleTeamScroll:GetWide() / 2, self.roleTeamScroll:GetTall() / 2, Color(255, 255, 255), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
-		end
-	end]]
-	self.roleTeamScrollPanelHeight = 50
-		--TO-DO
-	--[[local sbar = self.roleTeamScroll:GetVBar()
-	sbar.Paint = function()
-
-	end]]
-
-	--//Clears and recreates the roleTeamScroll scroll panel
-	function self:RefreshTeamRoles(teamTable)
-		self.roleTeamScroll:Clear()
-		if #teamTable == 0 then
-			local noPlayer = vgui.Create("DPanel", self.roleTeamScroll)
-			noPlayer:SetPos(0, 0)
-			noPlayer:SetSize(self.roleTeamScroll:GetWide(), self.roleTeamScroll:GetTall())
-			noPlayer.Paint = function()
-				draw.SimpleText("No Information To Display", "DermaLarge", noPlayer:GetWide() / 2, noPlayer:GetTall() / 2, Color(255, 255, 255), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
-			end
-			return
-		end
-
-		local spacerPanelHeight = 5
-		for k, v in pairs(teamTable) do
-			local playerPanel = vgui.Create("DPanel", self.roleTeamScroll)
-			playerPanel:SetPos(0, self.roleTeamScrollPanelHeight * (k - 1) + spacerPanelHeight * (k - 1))
-			playerPanel:SetSize(self.roleTeamScroll:GetWide(), self.roleTeamScrollPanelHeight)
-			playerPanel:SetText("")
-			playerPanel.Paint = function()
-				draw.SimpleText(v.Name, "DermaDefault", 5, playerPanel:GetTall() / 2, Color(255, 255, 255), TEXT_ALIGN_LEFT, TEXT_ALIGN_CENTER)
-				draw.SimpleText("Role: " .. v.Role, "DermaDefault", playerPanel:GetWide() * (5 / 8), playerPanel:GetTall() / 2, Color(255, 255, 255), TEXT_ALIGN_LEFT, TEXT_ALIGN_CENTER)
-			end
-
-			if teamTable[k + 1] then --If there's another player to add to the scroll panel, add a spacer panel
-				local spacerPanel = vgui.Create("DPanel", self.roleTeamScroll)
-				spacerPanel:SetPos(0, self.roleTeamScrollPanelHeight * k + spacerPanelHeight * (k - 1))
-				spacerPanel:SetSize(self.roleTeamScroll:GetWide(), spacerPanelHeight)
-				spacerPanel:SetText("")
-				spacerPanel.Paint = function()
-					surface.SetDrawColor(255, 255, 255)
-					surface.DrawLine(2, 3, spacerPanel:GetWide() - 2, 3)
-				end
+		else
+			local icon = vgui.Create("InfoIcon", self.roleInfoMain)
+			icon:SetSize(self.roleInfoMain:GetWide() / 4 - 6, ((self.roleInfoMain:GetTall() / 2 - 50) - 18 - 12) / 3)
+			icon:SetFont("TestFont3Small")
+			icon:SetPos(12 + (self.roleInfoMain:GetWide() / 4 * 3), baseYOffset + icon:GetTall() + 6)
+			icon:SetImg(self.armorToIcon[k])
+			icon:SetText("Health", v)
+			if v > self.Armor[2][k] then
+				icon:SetColor(Color(0, 160, 0))
+			elseif v < self.Armor[2][k] then
+				icon:SetColor(Color(238, 210, 2))
 			end
 		end
 	end
 
-	net.Start("RequestTeamRoles")
-	net.SendToServer()
-	net.Receive("RequestTeamRolesCallback", function()
-		self.roleTeamScrollTeamInfo = net.ReadTable()
-		if self.roleTeamScroll:IsValid() then
-			self:RefreshTeamRoles(self.roleTeamScrollTeamInfo)
-		end
-	end)
-
-	self.roleEnemy = vgui.Create("DFrame")
-	self.roleEnemy:SetSize(200, 400)
-	self.roleEnemy:SetPos(self.roleMainX + self.roleMain:GetWide(), self.roleMainY + 100)
-	self.roleEnemyX, self.roleEnemyY = self.roleEnemy:GetPos()
-	self.roleEnemy:SetTitle("")
-	self.roleEnemy:SetVisible(true)
-	self.roleEnemy:SetDraggable(false)
-	self.roleEnemy:ShowCloseButton(false)
-	self.roleEnemy:MakePopup()
-		local textOffset = 10
-    self.roleEnemy.Paint = function()
-        draw.RoundedBoxEx(16, 0, 0, self.roleEnemy:GetWide(), self.roleEnemy:GetTall(), Color(self.myTeam.menuTeamColor.r, self.myTeam.menuTeamColor.g, self.myTeam.menuTeamColor.b, 220), false, true, false, true)
-		draw.SimpleText("Enemy Role Count", "DermaDefault", 4, 2, Color(255, 255, 255), TEXT_ALIGN_LEFT, TEXT_ALIGN_TOP)
-		if not self.roleEnemyRoleCount then
-			draw.RoundedBoxEx(4, 0, 0, self.roleEnemy:GetWide(), self.roleEnemy:GetTall(), Color(self.myTeam.menuTeamColorLightAccent.r, self.myTeam.menuTeamColorLightAccent.g, self.myTeam.menuTeamColorLightAccent.b, 100), false, true, false, true)
-			draw.SimpleText("Loading Enemy Role Count", "DermaDefault", self.roleEnemy:GetWide() / 2, self.roleEnemy:GetTall() / 2, Color(0, 0, 0), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
-		end
-    end
-	self.roleEnemy.Think = function()
-		if not self.roleMain:IsValid() then
-			self.roleEnemy:Remove()
-			return
-		end
-		if self.roleEnemy:IsValid() then
-			self.roleEnemy:MakePopup()
-		end
-		if not self.roleEnemy:HasFocus() then
-			self.roleEnemy:RequestFocus()
-		end
-	end
-
-	self.roleEnemyScroll = vgui.Create("DScrollPanel", self.roleEnemy)
-	self.roleEnemyScroll:SetPos(0, 18)
-	self.roleEnemyScroll:SetSize(self.roleEnemy:GetWide(), self.roleEnemy:GetTall() - 18)
-	--[[self.roleEnemyScroll.Paint = function()
-		if not IsValid(self.roleEnemyScroll:GetChildren()) then
-			draw.RoundedBoxEx(16, 0, 0, self.roleEnemy:GetWide(), self.roleEnemy:GetTall(), Color(0, 0, 0, 220), false, true, false, true)
-			draw.SimpleText("Loading Enemy Role Count", "DermaDefault", self.roleEnemy:GetWide() / 2, self.roleEnemy:GetTall() / 2, Color(255, 255, 255), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
-		end
-	end]]
-	self.roleEnemyScrollPanelHeight = 50
-		--TO-DO
-	--[[local sbar = self.roleEnemyScroll:GetVBar()
-	sbar.Paint = function()
-
-	end]]
-
-	--//Clears and recreates the roleEnemyScroll scroll panel
-	function self:RefreshEnemyRoles(enemyTable)
-		self.roleEnemyScroll:Clear()
-		if #enemyTable == 0 then
-			local noPlayer = vgui.Create("DPanel", self.roleEnemyScroll)
-			noPlayer:SetPos(0, 0)
-			noPlayer:SetSize(self.roleEnemyScroll:GetWide(), self.roleEnemyScroll:GetTall())
-			noPlayer.Paint = function()
-				draw.SimpleText("No Information To Display", "DermaLarge", noPlayer:GetWide() / 2, noPlayer:GetTall() / 2, Color(255, 255, 255), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
-			end
-			return
-		end
-
-		local spacerPanelHeight = 5
-		local counter = 1 --Need a counter this time around because the role name is saved as the key value in enemyTable
-		for k, v in pairs(enemyTable) do
-			local playerPanel = vgui.Create("DPanel", self.roleEnemyScroll)
-			playerPanel:SetPos(0, self.roleEnemyScrollPanelHeight * (counter - 1) + spacerPanelHeight * (counter - 1))
-			playerPanel:SetSize(self.roleEnemyScroll:GetWide(), self.roleEnemyScrollPanelHeight)
-			playerPanel:SetText("")
-			playerPanel.Paint = function()
-				draw.SimpleText("Role: " .. k, "DermaDefault", 5, playerPanel:GetTall() / 2, Color(255, 255, 255), TEXT_ALIGN_LEFT, TEXT_ALIGN_CENTER)
-				draw.SimpleText("Amount of players: " .. v, "DermaDefault", playerPanel:GetWide() * (3 / 4), playerPanel:GetTall() / 2, Color(255, 255, 255), TEXT_ALIGN_LEFT, TEXT_ALIGN_CENTER)
-			end
-
-			if enemyTable[counter + 1] then --If there's another role to add to the scroll panel, add a spacer panel
-				local spacerPanel = vgui.Create("DPanel", self.roleEnemyScroll)
-				spacerPanel:SetPos(0, self.roleEnemyScrollPanelHeight * counter + spacerPanelHeight * (counter - 1))
-				spacerPanel:SetSize(self.roleEnemyScroll:GetWide(), spacerPanelHeight)
-				spacerPanel:SetText("")
-				spacerPanel.Paint = function()
-					surface.SetDrawColor(255, 255, 255)
-					surface.DrawLine(2, 3, spacerPanel:GetWide() - 2, 3)
-				end
-			end
-			counter = counter + 1
-		end
-	end
-
-	net.Start("RequestEnemyRoles")
-	net.SendToServer()
-	net.Receive("RequestEnemyRolesCallback", function()
-		self.roleEnemyRoleCount = net.ReadTable()
-		self:RefreshEnemyRoles(self.roleEnemyRoleCount)
-	end)
-end
-
-function GM:RoleDescriptions(role)
-	if self.roleDescMenu and self.roleDescMenu:IsValid() then return end
-
-	self.roleDescMenu = vgui.Create("DFrame")
-	self.roleDescMenu:SetSize(600, 300)
-	self.roleDescMenu:SetTitle("")
-	self.roleDescMenu:SetVisible(true)
-	self.roleDescMenu:SetDraggable(false)
-	self.roleDescMenu:ShowCloseButton(false)
-	self.roleDescMenu:MakePopup()
-	self.roleDescMenu:Center()
-	self.roleDescMenuX, self.roleDescMenuY = self.roleDescMenu:GetPos()
-    self.roleDescMenu.Paint = function()
-		--Derma_DrawBackgroundBlur(self.roleDescMenu, CurTime())
-		surface.SetDrawColor(self.myTeam.menuTeamColor.r, self.myTeam.menuTeamColor.g, self.myTeam.menuTeamColor.b, 220)
-        surface.DrawRect(0, 0, self.roleDescMenu:GetWide(), self.roleDescMenu:GetTall())
-    end
-	self.roleDescMenu.Think = function()
-		if self.roleMain:IsValid() then
-			self.roleDescMenu:Remove()
-		elseif self.roleDescMenu:IsValid() then
-			self.roleDescMenu:MakePopup()
-		end
-	end
-
-	self.roleDescMenuRoleWidth = self.roleDescMenu:GetWide() / 3
-	for k, v in pairs(self.Roles) do
-		local but = vgui.Create("RoleDescriptionButton", self.roleDescMenu)
-		but:SetSize(self.roleDescMenuRoleWidth, self.roleDescMenu:GetTall() / #self.Roles)
-		but:SetPos(0, (k - 1) * (self.roleDescMenu:GetTall() / #self.Roles))
-		but:SetText(v[self.teamNumberToName[LocalPlayer():Team()]])
-		but:SetRole(k)
-		if role == k then
-			but:DoClick()
-		end
-	end
-
-	self.roleDescMenuInfo = vgui.Create("DPanel", self.roleDescMenu)
-	self.roleDescMenuInfo:SetSize(self.roleDescMenu:GetWide() - self.roleDescMenuRoleWidth, self.roleDescMenu:GetTall())
-	self.roleDescMenuInfo:SetPos(self.roleDescMenuRoleWidth, 0)
-	self.roleDescMenuPOS = {
-		{x = self.roleDescMenuInfo:GetWide() / 4, y = self.roleDescMenuInfo:GetTall() * (1 / 5)},
-		{x = self.roleDescMenuInfo:GetWide() * (3 / 4), y = self.roleDescMenuInfo:GetTall() * (1 / 5)},
-		
-		{x = self.roleDescMenuInfo:GetWide() / 4, y = self.roleDescMenuInfo:GetTall() * (2 / 5)},
-		{x = self.roleDescMenuInfo:GetWide() / 2, y = self.roleDescMenuInfo:GetTall() * (2 / 5)},
-		{x = self.roleDescMenuInfo:GetWide() * (3 / 4), y = self.roleDescMenuInfo:GetTall() * (2 / 5)},
-
-		{x = self.roleDescMenuInfo:GetWide() / 4, y = self.roleDescMenuInfo:GetTall() * (3 / 5)},
-		{x = self.roleDescMenuInfo:GetWide() / 2, y = self.roleDescMenuInfo:GetTall() * (3 / 5)},
-		{x = self.roleDescMenuInfo:GetWide() * (3 / 4), y = self.roleDescMenuInfo:GetTall() * (3 / 5)},
-
-		{x = self.roleDescMenuInfo:GetWide() / 4, y = self.roleDescMenuInfo:GetTall() * (4 / 5)},
-		{x = self.roleDescMenuInfo:GetWide() / 2, y = self.roleDescMenuInfo:GetTall() * (4 / 5)},
-		{x = self.roleDescMenuInfo:GetWide() * (3 / 4), y = self.roleDescMenuInfo:GetTall() * (4 / 5)}
+	self.roleInfoMainArmors = vgui.Create("DPanel", self.roleInfoMain)
+	self.roleInfoMainArmors:SetSize(self.roleInfoMain:GetWide(), 20)
+	self.roleInfoMainArmors:SetPos(0, self.roleInfoMain:GetTall() - 52 - self.roleInfoMainFinish:GetTall())
+	self.roleInfoMainArmorsPOS = {
+		{x = self.roleInfoMainArmors:GetWide() / 8, y = self.roleInfoMainArmors:GetTall() / 2, name = self.Armor[1].armorName .. " Armor"},
+		{x = self.roleInfoMainArmors:GetWide() / 8 + (self.roleInfoMainArmors:GetWide() / 4), y = self.roleInfoMainArmors:GetTall() / 2, name = self.Armor[2].armorName .. " Armor"},
+		{x = self.roleInfoMainArmors:GetWide() / 8 + (self.roleInfoMainArmors:GetWide() / 4 * 2), y = self.roleInfoMainArmors:GetTall() / 2, name = self.Armor[3].armorName .. " Armor"},
+		{x = self.roleInfoMainArmors:GetWide() / 8 + (self.roleInfoMainArmors:GetWide() / 4 * 3), y = self.roleInfoMainArmors:GetTall() / 2, name = self.Armor[4].armorName .. " Armor"}
 	}
-	self.roleDescMenuInfo.Paint = function()
-		local w, h = self.roleDescMenuInfo:GetSize()
+	local toHighlight = table.KeyFromValue(self.Armor, self.Roles[role].armorRating)
+	self.roleInfoMainArmors.Paint = function()
+		surface.SetDrawColor(self.myTeam.menuTeamColor.r, self.myTeam.menuTeamColor.g, self.myTeam.menuTeamColor.b)
+		surface.DrawLine(self.roleInfoMainArmors:GetWide() / 4, 0, self.roleInfoMainArmors:GetWide() / 4, self.roleInfoMainArmors:GetTall())
+		surface.DrawLine(self.roleInfoMainArmors:GetWide() / 4 * 2, 0, self.roleInfoMainArmors:GetWide() / 4 * 2, self.roleInfoMainArmors:GetTall())
+		surface.DrawLine(self.roleInfoMainArmors:GetWide() / 4 * 3, 0, self.roleInfoMainArmors:GetWide() / 4 * 3, self.roleInfoMainArmors:GetTall())
 
-		surface.SetDrawColor(self.myTeam.menuTeamColorDarkAccent.r, self.myTeam.menuTeamColorDarkAccent.g, self.myTeam.menuTeamColorDarkAccent.b)
-		surface.DrawLine(0, 0, w, 0)
-		surface.DrawLine(w - 1, 0, w - 1, h)
-		surface.DrawLine(w, h - 1, 0, h - 1)
-		surface.DrawLine(0, 0, 0, self.roleDescMenuButtonDownY)
-		surface.DrawLine(0, self.roleDescMenuButtonDownY + self.roleDescMenuButtonDownTall, 0, h)
-		draw.SimpleText(self.Roles[self.roleDescMenuButtonNumber][self.teamNumberToName[LocalPlayer():Team()]], "DermaLarge", self.roleDescMenuInfo:GetWide() / 2, 20, Color(255, 255, 255), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
-		--draw.SimpleText(self.Roles[self.roleDescMenuButtonNumber].roleDescription, "DermaDefault", self.roleDescMenuInfo:GetWide() / 2, 36, Color(255, 255, 255), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
-		print(self.Roles[self.roleDescMenuButtonNumber].roleDescriptionExpanded[1], self.Roles[self.roleDescMenuButtonNumber].roleDescriptionExpanded[1][1], self.Roles[self.roleDescMenuButtonNumber].roleDescriptionExpanded[1][2], self.Roles[self.roleDescMenuButtonNumber].roleDescriptionExpanded[1][3])
-		for k, v in pairs(self.Roles[self.roleDescMenuButtonNumber].roleDescriptionExpanded) do
-
-			surface.SetFont("DermaDefault")
-			local w, h = surface.GetTextSize(v[1] .. ": ")
-			surface.SetDrawColor(255, 255, 255)
-			surface.SetTextPos(self.roleDescMenuPOS[k].x - (w / 2), self.roleDescMenuPOS[k].y - (h / 2))
-			surface.DrawText(v[1] .. ":")
-			
-			surface.SetDrawColor(v[3])
-			surface.SetTextPos(self.roleDescMenuPOS[k].x + (w / 2), self.roleDescMenuPOS[k].y - (h / 2))
-			surface.DrawText(v[2])
+		for i = 1, 4 do
+			if i == toHighlight then
+				draw.SimpleText(self.roleInfoMainArmorsPOS[toHighlight].name, "TestFont3", self.roleInfoMainArmorsPOS[toHighlight].x, self.roleInfoMainArmorsPOS[toHighlight].y, Color(self.myTeam.menuTeamColorLightAccent.r, self.myTeam.menuTeamColorLightAccent.g, self.myTeam.menuTeamColorLightAccent.b), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
+			else
+				draw.SimpleText(self.roleInfoMainArmorsPOS[i].name, "TestFont3", self.roleInfoMainArmorsPOS[i].x, self.roleInfoMainArmorsPOS[i].y, Color(175, 175, 175), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
+			end
 		end
-		--Draw role information
-	end
-
-	self.roleDescMenuExit = vgui.Create("DFrame")
-	self.roleDescMenuExit:SetSize(8, 8)
-	self.roleDescMenuExit:SetPos(self.roleDescMenuX + self.roleDescMenu:GetWide() + 2, self.roleDescMenuY)
-	self.roleDescMenuExit:SetTitle("")
-	self.roleDescMenuExit:SetVisible(true)
-	self.roleDescMenuExit:SetDraggable(false)
-	self.roleDescMenuExit:ShowCloseButton(false)
-	self.roleDescMenuExit:MakePopup()
-	self.roleDescMenuExitX, self.roleDescMenuExitY = self.roleDescMenuExit:GetPos()
-	self.roleDescMenuExit.Think = function()
-		if not self.roleDescMenu:IsValid() then
-			self.roleDescMenuExit:Remove()
-		end
-	end
-
-	self.roleDescMenuExitButton = vgui.Create("DButton", self.roleDescMenuExit)
-	self.roleDescMenuExitButton:SetPos(0, 0)
-	self.roleDescMenuExitButton:SetSize(self.roleDescMenuExit:GetWide(), self.roleDescMenuExit:GetTall())
-	self.roleDescMenuExitButton:SetText("X")
-	self.roleDescMenuExitButton.DoClick = function()
-		surface.PlaySound("buttons/lightswitch2.wav")
-		self.roleDescMenu:Remove()
-		self.roleDescMenuExit:Remove()
-		self:RoleSelectionMenu()
 	end
 end
 
-function GM:ArmorDescription(armor)
-	if self.armorDescMenu and self.armorDescMenu:IsValid() then return end
 
-	self.armorDescMenu = vgui.Create("DFrame")
-	self.armorDescMenu:SetSize(600, 200)
-	self.armorDescMenu:SetTitle("")
-	self.armorDescMenu:SetVisible(true)
-	self.armorDescMenu:SetDraggable(false)
-	self.armorDescMenu:ShowCloseButton(false)
-	self.armorDescMenu:MakePopup()
-	self.armorDescMenu:Center()
-	self.armorDescMenuX, self.armorDescMenuY = self.armorDescMenu:GetPos()
-    self.armorDescMenu.Paint = function()
-		--Derma_DrawBackgroundBlur(self.armorDescMenu, CurTime())
-		surface.SetDrawColor(self.myTeam.menuTeamColor.r, self.myTeam.menuTeamColor.g, self.myTeam.menuTeamColor.b, 220)
-        surface.DrawRect(0, 0, self.armorDescMenu:GetWide(), self.armorDescMenu:GetTall())
-    end
-	self.armorDescMenu.Think = function()
-		if self.armorDescMenu:IsValid() then
-			self.armorDescMenu:MakePopup()
+
+function GM:TeamSelectionMenu()
+	--//After selecting one of two available teams, auto-opens LoadoutMenu()
+	if (self.Main and self.Main:IsValid()) or (self.roleInfoMain and self.roleInfoMain:IsValid()) then return end --Later include functionality for when shop is open
+
+	--[[net.Start("RequestTeamBalanceStatus") --Asked when menu initially opens up, received once after and whenever a play switches teams
+	net.SendToServer()]]
+
+	self.teamMain = vgui.Create("DFrame")
+	self.teamMain:SetSize(1000, 428) --21:9 aspect ratio, it should actually be 428.5 but I don't think you can do half-pixels
+	self.teamMain:SetTitle("")
+	self.teamMain:SetVisible(true)
+	self.teamMain:SetDraggable(false)
+	self.teamMain:ShowCloseButton(false)
+	self.teamMain:MakePopup()
+	self.teamMain:Center()
+	self.teamMain.Paint = function()
+		surface.SetDrawColor(255, 255, 255, 100)
+		surface.DrawRect(0, 0, self.teamMain:GetWide(), self.teamMain:GetTall())
+	end
+	self.teamMain.Think = function()
+		if (self.Main and self.Main:IsValid()) or (self.roleInfoMain and self.roleInfoMain:IsValid()) then
+			self.teamMain:Remove()
 		end
 	end
 
-	self.armorDescMenuButtonWidth = self.armorDescMenu:GetWide() / 3
-	self.armorDescMenuInfo = vgui.Create("DPanel", self.armorDescMenu)
-	self.armorDescMenuInfo:SetSize(self.armorDescMenu:GetWide() - self.armorDescMenuButtonWidth, self.armorDescMenu:GetTall())
-	self.armorDescMenuInfo:SetPos(self.armorDescMenuButtonWidth, 0)
-	self.armorDescMenuInfo.Paint = function()
-		local w, h = self.armorDescMenuInfo:GetSize()
+	self.redTeamJoinable = true
+	self.teamMainRedTeam = vgui.Create("DButton", self.teamMain)
+	self.teamMainRedTeam:SetSize()
+	self.teamMainRedTeam:SetPos(0, 0)
+	self.teamMainRedTeam:SetText("")
+	self.teamMainRedTeam.Paint = function()
 
-		surface.SetDrawColor(self.myTeam.menuTeamColorDarkAccent.r, self.myTeam.menuTeamColorDarkAccent.g, self.myTeam.menuTeamColorDarkAccent.b)
-		surface.DrawLine(0, 0, w, 0)
-		surface.DrawLine(w - 1, 0, w - 1, h)
-		surface.DrawLine(w, h - 1, 0, h - 1)
-		surface.DrawLine(0, 0, 0, self.armorDescMenuButtonDownY)
-		surface.DrawLine(0, self.armorDescMenuButtonDownY + self.armorDescMenuButtonDownTall, 0, h)
+	end
+	self.teamMainRedTeam.DoClick = function()
+		if not self.redTeamJoinable then return end
 
-		draw.SimpleText("Damage Scaling %", "DermaDefault", self.armorDescMenuInfo:GetWide() / 4, 6, Color(255, 255, 255), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
-		surface.DrawLine(self.armorDescMenuInfo:GetWide() / 2, 7, self.armorDescMenuInfo:GetWide() / 2, self.armorDescMenuInfo:GetTall() - 7)
-		draw.SimpleText("Health and Movement Scaling %", "DermaDefault", self.armorDescMenuInfo:GetWide() * 0.75, 6, Color(255, 255, 255), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
+	end
+	self.teamMainRedTeam.OnCursorEntered = function()
+		if not self.redTeamJoinable then return end
+		self.teamMainRedTeamHover = true
+	end
+	self.teamMainRedTeam.OnCursorExited = function()
+		self.teamMainRedTeamHover = false
 	end
 
-	self.armorNumberToIcon = {
-		damageScaling = {"menu/headpic.png", "menu/chestpic2.png", "menu/armpic.png", "menu/legpic.png"},
-		movementScaling = {"menu/walkpic.png", "menu/runpic.png", "menu/jumppic2.png"}
-	}
+	self.blueTeamJoinable = true
+	self.teamMainBlueTeam = vgui.Create("DButton", self.teamMain)
+	self.teamMainBlueTeam:SetSize()
+	self.teamMainBlueTeam:SetPos()
+	self.teamMainBlueTeam:SetText("")
+	self.teamMainBlueTeam.Paint = function()
 
-	function self:DrawDescriptionPanel(armor) --TO TEST
-		if #self.armorDescMenuInfo:GetChildren() > 0 then
-			for k, v in pairs(self.armorDescMenuInfo:GetChildren()) do
-				if string.StartWith(v:GetName(), "aii") then
-					v:Remove()
-				end
-			end
-		end
-		
-		for k, v in pairs(self.Armor[armor].damageScaling) do
-			local but = vgui.Create("ArmorInfoIcon", self.armorDescMenuInfo, "aii" .. k)
-			but:SetPos(0, self.armorDescMenuInfo:GetTall() / 4 * (k - 1))
-			but:SetSize(self.armorDescMenuInfo:GetWide() / 2, self.armorDescMenuInfo:GetTall() / 4)
-			but:SetText(v)
-			but:SetImage(self.armorNumberToIcon.damageScaling[k])
-			but:SetArmor(armor)
-			but:SetWhatScale("damageScaling", k)
-			but:Finish()
-		end
-		
-		self.armorDescMenuInfoHealth = vgui.Create("ArmorInfoIcon", self.armorDescMenuInfo, "aii" .. tostring(#self.Armor[armor].damageScaling + 1))
-		self.armorDescMenuInfoHealth:SetPos(self.armorDescMenuInfo:GetWide() / 2, 0)
-		self.armorDescMenuInfoHealth:SetSize(self.armorDescMenuInfo:GetWide() / 2, self.armorDescMenuInfo:GetTall() / 4)
-		self.armorDescMenuInfoHealth:SetText(self.Armor[armor].healthScaling)
-		self.armorDescMenuInfoHealth:SetImage("menu/healthpic.png")
-		self.armorDescMenuInfoHealth:SetArmor(armor)
-		self.armorDescMenuInfoHealth:SetWhatScale("healthScaling")
-		self.armorDescMenuInfoHealth:Finish()
-		
-		for k, v in pairs(self.Armor[armor].movementScaling) do
-			local but = vgui.Create("ArmorInfoIcon", self.armorDescMenuInfo, "aii" .. (#self.Armor[armor].damageScaling + 1 + k))
-			but:SetPos(self.armorDescMenuInfo:GetWide() / 2, self.armorDescMenuInfo:GetTall() / 4 * k)
-			but:SetSize(self.armorDescMenuInfo:GetWide() / 2, self.armorDescMenuInfo:GetTall() / 4)
-			but:SetText(v)
-			but:SetImage(self.armorNumberToIcon.movementScaling[k])
-			but:SetArmor(armor)
-			but:SetWhatScale("movementScaling", k)
-			but:Finish()
-		end
+	end
+	self.teamMainBlueTeam.DoClick = function()
+		if not self.blueTeamJoinable then return end
+
+	end
+	self.teamMainBlueTeam.OnCursorEntered = function()
+		if not self.blueTeamJoinable then return end
+		self.teamMainBlueTeamHover = true
+	end
+	self.teamMainBlueTeam.OnCursorExited = function()
+		self.teamMainBlueTeamHover = false
 	end
 
-	for k, v in pairs(self.Armor) do
-		local but = vgui.Create("ArmorDescriptionButton", self.armorDescMenu)
-		but:SetSize(self.armorDescMenuButtonWidth, self.armorDescMenu:GetTall() / 4)
-		but:SetPos(0, self.armorDescMenu:GetTall() / 4 * (k - 1))
-		but:SetText(v.armorName)
-		but:SetArmor(k)
-		if armor == k then
-			but:DoClick()
+	net.Receive("RequestTeamBalanceStatusCallback", function()
+		self.redTeamJoinable = net.ReadBool()
+		self.blueTeamJoinable = net.ReadBool()
+		if not self.redTeamJoinable then
+			self.teamMainRedTeamHover = false
+		elseif not self.blueTeamJoinable then
+			self.teamMainBlueTeam = false
 		end
-	end
-
-	self.armorDescMenuExit = vgui.Create("DFrame")
-	self.armorDescMenuExit:SetSize(8, 8)
-	self.armorDescMenuExit:SetPos(self.armorDescMenuX + self.armorDescMenu:GetWide() + 2, self.armorDescMenuY)
-	self.armorDescMenuExit:SetTitle("")
-	self.armorDescMenuExit:SetVisible(true)
-	self.armorDescMenuExit:SetDraggable(false)
-	self.armorDescMenuExit:ShowCloseButton(false)
-	self.armorDescMenuExit:MakePopup()
-	self.armorDescMenuExitX, self.armorDescMenuExitY = self.armorDescMenuExit:GetPos()
-	self.armorDescMenuExit.Think = function()
-		if not self.armorDescMenu or not self.armorDescMenu:IsValid() then
-			self.armorDescMenuExit:Remove()
-		end
-	end
-
-	self.armorDescMenuExitButton = vgui.Create("DButton", self.armorDescMenuExit)
-	self.armorDescMenuExitButton:SetPos(0, 0)
-	self.armorDescMenuExitButton:SetSize(self.armorDescMenuExit:GetWide(), self.armorDescMenuExit:GetTall())
-	self.armorDescMenuExitButton:SetText("X")
-	self.armorDescMenuExitButton.DoClick = function()
-		surface.PlaySound("buttons/lightswitch2.wav")
-		self.armorDescMenu:Remove()
-		self.armorDescMenuExit:Remove()
-		self:RoleSelectionMenu()
-	end
+	end)
 end
 
 --[[net.Receive("SendRoleToServerCallback", function()

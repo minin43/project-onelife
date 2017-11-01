@@ -5,10 +5,12 @@ local roleSelectionButton = {}
 roleSelectionButton.font = "DermaLarge"
 roleSelectionButton.text = ""
 roleSelectionButton.imgsrc = ""
-roleSelectionButton.img = Material(roleSelectionButton.imgsrc)
+roleSelectionButton.img = Material("menu/role_rifleman_icon_fixed.png", "smooth")
+roleSelectionButton.lockedImg = Material("menu/lock_icon.png", "smooth")
 roleSelectionButton.title = false
 roleSelectionButton.locked = false
 roleSelectionButton.role = 1 --Default value, always unlocked
+roleSelectionButton.w, roleSelectionButton.h = 32, 32
 
 function roleSelectionButton:SetFont(font)
     self.font = font
@@ -20,37 +22,33 @@ end
 
 function roleSelectionButton:SetRole(num)
     self.role = num
+    self.img = GAMEMODE.Roles[num].roleIcon
 end
 
-function roleSelectionButton:IsTitle(bool)
-    self.title = bool
+function roleSelectionButton:SetImageSize(w, h)
+    self.w = w
+    self.h = h or w
 end
 
 function roleSelectionButton:IsLocked(bool)
     self.locked = bool
 end
 
-function roleSelectionButton:SetImage(img)
-    self.imgsrc = img
-    self.img = Material(self.imgsrc)
-end
-
 function roleSelectionButton:DoClick()
-    if self.title or self.locked then return end
-    if GAMEMODE.roleMainButtonNumber != self.role then
-        GAMEMODE.roleMainButtonNumber = self.role
-        surface.PlaySound("buttons/lightswitch2.wav")
+    if self.locked then return end
+    GAMEMODE.roleMainButtonNumber = self.role
+    surface.PlaySound("buttons/lightswitch2.wav")
+    if GAMEMODE.roleInfoMain and GAMEMODE.roleInfoMain:IsValid() then
+        GAMEMODE.roleInfoMain:Remove()
+        GAMEMODE:RoleSelection(self.role, true)
     else
-        net.Start("SendRoleToServer")
-            net.WriteString(tostring(self.role))
-        net.SendToServer()
-        self:GetParent():Close()
-        GAMEMODE:LoadoutMenu() --It is assumed this button will close its parent and open up the Loadout Menu
+        GAMEMODE:RoleSelection(self.role)
     end
+    roleSelectionButton.selectedButton = self
 end
 
 function roleSelectionButton:OnCursorEntered()
-    if self.title or self.locked then return end
+    if self.locked then return end
     surface.PlaySound("garrysmod/ui_hover.wav")
     self.cursorEntered = true
 end
@@ -61,39 +59,37 @@ end
 
 function roleSelectionButton:Paint()
     local w, h = self:GetSize()
-
-    if self.img then --if IsValid(self.img) then
+    
+    if self.locked then
+        surface.SetDrawColor(255, 255, 255)
+        surface.SetMaterial(self.lockedImg)
+        surface.DrawTexturedRect(0, 0, self.w, self.h)
+        draw.SimpleText("LOCKED", self.font, w / 2, self.h + ((h - self.h) / 2), Color(180, 0, 0), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
+        --self.lockedImg:SetFloat("$pp_colour_addr", 1)
+    else
         surface.SetDrawColor(255, 255, 255)
         surface.SetMaterial(self.img)
-        surface.DrawTexturedRect(1, 1, w - 2, h - 2)
-    else
-        surface.SetDrawColor(180, 180, 180)
-        surface.DrawRect(1, 1, w - 2, h - 2)
+        surface.DrawTexturedRect(0, 0, self.w, self.h)
+
+        draw.SimpleText(self.text, self.font, w / 2, self.h + ((h - self.h) / 2), Color(255, 255, 255), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
+        if self.cursorEntered then
+            surface.SetDrawColor(GAMEMODE.myTeam.menuTeamColorLightAccent.r, GAMEMODE.myTeam.menuTeamColorLightAccent.g, GAMEMODE.myTeam.menuTeamColorLightAccent.b)
+            surface.DrawOutlinedRect(0, 0, w, h)
+        end
     end
 
-    if self.title then
-        draw.SimpleTextOutlined("Select a role", self.font, w / 2, h / 2, Color(0, 0, 0), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER, 1, Color(255, 255, 255))
-    else
-        if self.locked then
-            surface.SetDrawColor(100, 0, 0, 150)
-            surface.DrawRect(1, 1, w - 2, h - 2)
-            draw.SimpleTextOutlined("LOCKED", self.font, w / 2, h / 2, Color(0, 0, 0), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER, 1, Color(255, 255, 255))
-        else
-            draw.SimpleTextOutlined(self.text, self.font, w / 2, h / 2, Color(0, 0, 0), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER, 1, Color(255, 255, 255))
-            if self.cursorEntered or GAMEMODE.roleMainButtonNumber == self.role then
-                surface.SetDrawColor(255, 255, 255)
-                surface.DrawOutlinedRect(0, 0, w, h)
-            end
-        end
+    if roleSelectionButton.selectedButton == self then
+        surface.SetDrawColor(GAMEMODE.myTeam.menuTeamColorLightAccent.r, GAMEMODE.myTeam.menuTeamColorLightAccent.g, GAMEMODE.myTeam.menuTeamColorLightAccent.b)
+        surface.DrawOutlinedRect(0, 0 - 1, w, h + 2)
     end
     return true
 end
 
---//
-
 vgui.Register("RoleSelectionButton", roleSelectionButton, "DButton")
 
-local roleDescriptionButton = {}
+--//
+
+--[[local roleDescriptionButton = {}
 roleDescriptionButton.text = ""
 roleDescriptionButton.font = "DermaLarge"
 
@@ -178,95 +174,172 @@ function armorDescriptionButton:Paint()
         surface.SetDrawColor(255, 255, 255)
         surface.DrawLine(0, 0, w, 0)
         surface.DrawLine(0, 0, 0, h)
-        --[[surface.DrawLine(0, h - 1, w, h - 1)
-        if self.armor == #GAMEMODE.Armor then
-            surface.DrawLine(0, h - 1, w, h)
-        else]]
+        --surface.DrawLine(0, h - 1, w, h - 1)
+        --if self.armor == #GAMEMODE.Armor then
+            --surface.DrawLine(0, h - 1, w, h)
+        --else
             surface.DrawLine(0, h, w, h)
         --end
     end
     return true
 end
 
-vgui.Register("ArmorDescriptionButton", armorDescriptionButton, "DButton")
+vgui.Register("ArmorDescriptionButton", armorDescriptionButton, "DButton")]]
 
-local armorInfoIcon = {}
-armorInfoIcon.font = "DermaDefault"
-armorInfoIcon.scaleType = "damageScaling"
-armorInfoIcon.imgsrc = ""
-armorInfoIcon.img = Material(armorInfoIcon.imgsrc)
-armorInfoIcon.color = Color(255, 255, 255)
-armorInfoIcon.armor = 2
-armorInfoIcon.scale = 0
+local infoIcon = {}
+infoIcon.lineOne = ""
+infoIcon.lineTwo = ""
+infoIcon.font = "DermaDefault"
+infoIcon.imgSize = 64
+infoIcon.img = Material("failicon")
 
-function armorInfoIcon:SetFont(font)
+function infoIcon:SetFont(font)
     self.font = font
 end
 
-function armorInfoIcon:SetImage(img)
-    self.imgsrc = img
-    self.img = Material(armorInfoIcon.imgsrc)
+function infoIcon:SetText(line1, line2)
+    self.lineOne = line1
+    self.lineTwo = line2
 end
 
-function armorInfoIcon:SetArmor(num)
-    self.armor = num
+function infoIcon:SetColor(color)
+    self.lineTwoColor = color
 end
 
-function armorInfoIcon:SetWhatScale(text, num)
-    self.scaleType = text
-    self.scaleNum = num
+function infoIcon:SetImg(img, size)
+    self.img = img
+    self.imgSize = size or self.imgSize or self:GetTall()
 end
 
-function armorInfoIcon:Finish() --I can't quite think of where to put this code, so instead I'm going require this function be called after the vgui element setup is done
-    if self.armor == 2 then return end
-
-    if self.scaleType == "healthScaling" then
-        if GAMEMODE.Armor[self.armor][self.scaleType] > GAMEMODE.Armor[2][self.scaleType] then
-            self.color = Color(0, 160, 0)
-        elseif GAMEMODE.Armor[self.armor][self.scaleType] < GAMEMODE.Armor[2][self.scaleType] then
-            self.color = Color(170, 0, 0)
-        end
-    else
-        if GAMEMODE.Armor[self.armor][self.scaleType][self.scaleNum] > GAMEMODE.Armor[2][self.scaleType][self.scaleNum] then
-            self.color = Color(0, 160, 0)
-        elseif GAMEMODE.Armor[self.armor][self.scaleType][self.scaleNum] < GAMEMODE.Armor[2][self.scaleType][self.scaleNum] then
-            self.color = Color(170, 0, 0)
-        end
-    end
-end
-
-function armorInfoIcon:Paint()
+function infoIcon:Paint()
     local w, h = self:GetSize()
 
+    surface.SetDrawColor(255, 255, 255)
+    surface.SetMaterial(self.img)
+    surface.DrawTexturedRect(0, 0, self.imgSize, self.imgSize)
 
-    --if self.img then --
-    if IsValid(self.img) then
-        surface.SetDrawColor(255, 255, 255)
-        surface.SetMaterial(self.img)
-        if w > h then
-            surface.DrawTexturedRect(0, 0, h, h)
-            draw.SimpleText(tostring(self.scale * 100), self.font, (w + h) / 2, h / 2, self.color, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
-        elseif w < h then
-            surface.DrawTexturedRect(0, 0, w, w)
-            draw.SimpleText(tosrting(self.scale * 100), self.font, w / 2, (h + w) / 2, self.color, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
-        else
-            surface.DrawTexturedRect(0, 0, w, h)
-        end
-    end
+    draw.SimpleText(self.lineOne, self.font, self.imgSize + 6, self:GetTall() / 3, Color(255, 255, 255), TEXT_ALIGN_LEFT, TEXT_ALIGN_CENTER)
+    draw.SimpleText(self.lineTwo, self.font, self.imgSize + 6, self:GetTall() / 3 * 2, self.lineTwoColor, TEXT_ALIGN_LEFT, TEXT_ALIGN_CENTER)
+end
+
+vgui.Register("InfoIcon", infoIcon, "DPanel")
+
+--//
+
+surface.CreateFont("TestFont3InfoPanel", {
+	font = "BF4 Numbers",
+	size = 20,
+	weight = 500,
+	antialias = true
+})
+
+local infoPanel = {}
+infoPanel.text = ""
+infoPanel.titletext = ""
+infoPanel.font = "DermaDefault"
+infoPanel.titlefont = "DermaLarge"
+infoPanel.color = {}
+
+function infoPanel:SetText(text, titletext)
+    self.text = text
+    self.titletext = titletext
+    self.parsedtext = markup.Parse("<font=TestFont3InfoPanel>" .. self.text .. "</font>", self:GetWide())
+end
+
+function infoPanel:SetFont(font, titlefont)
+    self.font = font
+    self.titlefont = titlefont
+end
+
+function infoPanel:SetColor(color)
+    self.color = color
+end
+
+function infoPanel:SetParent(parentPanel)
+    self.parentPanel = parentPanel
+end
+
+function infoPanel:Paint()
+    surface.SetDrawColor(self.color.menuTeamColorDarkAccent.r, self.color.menuTeamColorDarkAccent.g, self.color.menuTeamColorDarkAccent.b)
+    surface.DrawRect(0, 0, self:GetSize())
+    surface.SetDrawColor(self.color.menuTeamColorAccent.r, self.color.menuTeamColorAccent.g, self.color.menuTeamColorAccent.b)
+    surface.DrawOutlinedRect(0, 0, self:GetSize())
+    surface.SetDrawColor(self.color.menuTeamColor.r, self.color.menuTeamColor.g, self.color.menuTeamColor.b)
+    surface.DrawLine(6, 6 + draw.GetFontHeight(self.titlefont), self:GetWide() - 6, 6 + draw.GetFontHeight(self.titlefont))
+
+    draw.SimpleText(self.titletext, self.titlefont, 6, 6, Color(self.color.menuTeamColor.r, self.color.menuTeamColor.g, self.color.menuTeamColor.b), TEXT_ALIGN_LEFT, TEXT_ALIGN_TOP)
+    self.parsedtext:Draw(6, 12 + draw.GetFontHeight(self.titlefont), TEXT_ALIGN_LEFT, TEXT_ALIGN_TOP)
     return true
 end
 
-vgui.Register("ArmorInfoIcon", armorInfoIcon, "DPanel")
+function infoPanel:Think()
+    if not self.parentPanel or not self.parentPanel:Valid() then
+        self:Remove()
+    else
+        local w, h = self.parentPanel:GetPos()
+        self:SetPos(w + self.parentPanel:GetWide() + 6, h)
+    end
+end
+
+function string.Wrap(str,font,linewide)
+	surface.SetFont(font)
+	local txt = ""
+	for line in string.gmatch(str.."\n","([^\n]*)\n")do
+		local w = 0
+		for word in string.gmatch(line.." ","([^ ]*) ")do
+			local wordwide,_ = surface.GetTextSize(word.." ")
+			w = w + wordwide
+			if w > linewide then
+				txt = txt .. "\n"
+				w = wordwide
+			end
+			txt = txt .. word .. " "
+		end
+		txt = txt:sub(1,txt:len()-1) .. "\n"
+	end
+	txt = txt:sub(1,txt:len()-1)
+	return txt
+end
+
+vgui.Register("InfoPanel", infoPanel, "DFrame")
+
+--//
+
+surface.CreateFont("WeaponPanelTitle", {
+	font = "BankGothic",
+	size = 22,
+	weight = 500,
+	antialias = true
+})
+
+surface.CreateFont("WeaponPanelInfoFont", {
+	font = "BankGothic",
+	size = 16,
+	weight = 500,
+	antialias = true
+})
 
 local weaponPanel = {}
 weaponPanel.wepClass = "cw_kk_ins2_ak74" -- default in case SetWep fails to call
-weaponPanel.type = "primary"
 weaponPanel.font = "DermaDefault"
+weaponPanel.masterTable = weapons.GetStored(weaponPanel.wepClass)
 weaponPanel.attachmentButtonSize = 64
 weaponPanel.weaponModelWide = 200
-weaponPanel.isShotgun = false
-weaponPanel.isEquipment = false
-weaponPanel.worseColor = Color(170, 0, 0)
+weaponPanel.worseColor = {238, 210, 2}
+weaponPanel.betterColor = {0, 160, 0}
+--weaponPanel.textTable = {} --needs to be instantiated for draw to not freak out if it starts getting called before Finish() gets called
+weaponPanel.attachmentOrder = {["Sight"] = 1, ["Barrel"] = 2, ["Under"] = 3, ["Lasers"] = 4, ["More Sight"] = 5, ["Magazine"] = 6, ["Ammo"] = 7, ["Flavor"] = 8, ["Sight Contract"] = 9}
+weaponPanel.defaultAttachmentIcons = {
+    ["Sight"] = CustomizableWeaponry.registeredAttachmentsSKey.kk_ins2_kobra.displayIcon,
+    ["Barrel"] = CustomizableWeaponry.registeredAttachmentsSKey.kk_ins2_suppressor_ins.displayIcon,
+    ["Under"] = CustomizableWeaponry.registeredAttachmentsSKey.kk_ins2_vertgrip.displayIcon,
+    ["Lasers"] = CustomizableWeaponry.registeredAttachmentsSKey.kk_ins2_anpeq15.displayIcon,
+    ["More Sight"] = CustomizableWeaponry.registeredAttachmentsSKey.kk_ins2_magnifier.displayIcon,
+    ["Magazine"] = CustomizableWeaponry.registeredAttachmentsSKey.kk_ins2_mag_fal_30.displayIcon,
+    ["Ammo"] = CustomizableWeaponry.registeredAttachmentsSKey.am_magnum.displayIcon,
+    ["Flavor"] = CustomizableWeaponry.registeredAttachmentsSKey.kk_ins2_fnfal_skin.displayIcon,
+    ["Sight Contract"] = CustomizableWeaponry.registeredAttachmentsSKey.kk_ins2_sights_cstm.displayIcon
+}
 weaponPanel.attachmentPositionOffset = {
     [""] = Vector(0, 0, 0),
     [""] = Vector(0, 0, 0),
@@ -293,273 +366,344 @@ weaponPanel.attachmentAngleOffset = {
     [""] = Vector(0, 0, 0),
     [""] = Vector(0, 0, 0)
 }
+weaponPanel.primaryWeaponInfo = { --Format: {variable name in the weapon's file, Display name, Color to display int value, Int value, Lower int value is better boolean}
+    {"Damage", "Damage: ", {255, 255, 255}, 0},
+    {"FireDelay", "Fire rate: ", {255, 255, 255}, 0, true},
+    {"Recoil", "Recoil: ", {255, 255, 255}, 0, true},
+    {"AimSpread", "Accuracy: ", {255, 255, 255}, 0, true},
+    {"SpeedDec", "Weight: ", {255, 255, 255}, 0, true},
+    {"ClipSize", "Clip Size: ", {255, 255, 255}, 0}, --This is under a sub-table, will have to manually check
+    {"base_reload", "Reload Length (seconds): ", {255, 255, 255}, 0, true}, --Also under a sub-table
+    {"SpreadPerShot", "Spread Per Shot: ", {255, 255, 255}, 0, true},
+    {"MaxSpreadInc", "Maximum Spread: ", {255, 255, 255}, 0, true}
+}
+weaponPanel.primaryWeaponInfoShotgun = {
+    {"Damage", "Damage per pellet: ", {255, 255, 255}, 0},
+    {"Shots", "Pellets per shot: ", {255, 255, 255}, 0},
+    {0, "Max damage per shot: ", {255, 255, 255}, 0},
+    {"FireDelay", "Fire rate: ", {255, 255, 255}, 0, true},
+    {"Recoil", "Recoil: ", {255, 255, 255}, 0, true},
+    {"ClumpSpread", "Pellet Spread: ", {255, 255, 255}, 0, true},
+    {"SpeedDec", "Weight: ", {255, 255, 255}, 0, true},
+    {"ClipSize", "Clip Size: ", {255, 255, 255}, 0}, --This is under a sub-table, will have to manually check
+    {"base_reload_start", "Reload Time (per shell): ", {255, 255, 255}, 0, true}, --Also under a sub-table
+    {"base_reload_start_empty", "Reload Time (full): ", {255, 255, 255}, 0, true}, --STill under a sub-table
+    {"SpreadPerShot", "Spread Per Shot: ", {255, 255, 255}, 0, true},
+    {"MaxSpreadInc", "Maximum Spread: ", {255, 255, 255}, 0, true}
+}
+weaponPanel.secondaryWeaponInfo = {
+    {"Damage", "Damage: ", {255, 255, 255}, 0},
+    {"FireDelay", "Fire rate: ", {255, 255, 255}, 0, true},
+    {"Recoil", "Recoil: ", {255, 255, 255}, 0, true},
+    {"SpeedDec", "Weight: ", {255, 255, 255}, 0, true},
+    {"ClipSize", "Clip Size: ", {255, 255, 255}, 0}, --This is under a sub-table, will have to manually check
+    {"base_reload", "Reload Length (seconds): ", {255, 255, 255}, 0, true}
+}
+weaponPanel.equipmentWeaponInfo = { --No equipment have attachments that affect important gameplay stats
+    cw_kk_ins2_nade_anm14 = {
+        {"BurnDuration", "Burn Duration: ", {255, 255, 255}, 0},
+        {"ExplodeRadius", "Explosion Radius: ", {255, 255, 255}, 0},
+        {"ExplodeDamage", "Impact damage: ", {255, 255, 255}, 0}
+    },
+    cw_kk_ins2_nade_c4 = {
+        {"BlastRadius", "Explosion Radius: ", {255, 255, 255}, 0},
+        {"BlastDamage", "Explosion Damage: ", {255, 255, 255}, 0}
+    },
+    cw_kk_ins2_nade_f1 = {
+        {"ExplodeDamage", "Explosion damage: ", {255, 255, 255}, 0},
+        {"ExplodeRadius", "Explosion radius: ", {255, 255, 255}, 0},
+        --{"", "Fuze time: ", {255, 255, 255}, 0} --To create
+    },
+    cw_kk_ins2_nade_m18 = {
+        {"ExplodedRadius", "Smoke radius: ", {255, 255, 255}, 0},
+        --{"", "Smoke duration: ", {255, 255, 255}, 0} --To create
+    },
+    cw_kk_ins2_nade_m84 = {
+        {"FlashDuration", "Flash duration: ", {255, 255, 255}, 0},
+        {"FlashDistance", "Max Distance: ", {255, 255, 255}, 0}, --will decay over this much distance
+        {"MaxIntensityDistance", "Full Effect Distance: ", {255, 255, 255}, 0}, --if an entity is THIS close to the grenade upon explosion, the intensity of the flashbang will be maximum
+        --{"", "Fuze time: ", {255, 255, 255}, 0} --To create
+    },
+    cw_kk_ins2_rpg = { --the 5th, boolean, value is used for determining if the value is retrieved from the weapon (launcher) itself
+        {"BlastDamage", "Explosion Damage: ", {255, 255, 255}, 0},
+        {"BlastRadius", "Explosion Radius: ", {255, 255, 255}, 0},
+        {"base_ready", "reload length: ", {255, 255, 255}, 0, true}, --launcher's
+        {"SpeedDec", "weight: ", {255, 255, 255}, 0, true} --launcher's
+    },
+    cw_kk_ins2_p2a1 = {
+        {"TimeToLive", "Flare duration: ", {255, 255, 255}, 0},
+        {"BurnRadius", "Light Radius: ", {255, 255, 255}, 0}
+    }
+}
+--[[weaponPanel.equipmentWeaponInfo[cw_kk_ins2_nade_hl2] = table.Copy(weaponPanel.equipmentWeaponInfo[cw_kk_ins2_nade_f1])
+weaponPanel.equipmentWeaponInfo[cw_kk_ins2_nade_ied] = table.Copy(weaponPanel.equipmentWeaponInfo[cw_kk_ins2_nade_c4])
+weaponPanel.equipmentWeaponInfo[cw_kk_ins2_nade_m67] = table.Copy(weaponPanel.equipmentWeaponInfo[cw_kk_ins2_nade_f1])
+weaponPanel.equipmentWeaponInfo[cw_kk_ins2_nade_molotov] = table.Copy(weaponPanel.equipmentWeaponInfo[cw_kk_ins2_nade_anm14])
+weaponPanel.equipmentWeaponInfo[cw_kk_ins2_at4] = table.Copy(weaponPanel.equipmentWeaponInfo[cw_kk_ins2_rpg])]]
 
 function weaponPanel:Init()
-    self.attachments = { -- order is: sight, barrel, under, laser, mod, ammo, contract
-        {"kk_ins2_kobra", false},
-        {"kk_ins2_pbs5", false},
-        {"kk_ins2_vertgrip", false},
-        {"kk_ins2_anpeq15", false},
-        {"kk_ins2_magnifier", false},
-        {"am_magnum", false},
-        {"kk_ins2_sights_cstm", false}
-    }
-    self.copiedWeaponTable = { --Order: SWEP table key, display string, attribute value, color (if applicable)
-        {"Damage", "Damage: ", 0, Color(255, 255, 255)},
-        {"FireDelay", "Fire rate: ", 0, Color(255, 255, 255)},
-        {"Recoil", "Recoil: ", 0, Color(255, 255, 255)},
-        {"AimSpread", "Accuracy: ", 0, Color(255, 255, 255)},
-        {"SpeedDec", "Weight: ", 0, Color(255, 255, 255)},
-        {"ClipSize", "Clip Size: ", 0, Color(255, 255, 255)}, --This is under a sub-table, will have to manually check
-        {"base_reload", "Reload Length (seconds): ", 0, Color(255, 255, 255)}, --Also under a sub-table
-        {"SpreadPerShot", "Spread Per Shot: ", 0, Color(255, 255, 255)},
-        {"MaxSpreadInc", "Maximum Spread: ", 0, Color(255, 255, 255)}
-    }
+    self.textTable = {}
 end
 
 function weaponPanel:SetFont(font)
     self.font = font
 end
 
-function weaponPanel:SetType(type)
-    self.type = type
+function weaponPanel:SetModelWide(wide)
+    self.weaponModelWide = wide
 end
 
-function weaponPanel:SetWep(wep, type)
-    local temptable = weapons.GetStored(wep)
+function weaponPanel:SetAttachmentWide(wide)
+    self.attachmentButtonSize = wide
+end
+
+function weaponPanel:SetWep(wep)
 
     self.wepClass = wep
-    self.type = type
-    self.wepName = GAMEMODE.menuDisplayName[self.wepClass] or temptable.PrintName
-    if self.type != "equipment" then
-        if temptable.Shots > 1 then
-            self.isShotgun = true
-        end
-        for k, v in pairs(self.copiedWeaponTable) do
-            if self.isShotgun then
-                if v[1] == "Damage" then
-                    v[3] = temptable[v[1]] * temptable.Shots
-                elseif v[1] == "Aimspread" then
-                    v = {"ClumpSpread", "Pellet Spread: ", math.Round(temptable["ClumpSpread"], 3)}
-                elseif v[1] == "base_reload" then
-                    v[2] = "Reload Time (per shell): "
-                    v[3] = temptable.ReloadTimes.base_reload_insert[1]
-                elseif v[1] == "ClipSize" then
-                    v[3] = temptable.Primary.ClipSize
-                end
+    self.masterTable = weapons.GetStored(self.wepClass)
+    self.wepName = GAMEMODE.menuDisplayName[self.wepClass] or self.masterTable.PrintName
+    self.attachments = self.masterTable.Attachments
+
+    print(self.wepClass, self.wepName)
+
+    local toDelete = {}
+    for k, v in pairs(self.attachments) do if v.header == "CSGO" then toDelete[k] = true end end--purge unwanted attachment types here
+    for k, v in pairs(toDelete) do table.remove(self.attachments, k) end
+
+    --//This assigns a number (other than 0) to the variables we end up displaying
+    if GAMEMODE.menuDisplayName.secondaries[self.wepClass] then --if weapon is a sidearm (pistol)
+        self.weaponDisplayInfo = self.secondaryWeaponInfo
+
+        for k, v in pairs(self.weaponDisplayInfo) do
+            if v[1] == "ClipSize" then
+                v[4] = self.masterTable.Primary[v[1]]
+            elseif v[1] == "base_reload" then
+                v[4] = self.masterTable.ReloadTimes[v[1]][1]
             else
-                if v[1] == "ClipSize" then
-                    v[3] = temptable.Primary.ClipSize
-                elseif v[1] == "base_reload" then
-                    v[3] = temptable.ReloadTimes.base_reload[1]
+                v[4] = self.masterTable[v[1]]
+            end
+        end
+    elseif GAMEMODE.menuDisplayName.equipment[self.wepClass] then --if weapon is equipment (grenades or explosive)
+        self.weaponDisplayInfo = self.equipmentWeaponInfo[self.wepClass]
+
+        net.Start("RequestEntData")
+            net.WriteString(self.wepClass)
+            net.WriteTable(self.weaponDisplayInfo)
+        net.SendToServer()
+
+        net.Receive("RequestEntDataCallback", function()
+            print("DEBUG:----------- RequestEntDataCallback")
+            local projectileEnt = net.ReadTable()
+            print("projectileEnt = ", projectileEnt)
+            for k, v in pairs(self.weaponDisplayInfo) do
+                print(k, v) if istable(v) then PrintTable(v) end
+                if v[5] then
+                    v[4] = self.masterTable[v[1]]
                 else
-                    v[3] = math.Round(temptable[v[1]], 3)
+                    v[4] = projectileEnt[v[1]]
+                    print("else DEBUG: ", v[4])
+                end
+                if self.wepInfoToAdd[k] then
+                    self.wepInfoToAdd[k]:InsertColorChange(v[3][1], v[3][2], v[3][3], 255)
+                    self.wepInfoToAdd[k]:AppendText(v[4])
+                end
+            end
+        end)
+    else --If the weapon isn't a listed secondary or equipment, we'll assume it's a primary
+        if self.masterTable.Shots > 1 then --Check if the primary is a shotgun
+            self.weaponDisplayInfo = self.primaryWeaponInfoShotgun
+
+            for k, v in pairs(self.weaponDisplayInfo) do
+                if isnumber(v[1]) then
+                    v[4] = self.masterTable.Shots * self.masterTable.Damage
+                elseif v[1] == "ClipSize" then
+                    v[4] = self.masterTable.Primary[v[1]]
+                elseif v[1] == "base_reload_start" or v[1] == "base_reload_start_empty" then
+                    v[4] = self.masterTable.ReloadTimes[v[1]][1]
+                else
+                    v[4] = self.masterTable[v[1]]
+                end
+            end
+        else
+            self.weaponDisplayInfo = self.primaryWeaponInfo
+
+            for k, v in pairs(self.weaponDisplayInfo) do
+                if v[1] == "ClipSize" then
+                    v[4] = self.masterTable.Primary[v[1]]
+                elseif v[1] == "base_reload" then
+                    v[4] = self.masterTable.ReloadTimes[v[1]][1]
+                else
+                    v[4] = self.masterTable[v[1]]
                 end
             end
         end
-    else
-        --[[local spawnedEnt = ents.Create(temptable.projectileClass)
-        
-        Fire grenades:
-            -Burn Duration (ExplodeRadius)
-            -Explosion Radius (ExplodeDamage)
-            -Impact damage (BurnDuration)
-        Frag grenades:
-            -Explosion damage (ExplodeDamage)
-            -Explosion radius (ExplodeRadius)
-            -Fuze time --To create
-        Smoke grenade:
-            -Smoke radius (ExplodedRadius)
-            -Smoke duration --To create
-        Flash grenade:
-            -Flash duration (FlashDuration)
-            -Max Distance (FlashDistance) --will decay over this much distance
-            -Full effect Distance (MaxIntensityDistance) --if an entity is THIS close to the grenade upon explosion, the intensity of the flashbang will be maximum
-            -Fuze time --To create
-        Launched Explosives (AT-4, RPG-7):
-            -Explosion Damage (BlastDamage)
-            -Explosion Radius (BlastRadius)
-            -Launcher reload length
-            -Launcher weight
-        Detonated Explosives:
-            -Explosion Radius (BlastRadius)
-            -Explosion Damage (BlastDamage)
-        Flare Gun:
-            -Flare duration (TimeToLive)
-            -Light Radius (BurnRadius)
-        ]]
     end
 end
 
-function weaponPanel:SetAttach(sight, barrel, under, laser, mod, ammo, contract)
-    local temptable = table.Copy(self.copiedWeaponTable)
-    if CustomizableWeaponry.registeredAttachmentsSKey[sight] then
-        self.attachments[1] = {sight, true}
-        if CustomizableWeaponry.registeredAttachmentsSKey[sight].statModifiers and #CustomizableWeaponry.registeredAttachmentsSKey[sight].statModifiers > 0 then
-            for k, v in pairs(CustomizableWeaponry.registeredAttachmentsSKey[sight].statModifiers) do
-                for k2, v2 in pairs(self.copiedWeaponTable) do
-                    if string.StartWith(k, v2[1]) then
-                        v2[3] = v2[3] + v
-                        if v2[3] > temptable[k2][3] then
-                            v2[4] = self.betterColor
-                        elseif v2[3] < temptable[k2][3] then
-                            v2[4] = self.worseColor
-                        else
-                            v2[4] = Color(255, 255, 255)
+function weaponPanel:SetAttach(attachmentsToEquip, reset) --argument var = {attachmentname, attachmentname, attachmentname}, reset = boolean
+    
+    self.myAttachmentInfo = self.myAttachmentInfo or {} --we'll be using this when we draw the attachment's icon(s) in our panel
+
+    if not attachmentsToEquip then return end
+
+    for num, attach in pairs(attachmentsToEquip) do --for each of the attachments we're going to add to the display information, do the following
+        if CustomizableWeaponry.registeredAttachmentsSKey[attach] then --first, check if it's an actual attachment
+            --we need to identify what type of attachment the attachment is
+            local attachmentType, toRevert
+            for k, v in pairs(self.attachments) do --for each of the attachment slots available on the weapon, do the following:
+                if v.atts then 
+                    for k2, v2 in ipairs(v.atts) do --identify what type the attachment is - ipairs because we have a string key and don't want it ran
+                        if v2 == attach then
+                            attachmentType = v.header --save the attachment type in a local variable for validation
+                        end
+                    end
+                end
+            end
+            --if the attachment isn't available for attaching, there's no type, discontinue function and notify user
+            if not attachmentType then ErrorNoHalt("WeaponPanel ERROR - invalid attachment of attachment: ", attach, " attempted on weapon: ", self.wepClass, "\n") return end
+
+            --since the attachment can be attached to the gun, we need to save the attachment in a table for drawing and parameter using for later
+            if self.myAttachmentInfo[attachmentType] then --If we have already equipped an attachment in this slot
+                toRevert = true --Set a local variable to revert the previous attachment's value changes
+            end
+            self.myAttachmentInfo[attachmentType] = attach --Attachment location based on attachment type order
+
+            --Now, we need to change text colors, if the attachment has stat modifying colors
+            if CustomizableWeaponry.registeredAttachmentsSKey[attach].statModifiers and table.Count(CustomizableWeaponry.registeredAttachmentsSKey[attach].statModifiers) > 0 then --if the attachment modifies stats, then
+                for k, v in pairs(CustomizableWeaponry.registeredAttachmentsSKey[attach].statModifiers) do --for each modification it makes
+                    for k2, v2 in pairs(self.weaponDisplayInfo) do --for each variable that will be shown to the player
+                        if string.StartWith(k, v2[1]) then --if the variable and variable that will be modified by the modification are the same
+                            if v2[5] then --if the value is better the lower it is
+                                if v < 0 then --if the modifying value lowers our main value
+                                    v2[3] = self.betterColor --make it draw green
+                                else --if the modifiying value increases our main value
+                                    v2[3] = self.worseColor --make it draw red
+                                end
+                            else --otherwise, do the opposite
+                                if v < 0 then
+                                    v2[3] = self.worseColor
+                                else
+                                    v2[3] = self.betterColor
+                                end
+                            end
+                            if toRevert then
+                                v2[4] = v[6] --only runs if v[6] has already been set due to a previous attachment being added
+                            else
+                                v2[6] = v2[4] --save an old version of value in case we revert
+                            end
+                            v2[4] = v2[4] + v --actually edit the value
                         end
                     end
                 end
             end
         end
-    end
-    if CustomizableWeaponry.registeredAttachmentsSKey[barrel] then
-        self.attachments[2] = {barrel, true}
-        if CustomizableWeaponry.registeredAttachmentsSKey[barrel].statModifiers then
-            for k, v in pairs(CustomizableWeaponry.registeredAttachmentsSKey[barrel].statModifiers) do
-                for k2, v2 in pairs(self.copiedWeaponTable) do
-                    if string.StartWith(k, v2[1]) then
-                        v2[3] = v2[3] + v
-                        if v2[3] > temptable[k2][3] then
-                            v2[4] = self.betterColor
-                        elseif v2[3] < temptable[k2][3] then
-                            v2[4] = self.worseColor
-                        else
-                            v2[4] = Color(255, 255, 255)
-                        end
-                    end
-                end
-            end
-        end
-    end
-    if CustomizableWeaponry.registeredAttachmentsSKey[under] then
-        self.attachments[3] = {under, true}
-        if CustomizableWeaponry.registeredAttachmentsSKey[under].statModifiers then
-            for k, v in pairs(CustomizableWeaponry.registeredAttachmentsSKey[under].statModifiers) do
-                for k2, v2 in pairs(self.copiedWeaponTable) do
-                    if string.StartWith(k, v2[1]) then
-                        v2[3] = v2[3] + v
-                        if v2[3] > temptable[k2][3] then
-                            v2[4] = self.betterColor
-                        elseif v2[3] < temptable[k2][3] then
-                            v2[4] = self.worseColor
-                        else
-                            v2[4] = Color(255, 255, 255)
-                        end
-                    end
-                end
-            end
-        end
-    end
-    if CustomizableWeaponry.registeredAttachmentsSKey[laser] then
-        self.attachments[4] = {laser, true}
-        if CustomizableWeaponry.registeredAttachmentsSKey[laser].statModifiers then
-            for k, v in pairs(CustomizableWeaponry.registeredAttachmentsSKey[laser].statModifiers) do
-                for k2, v2 in pairs(self.copiedWeaponTable) do
-                    if string.StartWith(k, v2[1]) then
-                        v2[3] = v2[3] + v
-                        if v2[3] > temptable[k2][3] then
-                            v2[4] = self.betterColor
-                        elseif v2[3] < temptable[k2][3] then
-                            v2[4] = self.worseColor
-                        else
-                            v2[4] = Color(255, 255, 255)
-                        end
-                    end
-                end
-            end
-        end
-    end
-    if CustomizableWeaponry.registeredAttachmentsSKey[mod] then
-        self.attachments[5] = {mod, true}
-        if CustomizableWeaponry.registeredAttachmentsSKey[mod].statModifiers then
-            for k, v in pairs(CustomizableWeaponry.registeredAttachmentsSKey[mod].statModifiers) do
-                for k2, v2 in pairs(self.copiedWeaponTable) do
-                    if string.StartWith(k, v2[1]) then
-                        v2[3] = v2[3] + v
-                        if v2[3] > temptable[k2][3] then
-                            v2[4] = self.betterColor
-                        elseif v2[3] < temptable[k2][3] then
-                            v2[4] = self.worseColor
-                        else
-                            v2[4] = Color(255, 255, 255)
-                        end
-                    end
-                end
-            end
-        end
-    end
-    if CustomizableWeaponry.registeredAttachmentsSKey[ammo] then
-        self.attachments[6] = {ammo, true}
-        if CustomizableWeaponry.registeredAttachmentsSKey[ammo].statModifiers then
-            for k, v in pairs(CustomizableWeaponry.registeredAttachmentsSKey[ammo].statModifiers) do
-                for k2, v2 in pairs(self.copiedWeaponTable) do
-                    if string.StartWith(k, v2[1]) then
-                        v2[3] = v2[3] + v
-                        if v2[3] > temptable[k2][3] then
-                            v2[4] = self.betterColor
-                        elseif v2[3] < temptable[k2][3] then
-                            v2[4] = self.worseColor
-                        else
-                            v2[4] = Color(255, 255, 255)
-                        end
-                    end
-                end
-            end
-        end
-    end
-    if CustomizableWeaponry.registeredAttachmentsSKey[contract] then --This doesn't ever change any stats
-        self.attachments[7] = {contract, true}
     end
 end
 
 function weaponPanel:Paint()
-    draw.RoundedBoxEx(16, 0, 0, self:GetWide(), self:GetTall(), Color(255, 255, 255), true, true, true, true)
-    draw.RoundedBoxEx(16, 4, 4, self:GetWide() - 8, self:GetTall() - 8, Color(0, 0, 0), true, true, true, true)
-    draw.RoundedBoxEx(16, 5, 5, self:GetWide() - 10, self:GetTall() - 10, Color(100, 100, 100), true, true, true, true)
-    for k, v in pairs(self.copiedWeaponTable) do
-        if k < 4 then
-            draw.SimpleText(v[2] .. v[3], self.font, self.weaponModelWide + 6, 15 * k, v[4], TEXT_ALIGN_LEFT, TEXT_ALIGN_CENTER)
-        elseif k < 7 then
-            draw.SimpleText(v[2] .. v[3], self.font, self.weaponModelWide + (self:GetWide() - self.weaponModelWide) / 3, 15 * (k - 3), v[4], TEXT_ALIGN_LEFT, TEXT_ALIGN_CENTER)
-        elseif k < 10 then
-            draw.SimpleText(v[2] .. v[3], self.font, self.weaponModelWide + (self:GetWide() - self.weaponModelWide) * (2 / 3), 15 * (k - 6), v[4], TEXT_ALIGN_LEFT, TEXT_ALIGN_CENTER)
-        end
-    end
+    surface.SetDrawColor(GAMEMODE.myTeam.menuTeamColor.r, GAMEMODE.myTeam.menuTeamColor.g, GAMEMODE.myTeam.menuTeamColor.b)
+    draw.RoundedBox(8, 0, 0, self:GetWide(), self:GetTall(), Color(GAMEMODE.myTeam.menuTeamColorDarkAccent.r, GAMEMODE.myTeam.menuTeamColorDarkAccent.g, GAMEMODE.myTeam.menuTeamColorDarkAccent.b))
+    --surface.DrawLine(24, 1, self:GetWide() - 24, 1)
+    --surface.DrawLine(self.weaponModelWide, 6, self.weaponModelWide, self:GetTall() - 6)
+    --surface.DrawLine(1, 0, 1, self:GetTall())
+    --surface.SetDrawColor(255, 255, 255)
+    --surface.DrawOutlinedRect(0, 0, self:GetSize())
+    draw.SimpleText(self.wepName, "WeaponPanelTitle", self.weaponModelWide / 2, 2, Color(GAMEMODE.myTeam.menuTeamColor.r, GAMEMODE.myTeam.menuTeamColor.g, GAMEMODE.myTeam.menuTeamColor.b), TEXT_ALIGN_CENTER, TEXT_ALIGN_TOP)
     return true
 end
 
 function weaponPanel:Finish() --I can't think of a function to otherwise put this in and I don't care to test for another one
-    self.attachmentButtonSpacer = (self:GetWide() - (self.attachmentButtonSize * #self.attachments)) / (#self.attachments + 1)
+
+    self.myAttachmentInfo = self.myAttachmentInfo or {} --also called here in case the weapon panel wasn't created with attachments
+
+    self.availableTextSpace = self:GetWide() - self.weaponModelWide + 2
+    if #self.weaponDisplayInfo < 4 then
+        self.infoTextWide = self.availableTextSpace + 20
+        self.infoTextXOffset = self.availableTextSpace / 2
+    elseif #self.weaponDisplayInfo < 7 then
+        self.infoTextWide = self.availableTextSpace / 2 + 20
+        self.infoTextXOffset = self.availableTextSpace / 3
+    elseif #self.weaponDisplayInfo < 10 then
+        self.infoTextWide = self.availableTextSpace / 3 + 20
+        self.infoTextXOffset = self.availableTextSpace / 4
+    else
+        self.infoTextWide = self.availableTextSpace / 4 + 20
+        self.infoTextXOffset = self.availableTextSpace / 5
+    end
+
+    for k, v in pairs(self.weaponDisplayInfo) do
+        v[4] = math.Round(v[4], 3)
+        self.wepInfoToAdd = {}
+        --self.textTable[k] = markup.Parse("<font=" .. self.font .. "><colour=255, 255, 255>".. v[2] .. "</colour><colour=" .. v[3][1] .. "," .. v[3][2] .. ","  .. v[3][3] .. ">" .. v[4] .. "</colour></font>")
+
+        local richTextPanel = vgui.Create("RichText", self)
+        richTextPanel:SetSize(self.infoTextWide, (self:GetTall() - self.attachmentButtonSize) / 3)
+        if k < 4 then
+            richTextPanel:SetPos(self.weaponModelWide, richTextPanel:GetTall() * (k - 1))
+        elseif k < 7 then
+            richTextPanel:SetPos(self.weaponModelWide + self.infoTextXOffset, richTextPanel:GetTall() * (k - 4))
+        elseif k < 10 then
+            richTextPanel:SetPos(self.weaponModelWide + self.infoTextXOffset * 2, richTextPanel:GetTall() * (k - 7))
+        else
+            richTextPanel:SetPos(self.weaponModelWide + self.infoTextXOffset * 3, richTextPanel:GetTall() * (k - 10))
+        end
+        function richTextPanel:PerformLayout() --Has to be done through this function, because it doesn't work outside of it
+            self:SetFontInternal( "TestFont3Small" )
+        end
+        richTextPanel:InsertColorChange(150, 150, 150, 255)
+        richTextPanel:AppendText(v[2])
+        if not GAMEMODE.menuDisplayName.equipment[self.wepClass] then
+            richTextPanel:InsertColorChange(v[3][1], v[3][2], v[3][3], 255)
+            richTextPanel:AppendText(v[4])
+        else
+            self.wepInfoToAdd[k] = richTextPanel
+        end
+        richTextPanel:SetVerticalScrollbarEnabled(false)
+    end
+
+    self.attachmentButtonSpacer = (self:GetWide() - self.weaponModelWide - (self.attachmentButtonSize * table.Count(self.attachments))) / (table.Count(self.attachments) + 1)
+    local outerCount = 1
     for k, v in pairs(self.attachments) do
+        if k == "+use" or k == "+reload" then k = outerCount end
+
         local but = vgui.Create("DButton", self)
+
+        if self.myAttachmentInfo[v.header] then
+            but.textureToDraw = CustomizableWeaponry.registeredAttachmentsSKey[self.myAttachmentInfo[v.header]].displayIcon
+        else
+            but.textureToDraw = self.defaultAttachmentIcons[v.header]
+        end
+
         but:SetSize(self.attachmentButtonSize, self.attachmentButtonSize)
-        but:SetPos(self.attachmentButtonSpacer * k + (self.attachmentButtonSize * (k - 1)), self:GetTall() - self.attachmentButtonSize - 6)
+        but:SetPos(self.weaponModelWide + self.attachmentButtonSpacer * k + (self.attachmentButtonSize * (k - 1)), self:GetTall() - self.attachmentButtonSize - 6)
         but:SetText("")
         but.DoClick = function()
             surface.PlaySound("buttons/lightswitch2.wav")
-            --Opens attachment customization menu, can quick-purchase attachments from here instead of from the shop
+            --Opens attachment customization menu, can quickly add attachments to your gun from here
         end
         but.Paint = function()
-            if v[2] then
+            if self.myAttachmentInfo[v.header] then --if there is an attachment set to be equipped
                 surface.SetDrawColor(255, 255, 255)
-                surface.SetTexture(CustomizableWeaponry.registeredAttachmentsSKey[v[1]].displayIcon)
+                surface.SetTexture(but.textureToDraw)
                 surface.DrawTexturedRect(1, 1, self.attachmentButtonSize - 1, self.attachmentButtonSize - 1)
-                surface.SetDrawColor(175, 175, 175)
-                surface.DrawOutlinedRect(0, 0, self.attachmentButtonSize, self.attachmentButtonSize)
+                --surface.SetDrawColor(175, 175, 175)
+                --surface.DrawOutlinedRect(0, 0, self.attachmentButtonSize, self.attachmentButtonSize)
                 if but.hover then
-                    surface.SetDrawColor(255, 255, 255)
+                    surface.SetDrawColor(GAMEMODE.myTeam.menuTeamColorLightAccent.r, GAMEMODE.myTeam.menuTeamColorLightAccent.g, GAMEMODE.myTeam.menuTeamColorLightAccent.b)
                     surface.DrawOutlinedRect(0, 0, self.attachmentButtonSize, self.attachmentButtonSize)
                 end
-            else
+            else --if we're drawing the default icon
                 surface.SetDrawColor(255, 255, 255)
-                surface.SetTexture(CustomizableWeaponry.registeredAttachmentsSKey[v[1]].displayIcon)
+                surface.SetTexture(but.textureToDraw)
                 surface.DrawTexturedRect(1, 1, self.attachmentButtonSize - 1, self.attachmentButtonSize - 1)
-                surface.SetDrawColor(175, 175, 175)
-                surface.DrawOutlinedRect(0, 0, self.attachmentButtonSize, self.attachmentButtonSize)
-                if not but.hover then
-                    surface.SetDrawColor(175, 175, 175)
+                if but.hover then
+                    surface.SetDrawColor(GAMEMODE.myTeam.menuTeamColorLightAccent.r, GAMEMODE.myTeam.menuTeamColorLightAccent.g, GAMEMODE.myTeam.menuTeamColorLightAccent.b)
                     surface.DrawOutlinedRect(0, 0, self.attachmentButtonSize, self.attachmentButtonSize)
-                    surface.SetDrawColor(0, 0, 0, 200)
+                end
+                if not but.hover then
+                    --surface.SetDrawColor(175, 175, 175)
+                    --surface.DrawOutlinedRect(0, 0, self.attachmentButtonSize, self.attachmentButtonSize)
+                    surface.SetDrawColor(GAMEMODE.myTeam.menuTeamColorLightAccent.r, GAMEMODE.myTeam.menuTeamColorLightAccent.g, GAMEMODE.myTeam.menuTeamColorLightAccent.b, 5)
                     surface.DrawRect(0, 0, self.attachmentButtonSize, self.attachmentButtonSize)
                 end
             end
@@ -572,11 +716,13 @@ function weaponPanel:Finish() --I can't think of a function to otherwise put thi
         but.OnCursorExited = function()
             but.hover = false
         end
+
+        outerCount = outerCount + 1
     end
 
     local weaponModelPanel = vgui.Create("DModelPanel", self)
-    weaponModelPanel:SetPos(2, 2)
-    weaponModelPanel:SetSize(self.weaponModelWide, 70)
+    weaponModelPanel:SetSize(self.weaponModelWide, self:GetTall() - 26)
+    weaponModelPanel:SetPos(0, self:GetTall() - weaponModelPanel:GetTall())
     weaponModelPanel:SetModel(weapons.GetStored(self.wepClass).WorldModel)
     weaponModelPanel:SetCamPos(Vector(0, 35, 0)) --Courtesy of Spy
     weaponModelPanel:SetLookAt(Vector(0, 0, 0)) --Courtesy of Spy
@@ -586,30 +732,12 @@ function weaponPanel:Finish() --I can't think of a function to otherwise put thi
     weaponModelPanel:SetAmbientLight(Color(255, 255, 255))
     weaponModelPanel.LayoutEntity = function() return true end --Disables rotation
 
-    local but = vgui.Create("DButton", weaponModelPanel)
-    but:SetSize(weaponModelPanel:GetWide(), weaponModelPanel:GetTall())
-    but:SetPos(0, 0)
-    but:SetText("")
-    but.DoClick = function()
-        surface.PlaySound("buttons/lightswitch2.wav")
-        --Opens weapon selection menu, can quick-purchase weapons from here instead of from the shop
-    end
-    but.Paint = function()
-        draw.SimpleTextOutlined(self.wepName, "DermaDefault", but:GetWide() / 2, but:GetTall() / 2, Color(255, 255, 255), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER, 1, Color(0, 0, 0))
-        surface.SetDrawColor(175, 175, 175)
-        surface.DrawOutlinedRect(1, 1, but:GetWide() - 1, but:GetTall() - 1)
-        if but.hover then
-            surface.SetDrawColor(255, 255, 255)
-            surface.DrawOutlinedRect(1, 1, but:GetWide() - 1, but:GetTall() - 1)
-        end
-        return true
-    end
-    but.OnCursorEntered = function()
-        surface.PlaySound("garrysmod/ui_hover.wav")
-        but.hover = true
-    end
-    but.OnCursorExited = function()
-        but.hover = false
+    local panel = vgui.Create("DPanel", self)
+    panel:SetSize(self.weaponModelWide, self:GetTall() - 26)
+    panel:SetPos(0, self:GetTall() - panel:GetTall())
+    panel.Paint = function()
+        surface.SetDrawColor(255, 255, 255)
+        --surface.DrawOutlinedRect(0, 0, panel:GetSize())
     end
 end
 

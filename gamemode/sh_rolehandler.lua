@@ -34,21 +34,23 @@ GM.Roles = {
         redTeamName = "Militant",
         blueTeamName = "Rifleman",
         soloTeamName = "Rifleman",
-        roleDescription = "Standard armored fighter. Granted access to most weapon types and frag grenades.",
+        roleDescription = "Standard armored fighter. Granted access to most weapon types and frag grenades.", --Currently don't have a use for this
         roleDescriptionExpanded = {
             {"Assault Rifles", "Full"},
             {"Sub-Machine Guns", "Partial"},
-            {"Shotguns", "No"},
-            {"Heavy Machine Guns", "No"},
+            {"Shotguns", "None"},
+            {"Heavy Machine Guns", "None"},
             {"D.M.R.s", "Partial"},
-            {"Snipers", "No"},
+            {"Snipers", "None"},
             {"Frag Grenades", "Full"},
-            {"Flash Grenades", "No"},
-            {"Smoke Grenades", "No"},
-            {"Remote Explosives", "No"},
-            {"Explosive Launchers", "No"}
+            {"Flash Grenades", "None"},
+            {"Smoke Grenades", "None"},
+            {"Fire Grenades", "None"},
+            {"Remote Explosives", "None"},
+            {"Explosive Launchers", "None"}
         },
-        armorRating = GM.Armor[2]
+        armorRating = GM.Armor[2],
+        roleIcon = Material("menu/role_icons/role_rifleman_icon_fixed.png", "smooth")
     },
     [2] = {
         redTeamName = "Scout",
@@ -56,39 +58,43 @@ GM.Roles = {
         soloTeamName = "Recon",
         roleDescription = "Lightly armored but fast-moving fighter. Granted access to all short-range weaponry and flash grenades.",
         roleDescriptionExpanded = {
-            {"Assault Rifles", "No"},
+            {"Assault Rifles", "None"},
             {"Sub-Machine Guns", "Full"},
             {"Shotguns", "Full"},
-            {"Heavy Machine Guns", "No"},
-            {"D.M.R.s", "No"},
-            {"Snipers", "No"},
-            {"Frag Grenades", "No"},
+            {"Heavy Machine Guns", "None"},
+            {"D.M.R.s", "None"},
+            {"Snipers", "None"},
+            {"Frag Grenades", "None"},
             {"Flash Grenades", "Full"},
-            {"Smoke Grenades", "No"},
-            {"Remote Explosives", "No"},
-            {"Explosive Launchers", "No"}
+            {"Smoke Grenades", "None"},
+            {"Fire Grenades", "None"},
+            {"Remote Explosives", "None"},
+            {"Explosive Launchers", "None"}
         },
-        armorRating = GM.Armor[1]
+        armorRating = GM.Armor[1],
+        roleIcon = Material("menu/role_icons/role_recon_icon_fixed.png", "smooth")
     },
     [3] = {
         redTeamName = "Gunner",
         blueTeamName = "Support",
         soloTeamName = "Gunner",
-        roleDescription = "Super heavily armored supportive fighter. Granted access to LMGs, some long-distance DMRs, and smoke grenades.",
+        roleDescription = "Super heavily armored supportive fighter. Granted access to LMGs, some long-distance DMRs, and smoke and fire grenades.",
         roleDescriptionExpanded = {
             {"Assault Rifles", "Partial"},
-            {"Sub-Machine Guns", "No"},
-            {"Shotguns", "No"},
+            {"Sub-Machine Guns", "None"},
+            {"Shotguns", "None"},
             {"Heavy Machine Guns", "Full"},
             {"D.M.R.s", "Partial"},
-            {"Snipers", "No"},
-            {"Frag Grenades", "No"},
-            {"Flash Grenades", "No"},
+            {"Snipers", "None"},
+            {"Frag Grenades", "None"},
+            {"Flash Grenades", "None"},
             {"Smoke Grenades", "Full"},
-            {"Remote Explosives", "No"},
-            {"Explosive Launchers", "No"}
+            {"Fire Grenades", "Full"},
+            {"Remote Explosives", "None"},
+            {"Explosive Launchers", "None"}
         },
-        armorRating = GM.Armor[4]
+        armorRating = GM.Armor[4],
+        roleIcon = Material("menu/role_icons/role_support_icon_fixed.png", "smooth")
     },
     [4] = {
         redTeamName = "Sharpshooter",
@@ -97,18 +103,20 @@ GM.Roles = {
         roleDescription = "Lightly armored supportive fighter. Granted access to all DMRs but no sniper rifle.",
         roleDescriptionExpanded = {
             {"Assault Rifles", "Partial"},
-            {"Sub-Machine Guns", "No"},
-            {"Shotguns", "No"},
-            {"Heavy Machine Guns", "No"},
+            {"Sub-Machine Guns", "None"},
+            {"Shotguns", "None"},
+            {"Heavy Machine Guns", "None"},
             {"D.M.R.s", "Full"},
-            {"Snipers", "No"},
-            {"Frag Grenades", "No"},
-            {"Flash Grenades", "No"},
+            {"Snipers", "None"},
+            {"Frag Grenades", "None"},
+            {"Flash Grenades", "None"},
             {"Smoke Grenades", "Full"},
-            {"Remote Explosives", "No"},
-            {"Explosive Launchers", "No"}
+            {"Fire Grenades", "None"},
+            {"Remote Explosives", "None"},
+            {"Explosive Launchers", "None"}
         },
-        armorRating = GM.Armor[1]
+        armorRating = GM.Armor[1],
+        roleIcon = Material("menu/role_icons/role_marksman_icon_fixed.png", "smooth")
     },
     [5] = {
         redTeamName = "Striker",
@@ -117,18 +125,20 @@ GM.Roles = {
         roleDescription = "Super heavily armored fighter. Granted access to all launchers and Assault Rifles, but no grenades.",
         roleDescriptionExpanded = {
             {"Assault Rifles", "Full"},
-            {"Sub-Machine Guns", "No"},
-            {"Shotguns", "No"},
-            {"Heavy Machine Guns", "No"},
-            {"D.M.R.s", "No"},
-            {"Snipers", "No"},
-            {"Frag Grenades", "No"},
-            {"Flash Grenades", "No"},
-            {"Smoke Grenades", "No"},
-            {"Remote Explosives", "No"},
+            {"Sub-Machine Guns", "None"},
+            {"Shotguns", "None"},
+            {"Heavy Machine Guns", "None"},
+            {"D.M.R.s", "None"},
+            {"Snipers", "None"},
+            {"Frag Grenades", "None"},
+            {"Flash Grenades", "None"},
+            {"Smoke Grenades", "None"},
+            {"Fire Grenades", "None"},
+            {"Remote Explosives", "None"},
             {"Explosive Launchers", "Full"}
         },
-        armorRating = GM.Armor[4]
+        armorRating = GM.Armor[4],
+        roleIcon = Material("menu/role_icons/role_demolitions_icon_fixed.png", "smooth")
     },
     [6] = {
         redTeamName = "Sniper",
@@ -136,19 +146,21 @@ GM.Roles = {
         soloTeamName = "Sniper",
         roleDescription = "Lightly armored supportive fighter. Granted access to all sniper rifles but no grenades.",
         roleDescriptionExpanded = {
-            {"Assault Rifles", "No"},
-            {"Sub-Machine Guns", "No"},
-            {"Shotguns", "No"},
-            {"Heavy Machine Guns", "No"},
-            {"D.M.R.s", "No"},
+            {"Assault Rifles", "None"},
+            {"Sub-Machine Guns", "None"},
+            {"Shotguns", "None"},
+            {"Heavy Machine Guns", "None"},
+            {"D.M.R.s", "None"},
             {"Snipers", "Full"},
-            {"Frag Grenades", "No"},
-            {"Flash Grenades", "No"},
-            {"Smoke Grenades", "No"},
-            {"Remote Explosives", "No"},
-            {"Explosive Launchers", "No"}
+            {"Frag Grenades", "None"},
+            {"Flash Grenades", "None"},
+            {"Smoke Grenades", "None"},
+            {"Fire Grenades", "None"},
+            {"Remote Explosives", "None"},
+            {"Explosive Launchers", "None"}
         },
-        armorRating = GM.Armor[1]
+        armorRating = GM.Armor[1],
+        roleIcon = Material("menu/role_icons/role_sniper_icon_fixed.png", "smooth")
     },
     [7] = {
         redTeamName = "Sapper",
@@ -159,16 +171,18 @@ GM.Roles = {
             {"Assault Rifles", "Partial"},
             {"Sub-Machine Guns", "Partial"},
             {"Shotguns", "Partial"},
-            {"Heavy Machine Guns", "No"},
-            {"D.M.R.s", "No"},
-            {"Snipers", "No"},
+            {"Heavy Machine Guns", "None"},
+            {"D.M.R.s", "None"},
+            {"Snipers", "None"},
             {"Frag Grenades", "Full"},
             {"Flash Grenades", "Full"},
             {"Smoke Grenades", "Full"},
+            {"Fire Grenades", "Full"},
             {"Remote Explosives", "Full"},
-            {"Explosive Launchers", "No"}
+            {"Explosive Launchers", "None"}
         },
-        armorRating = GM.Armor[3]
+        armorRating = GM.Armor[3],
+        roleIcon = Material("menu/role_icons/role_breacher_icon_fixed.png", "smooth")
     },
     [8] = {
         redTeamName = "Expert",
@@ -181,14 +195,16 @@ GM.Roles = {
             {"Shotguns", "Full"},
             {"Heavy Machine Guns", "Full"},
             {"D.M.R.s", "Full"},
-            {"Snipers", "No"},
+            {"Snipers", "None"},
             {"Frag Grenades", "Full"},
             {"Flash Grenades", "Full"},
             {"Smoke Grenades", "Full"},
-            {"Remote Explosives", "No"},
-            {"Explosive Launchers", "No"}
+            {"Fire Grenades", "Full"},
+            {"Remote Explosives", "None"},
+            {"Explosive Launchers", "None"}
         },
-        armorRating = GM.Armor[2]
+        armorRating = GM.Armor[2],
+        roleIcon = Material("menu/role_icons/role_specialist_icon_fixed.png", "smooth")
     }
 }
 
@@ -198,7 +214,7 @@ for k, v in pairs(GM.Roles) do
             v2[3] = Color(0, 160, 0)
         elseif v2[2] == "Partial" then
             v2[3] = Color(238, 210, 2)
-        elseif v2[2] == "No" then
+        elseif v2[2] == "None" then
             v2[3] = Color(170, 0, 0)
         end
     end

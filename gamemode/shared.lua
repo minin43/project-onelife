@@ -7,19 +7,19 @@ GM.Version = "09092017"
 GM.redTeam = {
 	menuTeamColor = {r = 183, g = 28, b = 28},
 	menuTeamColorLightAccent = {r = 240, g = 85, b = 69},
-	menuTeamColorDarkAccent = {r = 127, g = 0, b = 0},
+	menuTeamColorDarkAccent = {r = 20, g = 15, b = 15},
 	menuTeamColorAccent = {r = 255, g = 255, b = 255}
 }
 GM.blueTeam = {
 	menuTeamColor = {r = 13, g = 71, b = 161},
 	menuTeamColorLightAccent = {r = 84, g = 114, b = 211},
-	menuTeamColorDarkAccent = {r = 0, g = 33, b = 113},
+	menuTeamColorDarkAccent = {r = 15, g = 15, b = 20},
 	menuTeamColorAccent = {r = 255, g = 255, b = 255}
 }
 GM.soloTeam = {
 	menuTeamColor = {r = 27, g = 94, b = 32},
 	menuTeamColorLightAccent = {r = 76, g = 140, b = 74},
-	menuTeamColorDarkAccent = {r = 0, g = 51, b = 0},
+	menuTeamColorDarkAccent = {r = 15, g = 20, b = 15},
 	menuTeamColorAccent = {r = 255, g = 255, b = 255}
 }
 
@@ -29,8 +29,16 @@ if SERVER then
 	util.AddNetworkString( "AskTeamsCallback" )
 
 	GM.possibleTeamNames = {
-		{ "Task Force 141", "US Army Rangers", "Navy Seals" },
-		{ "Spetsnaz", "Militia", "OpFor" }
+		{"Task Force 141", "US Army Rangers", "Navy Seals"},
+		{"Spetsnaz", "OpFor"}--"Militia", "OpFor" }
+	}
+	GM.teamIcons = {
+		["Task Force 141"] = Material("hud/icons/TF141_team_picture.jpg"),
+		["US Army Rangers"] = Material("hud/icons/Rangers_team_picture.jpg"),
+		["Navy Seals"] = Material("hud/icons/Seals_team_picture.jpg"),
+		["Spetsnaz"] = Material("hud/icons/Spetsnaz_team_picture.jpg"),
+		--["Militia"] = Material("hud/icons/"),
+		["OpFor"] = Material("hud/icons/OpFor_team_picture2.jpg")
 	}
 
 	GM.redTeam.Name = table.Random( GM.possibleTeamNames[ 2 ] )

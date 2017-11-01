@@ -80,3 +80,19 @@ net.Receive("RequestEntData", function(len, ply)
         net.WriteTable(tableToSend)
     net.Send(ply)
 end)
+
+net.Receive("RequestAvailableWeapons", function(len, ply)
+    local availableWeaponsTable = {}
+
+    --[[
+        To-Do:
+        - Retrieve all weapons provided to the role by default
+        - Retrieve all weapons unlocked by the player that are also available to the role
+
+        To note: I want the weapons sorted first based on weapon type, then by name
+    ]]
+
+    net.Start("RequestAvailableWeaponsCallback")
+        net.WriteTable(availableWeaponsTable)
+    net.Send(ply)
+end)

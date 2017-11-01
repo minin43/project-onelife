@@ -89,103 +89,6 @@ vgui.Register("RoleSelectionButton", roleSelectionButton, "DButton")
 
 --//
 
---[[local roleDescriptionButton = {}
-roleDescriptionButton.text = ""
-roleDescriptionButton.font = "DermaLarge"
-
-function roleDescriptionButton:SetText(txt)
-    self.text = txt
-end
-
-function roleDescriptionButton:SetRole(num)
-    self.role = num
-end
-
-function roleDescriptionButton:SetFont(fnt)
-    self.font = fnt
-end
-
-function roleDescriptionButton:OnCursorEntered()
-    surface.PlaySound("garrysmod/ui_hover.wav")
-    self.cursorEntered = true
-end
-
-function roleDescriptionButton:OnCursorExited()
-    self.cursorEntered = false
-end
-
-function roleDescriptionButton:Paint()
-    local w, h = self:GetSize()
-
-    draw.SimpleText(self.text, self.font, w / 2, h / 2, Color(175, 175, 175), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
-    surface.SetDrawColor(175, 175, 175)
-    surface.DrawLine(0, 0, w, 0)
-    surface.DrawLine(0, 0, 0, h)
-    surface.DrawLine(0, h - 1, w, h - 1)
-    if self.cursorEntered or GAMEMODE.roleDescMenuButtonNumber == self.role then
-        draw.SimpleText(self.text, self.font, w / 2, h / 2, Color(255, 255, 255), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
-        surface.SetDrawColor(255, 255, 255)
-        surface.DrawLine(0, 0, w, 0)
-        surface.DrawLine(0, 0, 0, h)
-       -- if self.role == #GAMEMODE.Roles then
-            surface.DrawLine(0, h - 1, w, h - 1)
-        --else
-            --surface.DrawLine(0, h, w, h)
-        --end
-    end
-    return true
-end
-
-function roleDescriptionButton:DoClick()
-    surface.PlaySound("buttons/lightswitch2.wav")
-    GAMEMODE.roleDescMenuButtonNumber = self.role
-    GAMEMODE.roleDescMenuButtonDownX, GAMEMODE.roleDescMenuButtonDownY = self:GetPos()
-    GAMEMODE.roleDescMenuButtonDownWide, GAMEMODE.roleDescMenuButtonDownTall = self:GetSize()
-end
-
-vgui.Register("RoleDescriptionButton", roleDescriptionButton, "DButton")
-
---//
-
-local armorDescriptionButton = table.Copy(roleDescriptionButton)
-
-function armorDescriptionButton:SetArmor(num)
-    self.armor = num
-end
-
-function armorDescriptionButton:DoClick()
-    surface.PlaySound("buttons/lightswitch2.wav")
-    GAMEMODE.armorDescMenuButtonDown = self.armor
-    GAMEMODE.armorDescMenuButtonDownX, GAMEMODE.armorDescMenuButtonDownY = self:GetPos()
-    GAMEMODE.armorDescMenuButtonDownWide, GAMEMODE.armorDescMenuButtonDownTall = self:GetSize()
-    GAMEMODE:DrawDescriptionPanel(self.armor)
-end
-
-function armorDescriptionButton:Paint()
-    local w, h = self:GetSize()
-
-    draw.SimpleText(self.text, self.font, w / 2, h / 2, Color(175, 175, 175), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
-    surface.SetDrawColor(175, 175, 175)
-    surface.DrawLine(0, 0, w, 0)
-    surface.DrawLine(0, 0, 0, h)
-    surface.DrawLine(0, h, w, h)
-    if self.cursorEntered or GAMEMODE.armorDescMenuButtonDown == self.armor then
-        draw.SimpleText(self.text, self.font, w / 2, h / 2, Color(255, 255, 255), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
-        surface.SetDrawColor(255, 255, 255)
-        surface.DrawLine(0, 0, w, 0)
-        surface.DrawLine(0, 0, 0, h)
-        --surface.DrawLine(0, h - 1, w, h - 1)
-        --if self.armor == #GAMEMODE.Armor then
-            --surface.DrawLine(0, h - 1, w, h)
-        --else
-            surface.DrawLine(0, h, w, h)
-        --end
-    end
-    return true
-end
-
-vgui.Register("ArmorDescriptionButton", armorDescriptionButton, "DButton")]]
-
 local infoIcon = {}
 infoIcon.lineOne = ""
 infoIcon.lineTwo = ""
@@ -318,6 +221,8 @@ surface.CreateFont("WeaponPanelInfoFont", {
 	weight = 500,
 	antialias = true
 })
+
+--//This class gets quite messy.
 
 local weaponPanel = {}
 weaponPanel.wepClass = "cw_kk_ins2_ak74" -- default in case SetWep fails to call
@@ -603,11 +508,6 @@ end
 function weaponPanel:Paint()
     surface.SetDrawColor(GAMEMODE.myTeam.menuTeamColor.r, GAMEMODE.myTeam.menuTeamColor.g, GAMEMODE.myTeam.menuTeamColor.b)
     draw.RoundedBox(8, 0, 0, self:GetWide(), self:GetTall(), Color(GAMEMODE.myTeam.menuTeamColorDarkAccent.r, GAMEMODE.myTeam.menuTeamColorDarkAccent.g, GAMEMODE.myTeam.menuTeamColorDarkAccent.b))
-    --surface.DrawLine(24, 1, self:GetWide() - 24, 1)
-    --surface.DrawLine(self.weaponModelWide, 6, self.weaponModelWide, self:GetTall() - 6)
-    --surface.DrawLine(1, 0, 1, self:GetTall())
-    --surface.SetDrawColor(255, 255, 255)
-    --surface.DrawOutlinedRect(0, 0, self:GetSize())
     draw.SimpleText(self.wepName, "WeaponPanelTitle", self.weaponModelWide / 2, 2, Color(GAMEMODE.myTeam.menuTeamColor.r, GAMEMODE.myTeam.menuTeamColor.g, GAMEMODE.myTeam.menuTeamColor.b), TEXT_ALIGN_CENTER, TEXT_ALIGN_TOP)
     return true
 end
@@ -634,7 +534,6 @@ function weaponPanel:Finish() --I can't think of a function to otherwise put thi
     for k, v in pairs(self.weaponDisplayInfo) do
         v[4] = math.Round(v[4], 3)
         self.wepInfoToAdd = {}
-        --self.textTable[k] = markup.Parse("<font=" .. self.font .. "><colour=255, 255, 255>".. v[2] .. "</colour><colour=" .. v[3][1] .. "," .. v[3][2] .. ","  .. v[3][3] .. ">" .. v[4] .. "</colour></font>")
 
         local richTextPanel = vgui.Create("RichText", self)
         richTextPanel:SetSize(self.infoTextWide, (self:GetTall() - self.attachmentButtonSize) / 3)
@@ -742,3 +641,67 @@ function weaponPanel:Finish() --I can't think of a function to otherwise put thi
 end
 
 vgui.Register("WeaponMenuPanel", weaponPanel, "DPanel")
+
+--//
+
+local weaponPanelList = {}
+weaponPanelList.class = "cw_kk_ins2_ak74"
+weaponPanelList.name = weapons.GetStored(weaponPanelList.class)[PrintName]
+menuDisplayName.font = "DermaDefault"
+weaponPanelList.type = "Assault Rifles"
+weaponPanelList.typeIcon = GAMEMODE.weaponToIcon[weaponPanelList.type]
+
+function weaponPanelList:SetWep(wep)
+    self.class = wep
+    for k, v in pairs(GAMEMODE.menuDisplayName) do
+        for k2, v2 in pairs(v) do
+            if k2 == self.class then
+                self.name = v2
+            end
+        end
+    end
+end
+
+function weaponPanelList:SetType(type)
+    self.type = type
+    self.typeIcon = GAMEMODE.weaponToIcon[self.type]
+end
+
+function weaponPanelList:SetFont(font)
+    self.font = font
+end
+
+function weaponPanelList:Paint()
+    surface.SetTexture(self.typeIcon)
+    surface.DrawTexturedRect(0, 0, self:GetTall(), self:GetTall())
+
+    draw.SimpleText(self.name, self.font, self:GetTall() + 6, self:GetTall() / 2, Color(), TEXT_ALIGN_LEFT, TEXT_ALIGN_CENTER)
+    return true
+end
+
+function weaponPanelList:DoClick()
+    --to do
+end
+
+function weaponPanelList:Finish()
+    local customizeButton = vgui.Create("DButton", self)
+    customizeButton:SetSize(self:GetTall() * 3, self:GetTall())
+    customizeButton:SetPos(self:GetWide() - customizeButton:GetWide(), 0)
+    customizeButton:SetText("")
+    customizeButton.DoClick = function()
+        surface.PlaySound("buttons/lightswitch2.wav")
+        --Do more
+    end
+    customizeButton.Paint = function()
+        draw.SimpleText("Customize Weapon", self.font, self:GetWide() / 2, self:GetTall() / 2, Color(), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER) --self.font may not work here
+    end
+    customizeButton.OnCursorEntered = function()
+        surface.PlaySound("garrysmod/ui_hover.wav")
+        self.hover = true
+    end
+    customizeButton.OnCursorExited = function()
+        self.hover = false
+    end
+end
+
+vgui.Register("WeaponPanelList", weaponPanelList, "DButton")

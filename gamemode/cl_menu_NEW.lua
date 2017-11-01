@@ -409,13 +409,55 @@ function GM:LoadoutMenuExt()
 		end
 	end
 
+	net.Start("RequestAvailableWeapons")
+	net.SendToServer()
+
+	self.weaponMainWeaponListTall = self.weaponMain:GetTall() - 50 - 18 - 4 --Includes spacing
 	self.weaponMainPrimaryList = vgui.Create("DScrollPanel", self.weaponMain)
-	self.weaponMainPrimaryList:SetSize()
-	self.weaponMainPrimaryList:SetPos()
+	self.weaponMainPrimaryList:SetSize(self.weaponMain:GetWide() / 3 - 4, self.weaponMainWeaponListTall)
+	self.weaponMainPrimaryList:SetPos(2, self.weaponMain:GetTall() - self.weaponMainPrimaryList:GetTall() - 2)
 
 	self.weaponMainSecondaryList = vgui.Create("DScrollPanel", self.weaponMain)
+	self.weaponMainSecondaryList:SetSize(self.weaponMain:GetWide() / 3 - 4, self.weaponMainWeaponListTall)
+	self.weaponMainSecondaryList:SetPos(self.weaponMain:GetTall() / 3 + 2)
 
 	self.weaponMainEquipmentList = vgui.Create("DScrollPanel", self.weaponMain)
+	self.weaponMainEquipmentList:SetSize(self.weaponMain:GetWide() / 3 - 4, self.weaponMainWeaponListTall)
+	self.weaponMainEquipmentList:SetPos(self.weaponMain:GetTall() / 3 * 2 + 2)
+
+	net.Receive("RequestAvailableWeaponsCallback", function()
+		local allWeapons = net.ReadTable()
+		--format = allWeapons - Primaries/Secondaries/Equipment & {} - # & {} - class/type & ""/""
+
+		for k, v in pairs(allWeapons.Primaries) do
+			local weaponPanel = vgui.Create("WeaponPanelList")
+			weaponPanel:SetSize(self.weaponMainPrimaryList:GetWide(), 35)
+			weaponPanel:SetFont("TestFont3")
+			weaponPanel:SetWep(v.class)
+			weaponPanel:SetType(v.type)
+
+			self.weaponMainPrimaryList:AddItem(weaponPanel)
+		end
+
+		for k, v in pairs(allWeapons.Secondaries) do
+			local weaponPanel = vgui.Create("WeaponPanelList")
+			weaponPanel:SetSize(self.weaponMainSecondaryList:GetWide(), 35)
+			weaponPanel:SetFont("TestFont3")
+			weaponPanel:SetWep(v.class)
+			weaponPanel:SetType(v.type)
+			
+			self.weaponMainSecondaryList:AddItem(weaponPanel)
+		end
+		for k, v in pairs(allWeapons.Equipment) do
+			local weaponPanel = vgui.Create("WeaponPanelList")
+			weaponPanel:SetSize(self.weaponMainEquipmentList:GetWide(), 35)
+			weaponPanel:SetFont("TestFont3")
+			weaponPanel:SetWep(v.class)
+			weaponPanel:SetType(v.type)
+			
+			self.weaponMainEquipmentList:AddItem(weaponPanel)
+		end
+	end)
 
 end
 

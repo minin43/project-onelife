@@ -5,18 +5,21 @@ GM.Email = "lobsterlogan43@yahoo.com"
 GM.Website = "egncommunity.com"
 GM.Version = "09092017"
 GM.redTeam = {
+	teamNumber = 1,
 	menuTeamColor = {r = 183, g = 28, b = 28},
 	menuTeamColorLightAccent = {r = 240, g = 85, b = 69},
 	menuTeamColorDarkAccent = {r = 20, g = 15, b = 15},
 	menuTeamColorAccent = {r = 255, g = 255, b = 255}
 }
 GM.blueTeam = {
+	teamNumber = 2,
 	menuTeamColor = {r = 13, g = 71, b = 161},
 	menuTeamColorLightAccent = {r = 84, g = 114, b = 211},
 	menuTeamColorDarkAccent = {r = 15, g = 15, b = 20},
 	menuTeamColorAccent = {r = 255, g = 255, b = 255}
 }
 GM.soloTeam = {
+	teamNumber = 3,
 	menuTeamColor = {r = 27, g = 94, b = 32},
 	menuTeamColorLightAccent = {r = 76, g = 140, b = 74},
 	menuTeamColorDarkAccent = {r = 15, g = 20, b = 15},

@@ -37,6 +37,7 @@ include("sv_roundhandler.lua")
 include("sv_roundstats.lua")
 include("sv_votehandler.lua")
 include("sv_menu.lua")
+include("sv_playerspawn.lua")
 
 --[[for k, v in pairs( file.Find("onelife/gamemode/perks/*.lua", "LUA") ) do
 	include("/perks/" .. v )
@@ -177,7 +178,8 @@ function GM:PlayerDisconnected( ply )
 	for k, v in pairs( player.GetAll() ) do
 		v:ChatPrint("Player " .. ply:Nick() .. " has disconnected (" .. ply:SteamID() .. ").")
 	end
-	self:DeadTeamCheck( ply )
+	--self:DeadTeamCheck( ply )
+	self.RoundCheck(ply)
 end
 
 --[[function GM:PlayerDeathThink( ply )

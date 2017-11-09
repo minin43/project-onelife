@@ -1008,7 +1008,7 @@ function CustomizeWeapon( wep, weptype )
 	end
 end
 
-concommand.Add( "pol_menu", LoadoutMenu )
+--concommand.Add( "pol_menu", LoadoutMenu )
 
 function GM:PlayerButtonDown( ply, button )
 	if input.GetKeyName( button ) == "c" and !main then

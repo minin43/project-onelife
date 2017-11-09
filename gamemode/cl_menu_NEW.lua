@@ -138,7 +138,7 @@ hook.Add("PostGamemodeLoaded", "AddIcons", function()
 	}
 end)
 
-function GM:LoadoutMenu(role, roleNotNeeded)
+function GM:LoadoutMenu(role, roleNotNeeded, selectedWeapons)
 	if self.Main and self.Main:IsValid() then return end
 
 	if LocalPlayer():Team() == 1 then
@@ -156,23 +156,6 @@ function GM:LoadoutMenu(role, roleNotNeeded)
 		self:RoleSelectionMenu()
 		return
 	end
-
-	--[[if not self.playerLevel then
-        net.Start("RequestLevel")
-		net.SendToServer()
-		net.Receive("RequestLevelCallback", function(len, ply)
-			self.playerLevel = tonumber(net.ReadString())
-			self.playerInfoMainLevelText = markup.Parse("<font=TestFont3Large>Level: <colour=" .. self.myTeam.menuTeamColorLightAccent.r .. "," .. self.myTeam.menuTeamColorLightAccent.g .. "," .. self.myTeam.menuTeamColorLightAccent.b .. ">" .. self.playerLevel .. "</colour></font>")			
-		end)
-    end
-    if not self.playerMoney then
-        net.Start("RequestMoney")
-		net.SendToServer()
-		net.Receive("RequestMoneyCallback", function()
-			self.playerMoney = tonumber(net.ReadString())
-			self.playerInfoMainMoneyText = markup.Parse(("<font=TestFont3Large>Cash: $<colour=" .. self.myTeam.menuTeamColorLightAccent.r .. "," .. self.myTeam.menuTeamColorLightAccent.g .. "," .. self.myTeam.menuTeamColorLightAccent.b .. ">" .. self.playerMoney .. "</colour></font>"))
-		end)
-	end]]
 
 	net.Start("RequestLevel")
 	net.SendToServer()
@@ -201,8 +184,6 @@ function GM:LoadoutMenu(role, roleNotNeeded)
 		surface.SetDrawColor(self.myTeam.menuTeamColorLightAccent.r, self.myTeam.menuTeamColorLightAccent.g, self.myTeam.menuTeamColorLightAccent.b)
 		surface.DrawRect(0, 0, self.Main:GetWide(), self.Main:GetTall())
 
-		--surface.SetDrawColor(self.myTeam.menuTeamColorDarkAccent.r, self.myTeam.menuTeamColorDarkAccent.g, self.myTeam.menuTeamColorDarkAccent.b)
-		--surface.DrawRect(0, 0, self.Main:GetWide(), 50 + 64 + 4)
 		draw.RoundedBox(8, 0, 0, self.Main:GetWide(), 50 + 64 + 4, Color(self.myTeam.menuTeamColorDarkAccent.r, self.myTeam.menuTeamColorDarkAccent.g, self.myTeam.menuTeamColorDarkAccent.b))
 
 		draw.SimpleText("Customize Your Loadout", "TestFont3Large", 13 / 2, 25, Color(self.myTeam.menuTeamColor.r, self.myTeam.menuTeamColor.g, self.myTeam.menuTeamColor.b), TEXT_ALIGN_LEFT, TEXT_ALIGN_CENTER)
@@ -214,11 +195,7 @@ function GM:LoadoutMenu(role, roleNotNeeded)
     end
 	self.Main.Think = function()
 		self.MainX, self.MainY = self.Main:GetPos()
-		if self.Main:IsValid() then
-			self.Main:MakePopup()
-		end
 	end
-	print("MainX and MainY started:", self.MainX, self.MainY)
 
 	self:LoadoutMenuExt()
 
@@ -267,10 +244,24 @@ function GM:LoadoutMenu(role, roleNotNeeded)
 			draw.SimpleText("X", "TestFont3Large", 0, 0, Color(self.myTeam.menuTeamColorLightAccent.r, self.myTeam.menuTeamColorLightAccent.g, self.myTeam.menuTeamColorLightAccent.b))
 		end
 	end
-	self.mainExitButton.DoClick = function() --Need to include functionality that disables this for first-joining players
+	self.mainExitButton.DoClick = function()
 		self.Main:Remove()
 		surface.PlaySound("buttons/lightswitch2.wav")
 		self.mainExitButtonHover = false
+
+		local loadoutTable = {
+			["role"] = self.myRole,
+			["primWeapon"] = self.PRIMARY_WEAPON,
+			["primWeaponAttachments"] = self.PRIMARY_WEAPON_ATTACHMENTS,
+			["secondWeapon"] = self.SECONDARY_WEAPON,
+			["secondWeaponAttachments"] = self.SECONDARY_WEAPON_ATTACHMENTS,
+			["equipWeapon"] = self.EQUIPMENT_WEAPON,
+			["equipWeaponAttachments"] = self.EQUIPMENT_WEAPON_ATTACHMENTS
+		}
+		net.Start("VerifyLoadout")
+			net.WriteTable(loadoutTable)
+		net.SendToServer()
+		file.Write("onelife/personalinfo/lastloadout" .. self.myRole .. ".txt", util.TableToJSON(loadoutTable))
 	end
 	self.mainExitButton.OnCursorEntered = function()
 		surface.PlaySound("garrysmod/ui_hover.wav")
@@ -280,7 +271,7 @@ function GM:LoadoutMenu(role, roleNotNeeded)
 		self.mainExitButtonHover = false
 	end
 
-	self.playerInfoMainPictureSize = 64 --The font we're using for the Name and SteamID is 30 pixels tall, so with both rows together it's a base size of 60
+	self.playerInfoMainPictureSize = 64 --The font we're using for the Name and SteamID is 30 pixels tall, so with both rows together it's a base size of 60, + 2 + 2 for spacing
 	self.playerInfoMain = vgui.Create("DPanel", self.Main) --This is the top bar panel below the title
 	self.playerInfoMain:SetPos(0, 50)
 	self.playerInfoMain:SetSize(self.Main:GetWide(), self.playerInfoMainPictureSize + 4)
@@ -331,34 +322,115 @@ function GM:LoadoutMenu(role, roleNotNeeded)
 		self.playerInfoMainShop.hover = false
 	end
 
-	--self.weaponPanelHeight = 50 + self.playerInfoMain:GetTall()
-	self.weaponPanelHeight = (self.Main:GetTall() - self.playerInfoMain:GetTall() - 50) / 2 --= 
-	self.playerInfoMainPrimary = vgui.Create("WeaponMenuPanel", self.Main)
-	self.playerInfoMainPrimary:SetSize(self.Main:GetWide() - 4, self.weaponPanelHeight)
-	self.playerInfoMainPrimary:SetPos(2, self.playerInfoMain:GetTall() + 50 + 1)
-	self.playerInfoMainPrimary:SetAttachmentWide(65)
-	self.playerInfoMainPrimary:SetModelWide(225)
-	self.playerInfoMainPrimary:SetFont("TestFont3Small")
-	self.playerInfoMainPrimary:SetWep("cw_kk_ins2_ak74")
-	self.playerInfoMainPrimary:SetAttach({"kk_ins2_aimpoint", "kk_ins2_pbs5", "kk_ins2_fnfal_skins"})
-	self.playerInfoMainPrimary:Finish()
+	self.defaultWeapons = {
+		{
+			"cw_kk_ins2_ak74",
+			"cw_kk_ins2_aks74u",
+			"cw_kk_ins2_rpk",
+			"cw_kk_ins2_m1a1",
+			"cw_kk_ins2_ak74",
+			"cw_kk_ins2_mosin",
+			"cw_kk_ins2_ak74",
+			"cw_kk_ins2_ak74",
+			["secondary"] = "cw_kk_ins2_makarov"
+		},
+		{
+			"cw_kk_ins2_m4a1",
+			"cw_kk_ins2_mp5k",
+			"cw_kk_ins2_m249",
+			"cw_kk_ins2_m14",
+			"cw_kk_ins2_m4a1",
+			"cw_kk_ins2_m40a1",
+			"cw_kk_ins2_m4a1",
+			"cw_kk_ins2_m4a1",
+			["secondary"] = "cw_kk_ins2_m9"
+		}
+	}
 
-	self.playerInfoMainSecondary = vgui.Create("WeaponMenuPanel", self.Main)
-	self.playerInfoMainSecondary:SetSize(self.Main:GetWide() / 3 * 2 - 4, self.weaponPanelHeight - 4)
-	self.playerInfoMainSecondary:SetPos(2, self.playerInfoMain:GetTall() + 50 + self.weaponPanelHeight + 2)
-	self.playerInfoMainSecondary:SetAttachmentWide(65)
-	self.playerInfoMainSecondary:SetFont("TestFont3Small")
-	self.playerInfoMainSecondary:SetWep("cw_kk_ins2_m9")
-	self.playerInfoMainSecondary:SetAttach({"kk_ins2_suppressor_pistol", "kk_ins2_lam", "am_matchgrade"})
-	self.playerInfoMainSecondary:Finish()
+	print(self.myRole)
+	local previousLoadout = util.JSONToTable(file.Read("onelife/personalinfo/lastloadout" .. self.myRole .. ".txt", "DATA"))
 
-	self.playerInfoMainEquipment = vgui.Create("WeaponMenuPanel", self.Main)
-	self.playerInfoMainEquipment:SetSize(self.Main:GetWide() / 3, self.weaponPanelHeight - 4)
-	self.playerInfoMainEquipment:SetPos(self.Main:GetWide() / 3 * 2 - 1, self.playerInfoMain:GetTall() + 50 + self.weaponPanelHeight + 2)
-	self.playerInfoMainEquipment:SetModelWide(100)
-	self.playerInfoMainEquipment:SetFont("TestFont3Small")
-	self.playerInfoMainEquipment:SetWep("cw_kk_ins2_nade_c4", "equipment")
-	self.playerInfoMainEquipment:Finish()
+	self.PRIMARY_WEAPON = previousLoadout.primWeapon or self.defaultWeapons[LocalPlayer():Team()][self.myRole]
+	self.SECONDARY_WEAPON = previousLoadout.secondWeapon or self.defaultWeapons[LocalPlayer():Team()].secondary
+	self.EQUIPMENT_WEAPON = previousLoadout.equipWeapon or "cw_kk_ins2_p2a1"
+
+	self.PRIMARY_WEAPON_ATTACHMENTS = previousLoadout.primWeaponAttachments or {}
+	self.SECONDARY_WEAPON_ATTACHMENTS = previousLoadout.secondWeaponAttachments or {}
+	self.EQUIPMENT_WEAPON_ATTACHMENTS = previousLoadout.equipWeaponAttachments or {}
+
+	self.PRIMARY_WEAPON_BACKUP = ""
+	self.SECONDARY_WEAPON_BACKUP = ""
+	self.EQUIPMENT_WEAPON_BACKUP = ""
+
+	self.PRIMARY_WEAPON_ATTACHMENTS_BACKUP = {}
+	self.SECONDARY_WEAPON_ATTACHMENTS_BACKUP = {}
+	self.EQUIPMENT_WEAPON_ATTACHMENTS_BACKUP = {}
+
+	self.weaponPanelHeight = (self.Main:GetTall() - self.playerInfoMain:GetTall() - 50) / 2
+	function self:RefreshWeapons()
+
+		if self.PRIMARY_WEAPON != self.PRIMARY_WEAPON_BACKUP or self.PRIMARY_WEAPON_ATTACHMENTS != self.PRIMARY_WEAPON_ATTACHMENTS_BACKUP then
+			if self.playerInfoMainPrimary and self.playerInfoMainPrimary:IsValid() then
+				self.playerInfoMainPrimary:Remove()
+				self.playerInfoMainPrimary = nil
+			end
+		end
+		if not (self.playerInfoMainPrimary and self.playerInfoMainPrimary:IsValid()) then
+			self.playerInfoMainPrimary = vgui.Create("WeaponMenuPanel", self.Main, "playerInfoMainPrimary")
+			self.playerInfoMainPrimary:SetSize(self.Main:GetWide() - 4, self.weaponPanelHeight)
+			self.playerInfoMainPrimary:SetPos(2, self.playerInfoMain:GetTall() + 50 + 1)
+			self.playerInfoMainPrimary:SetAttachmentWide(60)
+			self.playerInfoMainPrimary:SetModelWide(225)
+			self.playerInfoMainPrimary:SetFont("TestFont3Small")
+			self.playerInfoMainPrimary:SetWep(self.PRIMARY_WEAPON)
+			self.playerInfoMainPrimary:SetAttach(self.PRIMARY_WEAPON_ATTACHMENTS)
+			self.playerInfoMainPrimary:Finish()
+
+			self.PRIMARY_WEAPON_BACKUP = self.PRIMARY_WEAPON
+			self.PRIMARY_WEAPON_ATTACHMENTS_BACKUP = self.PRIMARY_WEAPON_ATTACHMENTS
+		end
+
+		if self.SECONDARY_WEAPON != self.SECONDARY_WEAPON_BACKUP or self.SECONDARY_WEAPON_ATTACHMENTS != self.SECONDARY_WEAPON_ATTACHMENTS_BACKUP then
+			if self.playerInfoMainSecondary and self.playerInfoMainSecondary:IsValid() then
+				self.playerInfoMainSecondary:Remove()
+				self.playerInfoMainSecondary = nil
+			end
+		end
+		if not (self.playerInfoMainSecondary and self.playerInfoMainSecondary:IsValid()) then
+			self.playerInfoMainSecondary = vgui.Create("WeaponMenuPanel", self.Main, "playerInfoMainSecondary")
+			self.playerInfoMainSecondary:SetSize(self.Main:GetWide() / 3 * 2 - 4, self.weaponPanelHeight - 4)
+			self.playerInfoMainSecondary:SetPos(2, self.playerInfoMain:GetTall() + 50 + self.weaponPanelHeight + 2)
+			self.playerInfoMainSecondary:SetAttachmentWide(65)
+			self.playerInfoMainSecondary:SetFont("TestFont3Small")
+			self.playerInfoMainSecondary:SetWep(self.SECONDARY_WEAPON)
+			self.playerInfoMainSecondary:SetAttach(self.SECONDARY_WEAPON_ATTACHMENTS)
+			self.playerInfoMainSecondary:Finish()
+
+			self.SECONDARY_WEAPON_BACKUP = self.SECONDARY_WEAPON
+			self.SECONDARY_WEAPON_ATTACHMENTS_BACKUP = self.SECONDARY_WEAPON_ATTACHMENTS
+		end
+		
+		if self.EQUIPMENT_WEAPON != self.EQUIPMENT_WEAPON_BACKUP or self.EQUIPMENT_WEAPON_ATTACHMENTS != self.EQUIPMENT_WEAPON_ATTACHMENTS_BACKUP then
+			if self.playerInfoMainEquipment and self.playerInfoMainEquipment:IsValid() then
+				self.playerInfoMainEquipment:Remove()
+				self.playerInfoMainEquipment = nil
+			end
+		end
+		if not (self.playerInfoMainEquipment and self.playerInfoMainEquipment:IsValid()) then
+			self.playerInfoMainEquipment = vgui.Create("WeaponMenuPanel", self.Main, "playerInfoMainEquipment")
+			self.playerInfoMainEquipment:SetSize(self.Main:GetWide() / 3, self.weaponPanelHeight - 4)
+			self.playerInfoMainEquipment:SetPos(self.Main:GetWide() / 3 * 2 - 1, self.playerInfoMain:GetTall() + 50 + self.weaponPanelHeight + 2)
+			self.playerInfoMainEquipment:SetModelWide(100)
+			self.playerInfoMainEquipment:SetFont("TestFont3Small")
+			self.playerInfoMainEquipment:SetWep(self.EQUIPMENT_WEAPON)
+			self.playerInfoMainEquipment:SetAttach(self.EQUIPMENT_WEAPON_ATTACHMENTS)
+			self.playerInfoMainEquipment:Finish()
+
+			self.EQUIPMENT_WEAPON_BACKUP = self.EQUIPMENT_WEAPON
+			self.EQUIPMENT_WEAPON_ATTACHMENTS_BACKUP = self.EQUIPMENT_WEAPON_ATTACHMENTS
+		end
+	end
+	self:RefreshWeapons()
 end
 
 function GM:LoadoutMenuExt()
@@ -410,50 +482,56 @@ function GM:LoadoutMenuExt()
 	end
 
 	net.Start("RequestAvailableWeapons")
+		net.WriteInt(self.myRole, 4)
 	net.SendToServer()
 
-	self.weaponMainWeaponListTall = self.weaponMain:GetTall() - 50 - 18 - 4 --Includes spacing
+	self.weaponMainWeaponListTall = self.weaponMain:GetTall() - 50 - 18 - 8 --Includes spacing
 	self.weaponMainPrimaryList = vgui.Create("DScrollPanel", self.weaponMain)
-	self.weaponMainPrimaryList:SetSize(self.weaponMain:GetWide() / 3 - 4, self.weaponMainWeaponListTall)
-	self.weaponMainPrimaryList:SetPos(2, self.weaponMain:GetTall() - self.weaponMainPrimaryList:GetTall() - 2)
+	self.weaponMainPrimaryList:SetSize(self.weaponMain:GetWide() / 3 - 8, self.weaponMainWeaponListTall)
+	self.weaponMainPrimaryList:SetPos(4, self.weaponMain:GetTall() - self.weaponMainPrimaryList:GetTall() - 2)
 
 	self.weaponMainSecondaryList = vgui.Create("DScrollPanel", self.weaponMain)
-	self.weaponMainSecondaryList:SetSize(self.weaponMain:GetWide() / 3 - 4, self.weaponMainWeaponListTall)
-	self.weaponMainSecondaryList:SetPos(self.weaponMain:GetTall() / 3 + 2)
+	self.weaponMainSecondaryList:SetSize(self.weaponMain:GetWide() / 3 - 8, self.weaponMainWeaponListTall)
+	self.weaponMainSecondaryList:SetPos(self.weaponMain:GetWide() / 3 + 4, self.weaponMain:GetTall() - self.weaponMainSecondaryList:GetTall() - 2)
 
 	self.weaponMainEquipmentList = vgui.Create("DScrollPanel", self.weaponMain)
-	self.weaponMainEquipmentList:SetSize(self.weaponMain:GetWide() / 3 - 4, self.weaponMainWeaponListTall)
-	self.weaponMainEquipmentList:SetPos(self.weaponMain:GetTall() / 3 * 2 + 2)
+	self.weaponMainEquipmentList:SetSize(self.weaponMain:GetWide() / 3 - 8, self.weaponMainWeaponListTall)
+	self.weaponMainEquipmentList:SetPos(self.weaponMain:GetWide() / 3 * 2 + 4, self.weaponMain:GetTall() - self.weaponMainEquipmentList:GetTall() - 2)
 
 	net.Receive("RequestAvailableWeaponsCallback", function()
 		local allWeapons = net.ReadTable()
-		--format = allWeapons - Primaries/Secondaries/Equipment & {} - # & {} - class/type & ""/""
 
-		for k, v in pairs(allWeapons.Primaries) do
-			local weaponPanel = vgui.Create("WeaponPanelList")
-			weaponPanel:SetSize(self.weaponMainPrimaryList:GetWide(), 35)
-			weaponPanel:SetFont("TestFont3")
+		for k, v in pairs(allWeapons.primaries) do
+			local weaponPanel = vgui.Create("WeaponPanelList", self.weaponMain)
+			weaponPanel:SetSize(self.weaponMainPrimaryList:GetWide(), 30)
+			weaponPanel:SetFont("TestFont3Small")
 			weaponPanel:SetWep(v.class)
 			weaponPanel:SetType(v.type)
+			weaponPanel:Dock(TOP)
+			weaponPanel:Finish()
 
 			self.weaponMainPrimaryList:AddItem(weaponPanel)
 		end
 
-		for k, v in pairs(allWeapons.Secondaries) do
-			local weaponPanel = vgui.Create("WeaponPanelList")
-			weaponPanel:SetSize(self.weaponMainSecondaryList:GetWide(), 35)
-			weaponPanel:SetFont("TestFont3")
+		for k, v in pairs(allWeapons.secondaries) do
+			local weaponPanel = vgui.Create("WeaponPanelList", self.weaponMain)
+			weaponPanel:SetSize(self.weaponMainSecondaryList:GetWide(), 30)
+			weaponPanel:SetFont("TestFont3Small")
 			weaponPanel:SetWep(v.class)
 			weaponPanel:SetType(v.type)
+			weaponPanel:Dock(TOP)
+			weaponPanel:Finish()
 			
 			self.weaponMainSecondaryList:AddItem(weaponPanel)
 		end
-		for k, v in pairs(allWeapons.Equipment) do
-			local weaponPanel = vgui.Create("WeaponPanelList")
-			weaponPanel:SetSize(self.weaponMainEquipmentList:GetWide(), 35)
-			weaponPanel:SetFont("TestFont3")
+		for k, v in pairs(allWeapons.equipment) do
+			local weaponPanel = vgui.Create("WeaponPanelList", self.weaponMain)
+			weaponPanel:SetSize(self.weaponMainEquipmentList:GetWide(), 30)
+			weaponPanel:SetFont("TestFont3Small")
 			weaponPanel:SetWep(v.class)
 			weaponPanel:SetType(v.type)
+			weaponPanel:Dock(TOP)
+			weaponPanel:Finish()
 			
 			self.weaponMainEquipmentList:AddItem(weaponPanel)
 		end
@@ -462,8 +540,6 @@ function GM:LoadoutMenuExt()
 end
 
 --//Similar to the menu system of Insurgency, players will select their roles in a separate menu
---//Plan: list all teammate's and their roles, and a summary of the enemy's roles
---//I would like the teammate and enemy role roster update dynamically
 function GM:RoleSelectionMenu()
 	if self.roleMain and self.roleMain:IsValid() then return end
 
@@ -502,12 +578,13 @@ function GM:RoleSelectionMenu()
 	self.roleMainInfo:SetSize(self.roleMainInfoSize, self.roleMainInfoSize)
 	self.roleMainInfo:SetPos(self.roleMain:GetWide() - self.roleMainInfoSize - 6, 6) --6 = spacer length
 	self.roleMainInfo:SetText("")
-	self.roleMainInfoIcon = Material("menu/information_icon_fixed.png", "smooth")
+	--self.roleMainInfoIcon = Material("menu/information_icon_fixed.png", "smooth")
 	self.roleMainInfo.Paint = function()
 		local w, h = self.roleMainInfo:GetSize()
 
 		surface.SetDrawColor(175, 175, 175)
-		surface.SetMaterial(self.roleMainInfoIcon)
+		--surface.SetMaterial(self.roleMainInfoIcon)
+		surface.SetTexture(surface.GetTextureID("gui/info"))
 		surface.DrawTexturedRect(0, 0, w, h)
 
 		if self.roleMainInfoHover then
@@ -616,12 +693,13 @@ function GM:RoleSelection(role, skipAnimation)
 	self.roleInfoMainInfo:SetSize(self.roleInfoMainInfoSize, self.roleInfoMainInfoSize)
 	self.roleInfoMainInfo:SetPos(self.roleInfoMain:GetWide() - self.roleInfoMainInfoSize - 6, 6) --6 = spacer length
 	self.roleInfoMainInfo:SetText("")
-	self.roleInfoMainInfoIcon = Material("menu/information_icon_fixed.png", "smooth")
+	--self.roleInfoMainInfoIcon = Material("menu/information_icon_fixed.png", "smooth")
 	self.roleInfoMainInfo.Paint = function()
 		local w, h = self.roleInfoMainInfo:GetSize()
 
 		surface.SetDrawColor(175, 175, 175)
-		surface.SetMaterial(self.roleInfoMainInfoIcon)
+		--surface.SetMaterial(self.roleInfoMainInfoIcon)
+		surface.SetTexture(surface.GetTextureID("gui/info"))
 		surface.DrawTexturedRect(0, 0, w, h)
 
 		if self.roleInfoMainInfoHover then
@@ -872,3 +950,15 @@ end
 --[[net.Receive("SendRoleToServerCallback", function()
 	GAMEMODE.
 end)]]
+
+concommand.Add("pol_menu", GM.LoadoutMenu)
+
+function GM:PlayerButtonDown( ply, button )
+	if input.GetKeyName( button ) == "c" then
+		self:LoadoutMenu()
+	--[[elseif input.GetKeyName( button ) == "c" and main then
+		print("close the menu")
+		main:Close()
+		main = nil]]
+	end
+end

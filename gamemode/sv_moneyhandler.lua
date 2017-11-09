@@ -67,24 +67,25 @@ net.Receive( "RequestMoney", function( len, ply )
 	net.Send( ply )
 end )
 
-net.Receive( "BuyAttachment", function( len, ply )
-	local parentwep = net.ReadString()
+net.Receive( "BuyAttachment", function(len, ply)
+	local parentWep = net.ReadString()
 	local attachment = net.ReadString()
-	--local attachmenttype = net.ReadString()
-	local price = tonumber( net.ReadString() )
+	local attachmentType = net.ReadString() --NEED TO ADD
+	local price = tonumber(net.ReadString())
 
-	local original = util.JSONToTable( file.Read( "onelife/users/" .. id( ply:SteamID() ) .. ".txt", "DATA" ) )
-	if original[ 2 ][ parentwep ] then
-		table.insert( original[ 2 ][ parentwep ], attachment )
+	local original = util.JSONToTable(file.Read( "onelife/users/" .. id( ply:SteamID() ) .. ".txt", "DATA"))
+	if original[2][parentWep] and original[2][parentWep][attachmentType] then
+		table.insert( original[2][parentWep][attachmentType], attachment)
 	else
-		original[ 2 ][ parentwep ] = { attachment }
+		original[2][parentWep] = {}
+		original[2][parentWep][attachmentType] = {attachment}
 	end
 	
-	local newfile = util.TableToJSON( original ) --{ original[ 1 ], currentattachments } )
-	file.Write( "onelife/users/" .. id( ply:SteamID() ) .. ".txt", newfile )
+	local newfile = util.TableToJSON(original) --{ original[ 1 ], currentattachments } )
+	file.Write("onelife/users/" .. id(ply:SteamID()) .. ".txt", newfile)
 
 	price = -price
-	GM:AddMoney( ply, price )
+	GM:AddMoney(ply, price)
 
 	timer.Simple( 0.1, function()
 		local cur = GM:GetMoney( ply )

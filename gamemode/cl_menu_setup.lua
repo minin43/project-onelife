@@ -233,7 +233,21 @@ weaponPanel.weaponModelWide = 200
 weaponPanel.worseColor = {238, 210, 2}
 weaponPanel.betterColor = {0, 160, 0}
 --weaponPanel.textTable = {} --needs to be instantiated for draw to not freak out if it starts getting called before Finish() gets called
-weaponPanel.attachmentOrder = {["Sight"] = 1, ["Barrel"] = 2, ["Under"] = 3, ["Lasers"] = 4, ["More Sight"] = 5, ["Magazine"] = 6, ["Ammo"] = 7, ["Flavor"] = 8, ["Sight Contract"] = 9}
+weaponPanel.attachmentOrder = {
+    ["Sight"] = 1, 
+    ["Barrel"] = 2, 
+    ["Under"] = 3, 
+    ["Lasers"] = 4, 
+    ["More Sight"] = 5, 
+    ["Magazine"] = 6, 
+    ["Reload Aid"] = 7, 
+    ["Variant"] = 8, 
+    ["Ammo"] = 9, 
+    ["Flavor"] = 10, 
+    ["Package"] = 11, 
+    ["Stock"] = 12, 
+    ["Sight Contract"] = 13
+}
 weaponPanel.defaultAttachmentIcons = {
     ["Sight"] = CustomizableWeaponry.registeredAttachmentsSKey.kk_ins2_kobra.displayIcon,
     ["Barrel"] = CustomizableWeaponry.registeredAttachmentsSKey.kk_ins2_suppressor_ins.displayIcon,
@@ -241,8 +255,12 @@ weaponPanel.defaultAttachmentIcons = {
     ["Lasers"] = CustomizableWeaponry.registeredAttachmentsSKey.kk_ins2_anpeq15.displayIcon,
     ["More Sight"] = CustomizableWeaponry.registeredAttachmentsSKey.kk_ins2_magnifier.displayIcon,
     ["Magazine"] = CustomizableWeaponry.registeredAttachmentsSKey.kk_ins2_mag_fal_30.displayIcon,
+    ["Reload Aid"] = CustomizableWeaponry.registeredAttachmentsSKey.kk_ins2_revolver_mag.displayIcon,
+    ["Variant"] = CustomizableWeaponry.registeredAttachmentsSKey.kk_ins2_galil_sar.displayIcon, --Fairly certain this is a galil-only thing
     ["Ammo"] = CustomizableWeaponry.registeredAttachmentsSKey.am_magnum.displayIcon,
     ["Flavor"] = CustomizableWeaponry.registeredAttachmentsSKey.kk_ins2_fnfal_skin.displayIcon,
+    ["Package"] = CustomizableWeaponry.registeredAttachmentsSKey.kk_ins2_rpk_sopmod.displayIcon,
+    ["Stock"] = CustomizableWeaponry.registeredAttachmentsSKey.bg_vss_foldable_stock.displayIcon,
     ["Sight Contract"] = CustomizableWeaponry.registeredAttachmentsSKey.kk_ins2_sights_cstm.displayIcon
 }
 weaponPanel.attachmentPositionOffset = {
@@ -320,7 +338,7 @@ weaponPanel.equipmentWeaponInfo = { --No equipment have attachments that affect 
         --{"", "Fuze time: ", {255, 255, 255}, 0} --To create
     },
     cw_kk_ins2_nade_m18 = {
-        {"ExplodedRadius", "Smoke radius: ", {255, 255, 255}, 0},
+        {"ExplodeRadius", "Smoke radius: ", {255, 255, 255}, 0},
         --{"", "Smoke duration: ", {255, 255, 255}, 0} --To create
     },
     cw_kk_ins2_nade_m84 = {
@@ -340,11 +358,11 @@ weaponPanel.equipmentWeaponInfo = { --No equipment have attachments that affect 
         {"BurnRadius", "Light Radius: ", {255, 255, 255}, 0}
     }
 }
---[[weaponPanel.equipmentWeaponInfo[cw_kk_ins2_nade_hl2] = table.Copy(weaponPanel.equipmentWeaponInfo[cw_kk_ins2_nade_f1])
-weaponPanel.equipmentWeaponInfo[cw_kk_ins2_nade_ied] = table.Copy(weaponPanel.equipmentWeaponInfo[cw_kk_ins2_nade_c4])
-weaponPanel.equipmentWeaponInfo[cw_kk_ins2_nade_m67] = table.Copy(weaponPanel.equipmentWeaponInfo[cw_kk_ins2_nade_f1])
-weaponPanel.equipmentWeaponInfo[cw_kk_ins2_nade_molotov] = table.Copy(weaponPanel.equipmentWeaponInfo[cw_kk_ins2_nade_anm14])
-weaponPanel.equipmentWeaponInfo[cw_kk_ins2_at4] = table.Copy(weaponPanel.equipmentWeaponInfo[cw_kk_ins2_rpg])]]
+weaponPanel.equipmentWeaponInfo["cw_kk_ins2_nade_hl2"] = table.Copy(weaponPanel.equipmentWeaponInfo["cw_kk_ins2_nade_f1"])
+weaponPanel.equipmentWeaponInfo["cw_kk_ins2_nade_ied"] = table.Copy(weaponPanel.equipmentWeaponInfo["cw_kk_ins2_nade_c4"])
+weaponPanel.equipmentWeaponInfo["cw_kk_ins2_nade_m67"] = table.Copy(weaponPanel.equipmentWeaponInfo["cw_kk_ins2_nade_f1"])
+weaponPanel.equipmentWeaponInfo["cw_kk_ins2_nade_molotov"] = table.Copy(weaponPanel.equipmentWeaponInfo["cw_kk_ins2_nade_anm14"])
+weaponPanel.equipmentWeaponInfo["cw_kk_ins2_at4"] = table.Copy(weaponPanel.equipmentWeaponInfo["cw_kk_ins2_rpg"])
 
 function weaponPanel:Init()
     self.textTable = {}
@@ -366,29 +384,38 @@ function weaponPanel:SetWep(wep)
 
     self.wepClass = wep
     self.masterTable = weapons.GetStored(self.wepClass)
-    self.wepName = GAMEMODE.menuDisplayName[self.wepClass] or self.masterTable.PrintName
-    self.attachments = self.masterTable.Attachments
-
-    print(self.wepClass, self.wepName)
+    for k, v in pairs(GAMEMODE.menuWeaponInfo) do
+        if v[self.wepClass] and v[self.wepClass][1] then
+            self.wepName = v[self.wepClass][1]
+        end
+    end
+    self.wepName = self.wepName or self.masterTable.PrintName
+    self.attachments = table.Copy(self.masterTable.Attachments)
 
     local toDelete = {}
-    for k, v in pairs(self.attachments) do if v.header == "CSGO" then toDelete[k] = true end end--purge unwanted attachment types here
+    for k, v in pairs(self.attachments) do if v.header == "CSGO" or #self.attachments == 0 then toDelete[k] = true end end--purge unwanted attachment types here
     for k, v in pairs(toDelete) do table.remove(self.attachments, k) end
 
     --//This assigns a number (other than 0) to the variables we end up displaying
-    if GAMEMODE.menuDisplayName.secondaries[self.wepClass] then --if weapon is a sidearm (pistol)
+    if GAMEMODE.menuWeaponInfo.secondaries[self.wepClass] then --if weapon is a sidearm (pistol)
+        self.wepType = "secondaries"
         self.weaponDisplayInfo = self.secondaryWeaponInfo
 
         for k, v in pairs(self.weaponDisplayInfo) do
             if v[1] == "ClipSize" then
                 v[4] = self.masterTable.Primary[v[1]]
             elseif v[1] == "base_reload" then
-                v[4] = self.masterTable.ReloadTimes[v[1]][1]
+                if self.wepClass == "cw_kk_ins2_revolver" then
+                    v[4] = self.masterTable.ReloadTimes.base_reload_start[1]
+                else
+                    v[4] = self.masterTable.ReloadTimes[v[1]][1]
+                end
             else
                 v[4] = self.masterTable[v[1]]
             end
         end
-    elseif GAMEMODE.menuDisplayName.equipment[self.wepClass] then --if weapon is equipment (grenades or explosive)
+    elseif GAMEMODE.menuWeaponInfo.equipment[self.wepClass] then --if weapon is equipment (grenades or explosive)
+        self.wepType = "equipment"
         self.weaponDisplayInfo = self.equipmentWeaponInfo[self.wepClass]
 
         net.Start("RequestEntData")
@@ -397,16 +424,16 @@ function weaponPanel:SetWep(wep)
         net.SendToServer()
 
         net.Receive("RequestEntDataCallback", function()
-            print("DEBUG:----------- RequestEntDataCallback")
+            --print("DEBUG:----------- RequestEntDataCallback")
             local projectileEnt = net.ReadTable()
-            print("projectileEnt = ", projectileEnt)
+            --print("projectileEnt = ", projectileEnt)
             for k, v in pairs(self.weaponDisplayInfo) do
-                print(k, v) if istable(v) then PrintTable(v) end
+                --print(k, v, v[1], v[2])
                 if v[5] then
                     v[4] = self.masterTable[v[1]]
                 else
                     v[4] = projectileEnt[v[1]]
-                    print("else DEBUG: ", v[4])
+                    --print("else DEBUG: ", v[4])
                 end
                 if self.wepInfoToAdd[k] then
                     self.wepInfoToAdd[k]:InsertColorChange(v[3][1], v[3][2], v[3][3], 255)
@@ -415,6 +442,7 @@ function weaponPanel:SetWep(wep)
             end
         end)
     else --If the weapon isn't a listed secondary or equipment, we'll assume it's a primary
+        self.wepType = "primaries"
         if self.masterTable.Shots > 1 then --Check if the primary is a shotgun
             self.weaponDisplayInfo = self.primaryWeaponInfoShotgun
 
@@ -514,6 +542,11 @@ end
 
 function weaponPanel:Finish() --I can't think of a function to otherwise put this in and I don't care to test for another one
 
+    net.Start("RequestAvailableAttachments")
+        net.WriteString(self.wepClass)
+        net.WriteString(self.wepType)
+    net.SendToServer()
+
     self.myAttachmentInfo = self.myAttachmentInfo or {} --also called here in case the weapon panel wasn't created with attachments
 
     self.availableTextSpace = self:GetWide() - self.weaponModelWide + 2
@@ -551,7 +584,7 @@ function weaponPanel:Finish() --I can't think of a function to otherwise put thi
         end
         richTextPanel:InsertColorChange(150, 150, 150, 255)
         richTextPanel:AppendText(v[2])
-        if not GAMEMODE.menuDisplayName.equipment[self.wepClass] then
+        if not GAMEMODE.menuWeaponInfo.equipment[self.wepClass] then
             richTextPanel:InsertColorChange(v[3][1], v[3][2], v[3][3], 255)
             richTextPanel:AppendText(v[4])
         else
@@ -562,62 +595,119 @@ function weaponPanel:Finish() --I can't think of a function to otherwise put thi
 
     self.attachmentButtonSpacer = (self:GetWide() - self.weaponModelWide - (self.attachmentButtonSize * table.Count(self.attachments))) / (table.Count(self.attachments) + 1)
     local outerCount = 1
-    for k, v in pairs(self.attachments) do
-        if k == "+use" or k == "+reload" then k = outerCount end
+    net.Receive("RequestAvailableAttachmentsCallback" .. self.wepType, function()
+        local availableAttachments = net.ReadTable() or {}
 
-        local but = vgui.Create("DButton", self)
+        for k, v in pairs(self.attachments) do
 
-        if self.myAttachmentInfo[v.header] then
-            but.textureToDraw = CustomizableWeaponry.registeredAttachmentsSKey[self.myAttachmentInfo[v.header]].displayIcon
-        else
-            but.textureToDraw = self.defaultAttachmentIcons[v.header]
-        end
+            availableAttachments[k] = availableAttachments[k] or {}
 
-        but:SetSize(self.attachmentButtonSize, self.attachmentButtonSize)
-        but:SetPos(self.weaponModelWide + self.attachmentButtonSpacer * k + (self.attachmentButtonSize * (k - 1)), self:GetTall() - self.attachmentButtonSize - 6)
-        but:SetText("")
-        but.DoClick = function()
-            surface.PlaySound("buttons/lightswitch2.wav")
-            --Opens attachment customization menu, can quickly add attachments to your gun from here
-        end
-        but.Paint = function()
-            if self.myAttachmentInfo[v.header] then --if there is an attachment set to be equipped
-                surface.SetDrawColor(255, 255, 255)
-                surface.SetTexture(but.textureToDraw)
-                surface.DrawTexturedRect(1, 1, self.attachmentButtonSize - 1, self.attachmentButtonSize - 1)
-                --surface.SetDrawColor(175, 175, 175)
-                --surface.DrawOutlinedRect(0, 0, self.attachmentButtonSize, self.attachmentButtonSize)
-                if but.hover then
-                    surface.SetDrawColor(GAMEMODE.myTeam.menuTeamColorLightAccent.r, GAMEMODE.myTeam.menuTeamColorLightAccent.g, GAMEMODE.myTeam.menuTeamColorLightAccent.b)
-                    surface.DrawOutlinedRect(0, 0, self.attachmentButtonSize, self.attachmentButtonSize)
-                end
-            else --if we're drawing the default icon
-                surface.SetDrawColor(255, 255, 255)
-                surface.SetTexture(but.textureToDraw)
-                surface.DrawTexturedRect(1, 1, self.attachmentButtonSize - 1, self.attachmentButtonSize - 1)
-                if but.hover then
-                    surface.SetDrawColor(GAMEMODE.myTeam.menuTeamColorLightAccent.r, GAMEMODE.myTeam.menuTeamColorLightAccent.g, GAMEMODE.myTeam.menuTeamColorLightAccent.b)
-                    surface.DrawOutlinedRect(0, 0, self.attachmentButtonSize, self.attachmentButtonSize)
-                end
-                if not but.hover then
-                    --surface.SetDrawColor(175, 175, 175)
-                    --surface.DrawOutlinedRect(0, 0, self.attachmentButtonSize, self.attachmentButtonSize)
-                    surface.SetDrawColor(GAMEMODE.myTeam.menuTeamColorLightAccent.r, GAMEMODE.myTeam.menuTeamColorLightAccent.g, GAMEMODE.myTeam.menuTeamColorLightAccent.b, 5)
-                    surface.DrawRect(0, 0, self.attachmentButtonSize, self.attachmentButtonSize)
+            local but = vgui.Create("DButton", self)
+
+            if self.myAttachmentInfo[v.header] then
+                but.textureToDraw = CustomizableWeaponry.registeredAttachmentsSKey[self.myAttachmentInfo[v.header]].displayIcon
+            else
+                but.textureToDraw = self.defaultAttachmentIcons[v.header]
+            end
+
+            but:SetSize(self.attachmentButtonSize, self.attachmentButtonSize)
+            but:SetPos(self.weaponModelWide + self.attachmentButtonSpacer * outerCount + (self.attachmentButtonSize * (outerCount - 1)), self:GetTall() - self.attachmentButtonSize - 6)
+            but:SetText("")
+            but.DoClick = function()
+                surface.PlaySound("buttons/lightswitch2.wav")
+                if but.isOpen then
+                    but.isOpen = false
+                else
+                    but.isOpen = true
+                    local outerCount2 = 1
+                    local x, y = but:LocalToScreen(0, 0)
+                    local maxHeight = math.Clamp(#availableAttachments[k] + 1, 1, 4)
+
+                    local moreAttachments = vgui.Create("DFrame")
+                    moreAttachments:SetSize(but:GetWide(), but:GetTall() * maxHeight)
+                    moreAttachments:SetPos(x, y - moreAttachments:GetTall())
+                    moreAttachments:SetTitle("")
+                    moreAttachments:SetVisible(true)
+                    moreAttachments:SetDraggable(false)
+                    moreAttachments:ShowCloseButton(false)
+                    moreAttachments:MakePopup()
+                    moreAttachments:SetDrawOnTop(true) --Prevents the panel from disappearing behind main if you click anywhere but this frame
+                    moreAttachments.Paint = function()
+                        surface.SetDrawColor(100, 100, 100, 100)
+                        surface.DrawRect(0, 0, moreAttachments:GetSize())
+                    end
+                    
+                    moreAttachments.Think = function()
+                        if not but.isOpen or not but:IsValid() then
+                            moreAttachments:Close() --Close only works on DFrames, I've found out
+                        end
+                    end
+
+                    local moreAttachmentsList = vgui.Create("DScrollPanel", moreAttachments)
+                    moreAttachmentsList:SetSize(moreAttachments:GetSize())
+                    moreAttachmentsList:SetPos(0, 0)
+
+                    for k2, v2 in pairs(availableAttachments[k]) do
+                        if v2 != self.myAttachmentInfo[v.header] then --If the attachment's currently selected, no point in adding it to the available options
+                            local moreAttachments = vgui.Create("AttachmentButton", moreAttachmentsList)
+                            moreAttachments:SetSize(but:GetSize())
+                            moreAttachments:SetInfo(but, v2, k, self.wepType)
+                            moreAttachments:Dock(TOP)
+
+                            outerCount2 = outerCount2 + 1
+                        end
+                    end
+                    
+                    local noAttachment = vgui.Create("AttachmentButton", moreAttachmentsList)
+                    noAttachment:SetSize(but:GetSize())
+                    noAttachment:SetInfo(but, nil, k, self.wepType)
+                    noAttachment:Dock(TOP)
+                    noAttachment.Paint = function()
+                        draw.SimpleText("Remove", "TestFont3Small", noAttachment:GetWide() / 2, noAttachment:GetTall() / 2, Color(GAMEMODE.myTeam.menuTeamColorAccent.r, GAMEMODE.myTeam.menuTeamColorAccent.g, GAMEMODE.myTeam.menuTeamColorAccent.b), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
+                        return true
+                    end
+                    --noAttachment.DoClick = function() end
                 end
             end
-            return true
-        end
-        but.OnCursorEntered = function()
-            surface.PlaySound("garrysmod/ui_hover.wav")
-            but.hover = true
-        end
-        but.OnCursorExited = function()
-            but.hover = false
-        end
+            but.Paint = function()
+                if self.myAttachmentInfo[v.header] then --if there is an attachment set to be equipped
+                    surface.SetDrawColor(255, 255, 255)
+                    surface.SetTexture(but.textureToDraw)
+                    surface.DrawTexturedRect(1, 1, self.attachmentButtonSize - 1, self.attachmentButtonSize - 1)
+                    --surface.SetDrawColor(175, 175, 175)
+                    --surface.DrawOutlinedRect(0, 0, self.attachmentButtonSize, self.attachmentButtonSize)
+                    if but.hover then
+                        surface.SetDrawColor(GAMEMODE.myTeam.menuTeamColorLightAccent.r, GAMEMODE.myTeam.menuTeamColorLightAccent.g, GAMEMODE.myTeam.menuTeamColorLightAccent.b)
+                        surface.DrawOutlinedRect(0, 0, self.attachmentButtonSize, self.attachmentButtonSize)
+                    end
+                else --if we're drawing the default icon
+                    surface.SetDrawColor(255, 255, 255)
+                    surface.SetTexture(but.textureToDraw)
+                    surface.DrawTexturedRect(1, 1, self.attachmentButtonSize - 1, self.attachmentButtonSize - 1)
+                    if but.hover then
+                        surface.SetDrawColor(GAMEMODE.myTeam.menuTeamColorLightAccent.r, GAMEMODE.myTeam.menuTeamColorLightAccent.g, GAMEMODE.myTeam.menuTeamColorLightAccent.b)
+                        surface.DrawOutlinedRect(0, 0, self.attachmentButtonSize, self.attachmentButtonSize)
+                    end
+                    if not but.hover then
+                        --surface.SetDrawColor(175, 175, 175)
+                        --surface.DrawOutlinedRect(0, 0, self.attachmentButtonSize, self.attachmentButtonSize)
+                        surface.SetDrawColor(GAMEMODE.myTeam.menuTeamColorLightAccent.r, GAMEMODE.myTeam.menuTeamColorLightAccent.g, GAMEMODE.myTeam.menuTeamColorLightAccent.b, 5)
+                        surface.DrawRect(0, 0, self.attachmentButtonSize, self.attachmentButtonSize)
+                    end
+                end
+                return true
+            end
+            but.OnCursorEntered = function()
+                surface.PlaySound("garrysmod/ui_hover.wav")
+                but.hover = true
+            end
+            but.OnCursorExited = function()
+                but.hover = false
+            end
 
-        outerCount = outerCount + 1
-    end
+            outerCount = outerCount + 1
+        end
+    end)
 
     local weaponModelPanel = vgui.Create("DModelPanel", self)
     weaponModelPanel:SetSize(self.weaponModelWide, self:GetTall() - 26)
@@ -644,27 +734,102 @@ vgui.Register("WeaponMenuPanel", weaponPanel, "DPanel")
 
 --//
 
+local attachmentButton = {}
+
+function attachmentButton:SetInfo(basePanel, attachment, attachmentType, baseWepType)
+    self.basePanel = basePanel
+    self.attachment = attachment
+    self.attachmentType = attachmentType
+    self.wepType = baseWepType
+
+    --print(self.attachment)
+    if self.attachment then
+        self.img = CustomizableWeaponry.registeredAttachmentsSKey[self.attachment].displayIcon
+    else
+        self.img = Material("a") --missing texture
+    end
+end
+
+function attachmentButton:DoClick()
+    surface.PlaySound("buttons/lightswitch2.wav")
+    if self.wepType == "primaries" then
+        GAMEMODE.PRIMARY_WEAPON_ATTACHMENTS[self.attachmentType] = self.attachment
+    elseif self.wepType == "Secondaries" then
+        GAMEMODE.SECONDARY_WEAPON_ATTACHMENTS[self.attachmentType] = self.attachment
+    elseif self.wepType == "equipment" then
+        GAMEMODE.EQUIPMENT_WEAPON_ATTACHMENTS[self.attachmentType] = self.attachment
+    end
+    self.basePanel.isOpen = false
+    GAMEMODE:RefreshWeapons()
+end
+
+function attachmentButton:OnCursorEntered()
+    surface.PlaySound("garrysmod/ui_hover.wav")
+    self.hover = true
+end
+
+function attachmentButton:OnCursorExited()
+    self.hover = false
+end
+
+function attachmentButton:Paint()
+    surface.SetDrawColor(GAMEMODE.myTeam.menuTeamColor.r, GAMEMODE.myTeam.menuTeamColor.g, GAMEMODE.myTeam.menuTeamColor.b)
+    surface.DrawRect(0, 0, self:GetSize())
+    surface.SetDrawColor(255, 255, 255)
+    surface.DrawOutlinedRect(0, 0, self:GetSize())
+
+    if self.attachment then
+        surface.SetTexture(self.img)
+    else
+        surface.SetMaterial(self.img)
+    end
+    surface.DrawTexturedRect(0, 0, self:GetSize())
+    if self.hover then
+        surface.SetDrawColor(GAMEMODE.myTeam.menuTeamColorLightAccent.r, GAMEMODE.myTeam.menuTeamColorLightAccent.g, GAMEMODE.myTeam.menuTeamColorLightAccent.b)
+        --surface.DrawOutlinedRect(0, 0, self:GetSize())
+    end
+    return true
+end
+
+--[[function attachmentButton:Think()
+    self:MoveToFront()
+    if self.basePanel and self.basePanel:IsValid() and self.basePanel.isOpen then return end
+    self:Remove()
+end]]
+
+vgui.Register("AttachmentButton", attachmentButton, "DButton")
+
+--//
+
 local weaponPanelList = {}
 weaponPanelList.class = "cw_kk_ins2_ak74"
-weaponPanelList.name = weapons.GetStored(weaponPanelList.class)[PrintName]
-menuDisplayName.font = "DermaDefault"
+weaponPanelList.font = "DermaDefault"
 weaponPanelList.type = "Assault Rifles"
-weaponPanelList.typeIcon = GAMEMODE.weaponToIcon[weaponPanelList.type]
+
+function weaponPanelList:Init()
+    self.name = weapons.GetStored(self.class)[PrintName]
+    self.typeIcon = GAMEMODE.weaponToIcon[self.type]
+end
 
 function weaponPanelList:SetWep(wep)
     self.class = wep
-    for k, v in pairs(GAMEMODE.menuDisplayName) do
+    for k, v in pairs(GAMEMODE.menuWeaponInfo) do
         for k2, v2 in pairs(v) do
             if k2 == self.class then
-                self.name = v2
+                self.name = v2[1]
+                self.wepSlot = k
             end
         end
     end
 end
 
+function weaponPanelList:GetWep()
+    return self.class
+end
+
 function weaponPanelList:SetType(type)
     self.type = type
-    self.typeIcon = GAMEMODE.weaponToIcon[self.type]
+    self.typeIcon = GAMEMODE.weaponToIcon[self.type] or Material("a")
 end
 
 function weaponPanelList:SetFont(font)
@@ -672,15 +837,41 @@ function weaponPanelList:SetFont(font)
 end
 
 function weaponPanelList:Paint()
-    surface.SetTexture(self.typeIcon)
+    surface.SetDrawColor(255, 255, 255)
+    surface.SetMaterial(self.typeIcon)
     surface.DrawTexturedRect(0, 0, self:GetTall(), self:GetTall())
 
-    draw.SimpleText(self.name, self.font, self:GetTall() + 6, self:GetTall() / 2, Color(), TEXT_ALIGN_LEFT, TEXT_ALIGN_CENTER)
+    --surface.DrawLine(0, self:GetTall() - 1, self:GetWide(), self:GetTall() - 1)
+
+    draw.SimpleText(self.name, self.font, self:GetTall() + 6, self:GetTall() / 2, Color(GAMEMODE.myTeam.menuTeamColorLightAccent.r, GAMEMODE.myTeam.menuTeamColorLightAccent.g, GAMEMODE.myTeam.menuTeamColorLightAccent.b), TEXT_ALIGN_LEFT, TEXT_ALIGN_CENTER)
+    if self.hover then
+        surface.SetFont(self.font)
+        local w, h = surface.GetTextSize(self.name)
+        surface.SetDrawColor(GAMEMODE.myTeam.menuTeamColor.r, GAMEMODE.myTeam.menuTeamColor.g, GAMEMODE.myTeam.menuTeamColor.b)
+        surface.DrawLine(self:GetTall() + 6, self:GetTall() / 2 + h / 2, self:GetTall() +  6 + w, self:GetTall() / 2 + h / 2)
+    end
     return true
 end
 
 function weaponPanelList:DoClick()
-    --to do
+    surface.PlaySound("buttons/lightswitch2.wav")
+    if self.wepSlot == "primaries" then
+        GAMEMODE.PRIMARY_WEAPON = self.class
+    elseif self.wepSlot == "secondaries" then
+        GAMEMODE.SECONDARY_WEAPON = self.class
+    elseif self.wepSlot == "equipment" then
+        GAMEMODE.EQUIPMENT_WEAPON = self.class
+    end
+    GAMEMODE:RefreshWeapons()
+end
+
+function weaponPanelList:OnCursorEntered()
+    surface.PlaySound("garrysmod/ui_hover.wav")
+    self.hover = true
+end
+
+function weaponPanelList:OnCursorExited()
+    self.hover = false
 end
 
 function weaponPanelList:Finish()
@@ -690,17 +881,36 @@ function weaponPanelList:Finish()
     customizeButton:SetText("")
     customizeButton.DoClick = function()
         surface.PlaySound("buttons/lightswitch2.wav")
-        --Do more
+        --[[local customizePanel = vgui.Create("DFrame")
+        customizePanel:SetSize()
+        customizePanel:SetTitle("")
+        customizePanel:SetVisible(true)
+        customizePanel:SetDraggable(false)
+        customizePanel:ShowCloseButton(false)
+        customizePanel:MakePopup()
+        customizePanel:Center()
+        customizePanel:SetDrawOnTop(true)
+        customizePanel.Think = function()
+            if not GAMEMODE.weaponMain or not GAMEMODE.weaponMain:IsValid() then
+                customizePanel:Close()
+            end
+        end]]
     end
     customizeButton.Paint = function()
-        draw.SimpleText("Customize Weapon", self.font, self:GetWide() / 2, self:GetTall() / 2, Color(), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER) --self.font may not work here
+        if customizeButton.hover then
+            surface.SetDrawColor(GAMEMODE.myTeam.menuTeamColor.r, GAMEMODE.myTeam.menuTeamColor.g, GAMEMODE.myTeam.menuTeamColor.b)
+		    surface.SetTexture(surface.GetTextureID("gui/center_gradient"))
+            surface.DrawTexturedRect(0, 0, customizeButton:GetSize())
+        end
+        draw.SimpleText("Customize", self.font, customizeButton:GetWide() / 2, customizeButton:GetTall() / 2, Color(GAMEMODE.myTeam.menuTeamColorAccent.r, GAMEMODE.myTeam.menuTeamColorAccent.g, GAMEMODE.myTeam.menuTeamColorAccent.b), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
     end
     customizeButton.OnCursorEntered = function()
         surface.PlaySound("garrysmod/ui_hover.wav")
-        self.hover = true
+        customizeButton.hover = true
+        self.hover = false
     end
     customizeButton.OnCursorExited = function()
-        self.hover = false
+        customizeButton.hover = false
     end
 end
 

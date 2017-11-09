@@ -116,76 +116,78 @@ print( "sh_loadoutmenu initialization..." )
 	}
 }]]
 
-GM.menuDisplayName = {
+GM.weaponTypes = {"Assault Rifles", "Sub-Machine Guns", "Shotguns", "Heavy Machine Guns", "D.M.R.s", "Snipers", "Frag Grenades",
+					"Flash Grenades", "Smoke Grenades", "Fire Grenades", "Remote Explosives", "Explosive Launchers", "none"}
+GM.menuWeaponInfo = {
 	primaries = {
 		--Red Primaries
-		["cw_kk_ins2_ak74"] = 			"AK-74",
-		["cw_kk_ins2_akm"] = 			"AKM",
-		["cw_kk_ins2_aks74u"] = 		"AKs-74u",
-		["cw_kk_ins2_fnfal"] = 			"FN FAL",
-		["cw_kk_ins2_m1a1"] = 			"M1A1 Carbine",
-		["cw_kk_ins2_m1a1_para"] = 		"M1A1 Elite",
-		["cw_kk_ins2_mosin"] = 			"Mosin Nagant",
-		["cw_kk_ins2_mp40"] = 			"MP-40",
-		["cw_kk_ins2_rpk"] = 			"RPK",
-		["cw_kk_ins2_sks"] = 			"SKS",
-		["cw_kk_ins2_sterling"] = 		"Sterling L2A3",
-		["cw_kk_ins2_toz"] = 			"TOZ-194",
+		["cw_kk_ins2_ak74"] = 			{"AK-74", GM.weaponTypes[1], 1},
+		["cw_kk_ins2_akm"] = 			{"AKM", GM.weaponTypes[1], 1},
+		["cw_kk_ins2_aks74u"] = 		{"AKs-74u", GM.weaponTypes[2], 1},
+		["cw_kk_ins2_fnfal"] = 			{"FN FAL", GM.weaponTypes[5], 1},
+		["cw_kk_ins2_m1a1"] = 			{"M1A1 Carbine", GM.weaponTypes[5], 1},
+		["cw_kk_ins2_m1a1_para"] = 		{"M1A1 Elite", GM.weaponTypes[5], 1},
+		["cw_kk_ins2_mosin"] = 			{"Mosin Nagant", GM.weaponTypes[6], 1},
+		["cw_kk_ins2_mp40"] = 			{"MP-40", GM.weaponTypes[2], 1},
+		["cw_kk_ins2_rpk"] = 			{"RPK", GM.weaponTypes[4], 1},
+		["cw_kk_ins2_sks"] = 			{"SKS", GM.weaponTypes[5], 1},
+		["cw_kk_ins2_sterling"] = 		{"Sterling L2A3", GM.weaponTypes[2], 1},
+		["cw_kk_ins2_toz"] = 			{"TOZ-194", GM.weaponTypes[3], 1},
 		--Blue Primaires
-		["cw_kk_ins2_mini14"] = 		"AC-556", --AR
-		["cw_kk_ins2_galil"] = 			"IMI Galil", --AR
-		["cw_kk_ins2_cstm_galil_ace"] = "IMI Galil ACE", --AR
-		["cw_kk_ins2_mp5k"] = 			"H&K MP5K", --SMG
-		["cw_kk_ins2_ump45"] = 			"H&K UMP .45", --SMG
-		["cw_kk_ins2_l1a1"] = 			"L1A1", --DMR
-		["cw_kk_ins2_m14"] = 			"M14 EBR", --DMR
-		["cw_kk_ins2_m16a4"] = 			"M16A4", --AR
-		["cw_kk_ins2_m249"] = 			"M249", --HMG
-		["cw_kk_ins2_m40a1"] = 			"M40A1", --SR
-		["cw_kk_ins2_m4a1"] = 			"M4A1", --AR
-		["cw_kk_ins2_m590"] = 			"M590", --SG
-		["cw_kk_ins2_mk18"] = 			"MK18", --AR
+		["cw_kk_ins2_mini14"] = 		{"AC-556", GM.weaponTypes[5], 2},
+		["cw_kk_ins2_galil"] = 			{"IMI Galil", GM.weaponTypes[1], 2},
+		["cw_kk_ins2_cstm_galil_ace"] = {"IMI Galil ACE", GM.weaponTypes[1], 2},
+		["cw_kk_ins2_mp5k"] = 			{"H&K MP5K", GM.weaponTypes[2], 2},
+		["cw_kk_ins2_ump45"] = 			{"H&K UMP .45", GM.weaponTypes[2], 2},
+		["cw_kk_ins2_l1a1"] = 			{"L1A1", GM.weaponTypes[5], 2},
+		["cw_kk_ins2_m14"] = 			{"M14 EBR", GM.weaponTypes[5], 2},
+		["cw_kk_ins2_m16a4"] = 			{"M16A4", GM.weaponTypes[1], 2},
+		["cw_kk_ins2_m249"] = 			{"M249", GM.weaponTypes[4], 2},
+		["cw_kk_ins2_m40a1"] = 			{"M40A1", GM.weaponTypes[6], 2},
+		["cw_kk_ins2_m4a1"] = 			{"M4A1", GM.weaponTypes[1], 2},
+		["cw_kk_ins2_m590"] = 			{"M590", GM.weaponTypes[3], 2},
+		["cw_kk_ins2_mk18"] = 			{"MK18", GM.weaponTypes[1], 2},
 		--Extra Primaries
-		["cw_kk_ins2_cstm_aug"] = 		"Steyr AUG",
-		["cw_kk_ins2_cstm_colt"] = 		"Colt",
-		["cw_kk_ins2_cstm_famas"] = 	"F1 Famas",
-		["cw_kk_ins2_cstm_g36c"] = 		"G36C",
-		["cw_kk_ins2_cstm_kriss"] = 	"Kriss Vector",
-		["cw_kk_ins2_cstm_ksg"] = 		"KSG-12",
-		["cw_kk_ins2_cstm_l85"] = 		"L85A2",
-		["cw_kk_ins2_cstm_m14"] = 		"M14 Classic",
-		["cw_kk_ins2_cstm_m500"] = 		"Mossberg 500",
-		["cw_kk_ins2_cstm_mp5a4"] = 	"H&K MP5A4",
-		["cw_kk_ins2_cstm_mp7"] = 		"H&K MP7",
-		["cw_kk_ins2_cstm_scar"] = 		"SCAR-H",
-		["cw_kk_ins2_cstm_spas12"] = 	"SPAS-12",
-		["cw_kk_ins2_cstm_uzi"] = 		"Mini Uzi"
+		["cw_kk_ins2_cstm_aug"] = 		{"Steyr AUG", GM.weaponTypes[1], 3},
+		["cw_kk_ins2_cstm_colt"] = 		{"Colt", GM.weaponTypes[1], 3},
+		["cw_kk_ins2_cstm_famas"] = 	{"F1 Famas", GM.weaponTypes[1], 3},
+		["cw_kk_ins2_cstm_g36c"] = 		{"G36C", GM.weaponTypes[1], 3},
+		["cw_kk_ins2_cstm_kriss"] = 	{"Kriss Vector", GM.weaponTypes[2], 3},
+		["cw_kk_ins2_cstm_ksg"] = 		{"KSG-12", GM.weaponTypes[3], 3},
+		["cw_kk_ins2_cstm_l85"] = 		{"L85A2", GM.weaponTypes[1], 3},
+		["cw_kk_ins2_cstm_m14"] = 		{"M14 Classic", GM.weaponTypes[5], 3},
+		["cw_kk_ins2_cstm_m500"] = 		{"Mossberg 500", GM.weaponTypes[3], 3},
+		["cw_kk_ins2_cstm_mp5a4"] = 	{"H&K MP5A4", GM.weaponTypes[2], 3},
+		["cw_kk_ins2_cstm_mp7"] = 		{"H&K MP7", GM.weaponTypes[2], 3},
+		["cw_kk_ins2_cstm_scar"] = 		{"SCAR-H", GM.weaponTypes[5], 3},
+		["cw_kk_ins2_cstm_spas12"] = 	{"SPAS-12", GM.weaponTypes[3], 3},
+		["cw_kk_ins2_cstm_uzi"] = 		{"Mini Uzi", GM.weaponTypes[2], 3}
 	},
 	secondaries = {
 		--Secondaries
-		["cw_kk_ins2_m1911"] = 			"M1911",
-		["cw_kk_ins2_makarov"] = 		"Makarov",
-		["cw_kk_ins2_revolver"] = 		"M&W Model 10",
-		["cw_kk_ins2_m9"] = 			"Beretta M9",
-		["cw_kk_ins2_m45"] = 			"MEU(SOC) .45",
+		["cw_kk_ins2_m1911"] = 			{"M1911", GM.weaponTypes[13], 1},
+		["cw_kk_ins2_makarov"] = 		{"Makarov", GM.weaponTypes[13], 1},
+		["cw_kk_ins2_revolver"] = 		{"S&W Model 10", GM.weaponTypes[13], 0},
+		["cw_kk_ins2_m9"] = 			{"Beretta M9", GM.weaponTypes[13], 2},
+		["cw_kk_ins2_m45"] = 			{"MEU(SOC) .45", GM.weaponTypes[13], 2},
 		--Extra Secondaries
-		["cw_kk_ins2_cstm_cobra"] = 	"S&W Cobra",
-		["cw_kk_ins2_cstm_g19"] = 		"Glock 19",
+		["cw_kk_ins2_cstm_cobra"] = 	{"S&W Cobra", GM.weaponTypes[13], 3},
+		["cw_kk_ins2_cstm_g19"] = 		{"Glock 19", GM.weaponTypes[13], 3}
 	},
 	equipment = {
 		--Equipment
-		["cw_kk_ins2_nade_f1"] = 		"F1 Frag",
-		["cw_kk_ins2_nade_m67"] = 		"M67 Frag",
-		["cw_kk_ins2_nade_m18"] = 		"M18 Smoke",
-		["cw_kk_ins2_nade_m84"] = 		"M84 Flash",
-		["cw_kk_ins2_nade_anm14"] = 	"ANM-14",
-		["cw_kk_ins2_nade_molotov"] = 	"Molotov",
-		["cw_kk_ins2_nade_c4"] = 		"C4",
-		["cw_kk_ins2_nade_ied"] = 		"IED",
-		["cw_kk_ins2_rpg"] = 			"RPG-7",
-		["cw_kk_ins2_at4"] = 			"AT-4",
-		--"cw_kk_ins2_gp25" = 			"GP-25 Grenade Launcher",
-		["cw_kk_ins2_p2a1"] = 			"P2A1 Flare Gun" --This is the flare gun, for night maps, I guess
+		["cw_kk_ins2_nade_f1"] = 		{"F1 Frag", GM.weaponTypes[7], 1},
+		["cw_kk_ins2_nade_m67"] = 		{"M67 Frag", GM.weaponTypes[7], 2},
+		["cw_kk_ins2_nade_m18"] = 		{"M18 Smoke", GM.weaponTypes[9], 0},
+		["cw_kk_ins2_nade_m84"] = 		{"M84 Flash", GM.weaponTypes[8], 0},
+		["cw_kk_ins2_nade_anm14"] = 	{"ANM-14", GM.weaponTypes[10], 2},
+		["cw_kk_ins2_nade_molotov"] = 	{"Molotov", GM.weaponTypes[10], 1},
+		["cw_kk_ins2_nade_c4"] = 		{"C4", GM.weaponTypes[11], 2},
+		["cw_kk_ins2_nade_ied"] = 		{"IED", GM.weaponTypes[11], 1},
+		["cw_kk_ins2_rpg"] = 			{"RPG-7", GM.weaponTypes[12], 1},
+		["cw_kk_ins2_at4"] = 			{"AT-4", GM.weaponTypes[12], 2},
+		--"cw_kk_ins2_gp25" = 			{"GP-25 Grenade Launcher", GM.weaponTypes[12], 0},
+		["cw_kk_ins2_p2a1"] = 			{"P2A1 Flare Gun", GM.weaponTypes[13], 0} --This is the flare gun, for night maps, I guess
 	}
 }
 
@@ -305,7 +307,7 @@ if SERVER then
 		GiveLoadout( ply )
 	end )
 
-	function GiveLoadout( ply )
+	--[[function GiveLoadout( ply )
 		if GetGlobalBool( "RoundInProgress" ) or !GetGlobalBool( "GameInProgress" ) then return end
 
 		--[[This COULD be a table and a for statement... but meh...
@@ -321,7 +323,7 @@ if SERVER then
 		ply:RemoveAmmo( ply:GetAmmoCount( "cw_kk_ins2_nade_c4" ),  "cw_kk_ins2_nade_c4" )
 		ply:RemoveAmmo( ply:GetAmmoCount( "cw_kk_ins2_nade_ied" ), "cw_kk_ins2_nade_ied" )]]
 
-		local attachmentequipdelay = 0.3
+		--[[local attachmentequipdelay = 0.3
 		local give40mm = false
 		ply:StripWeapons()
 		if ply.oldprim then
@@ -404,7 +406,7 @@ if SERVER then
 		end )
 		print( "SetRole called via sh_loadoutmenu" )
 		SetRole( ply )
-	end
+	end]]
 
 	function GM:CheckRole( ply )
 		local role = ply:GetNWString( "role" )

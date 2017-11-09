@@ -95,28 +95,29 @@ end
 
 function GM:StartRound( round )
     SetGlobalInt( "RoundTime", self.modes[self.gameType].roundTime )
-    self.Round = self.Round
-    self.RoundPrep( self.round )
+    self.Round = round
+    self.RoundPrep( self.Round )
 end
-
+print("table debug:", GAMEMODE, GM)
+--PrintTable(GM)
 --Round preperation stuff
-function GM:RoundPrep( round ) 
+function GM:RoundPrep( round )
+    print("RoundPrep DEBUG:", self, GAMEMODE, GM)
     print( "We are starting round: ", round)
     if not GAMEMODE:allteamsvalid() then 
-        print( "Not all teams are valid, preventing round preperation." ) 
-        self.GameInProgress = false
-        self.gameType = "none"
-        self.GameInProgress = false
-        self.RoundInProgress = false
+        print( "Not all teams are valid, preventing round preperation." )
+        GAMEMODE.gameType = "none"
+        GAMEMODE.GameInProgress = false
+        GAMEMODE.RoundInProgress = false
         SetGlobalInt( "RoundTime", 0 ) 
         return 
     end
     game.CleanUpMap()
     print( "Round preperation starting, cleaning up map..." )
 
-    if not self.Round % 2 == 0 and not self.Round == 1 then
+    --[[if not GAMEMODE.Round % 2 == 0 and not GAMEMODE.Round == 1 then
         --ChangeSides() --To-do function, use this to change everyone's spawn/objective?
-    end
+    end]]
 
     --//Spawns and freezes all players
     print( "All teams valid...")
@@ -132,13 +133,13 @@ function GM:RoundPrep( round )
                 v.initialJoin = false
             end
             --//Found in sh_loadoutmenu//--
-            GiveLoadout( v )
+            GAMEMODE:ApplyLoadout( v )
             print( "Spawning and locking: ", v )
         end
     end
 
     --//Calls the respective hook and starts the respective net message
-    hook.Call( "RoundPrepStart", self, round )
+    hook.Call( "RoundPrepStart", GAMEMODE, round )
     net.Start( "RoundPrepStart" )
         net.WriteString( tostring( round ) )
     net.Broadcast()
@@ -154,7 +155,7 @@ function GM:RoundPrep( round )
         --//After 30 seconds has passed, begins the round
         if timer.RepsLeft( "Countdown Timer" ) == 0 then
             print( "30 second timer finished, starting round/game.")
-            self:RoundBegin( round )
+            GAMEMODE:RoundBegin( round )
         end
     end )
 end 
@@ -162,6 +163,7 @@ end
 --Game starting, player movement freed
 function GM:RoundBegin( round )
     print( "Starting round...", round )
+    self.RoundInProgress = true
     --Start the round's countdown timer
     timer.Create( "Time Countdown", 1, 0, function()
         SetGlobalInt( "RoundTime", GetGlobalInt( "RoundTime" ) - 1 )

@@ -19,7 +19,6 @@ AddCSLuaFile("sh_weaponstats.lua")
 AddCSLuaFile("sh_rolehandler.lua")
 
 include("shared.lua")
-include("player.lua")
 include("sh_attachmenthandler.lua")
 include("sh_loadoutmenu.lua")
 include("sh_rolehandler.lua")
@@ -179,19 +178,13 @@ function GM:PlayerDisconnected( ply )
 		v:ChatPrint("Player " .. ply:Nick() .. " has disconnected (" .. ply:SteamID() .. ").")
 	end
 	--self:DeadTeamCheck( ply )
-	self.RoundCheck(ply)
+	self:RoundCheck(ply)
 end
 
---[[function GM:PlayerDeathThink( ply )
-	if ply.NextSpawnTime and ply.NextSpawnTime > CurTime() then 
-		return
-	end
-	if ply:KeyPressed( IN_JUMP ) then
-		ply:Spawn()
-		umsg.Start("CloseDeathScreen", ply )
-		umsg.End()
-	end
-end]]
+--//Disables player-directed respawning (when clicking or pressing space)
+function GM:PlayerDeathThink( ply )
+	return false
+end
 
 load = load or {} -- load[
 preload = preload or {} -- preload[
@@ -375,7 +368,6 @@ hook.Add("PlayerDisconnected", "Spec_DC", function( ply )
 	--if leaderboard[ ply:Nick() ] then leaderboard[ ply:Nick() ] = nil end
 end )
 
-
 function GM:PlayerSpawn( ply )
 	print( ply:Nick(), " has spawned!")
 
@@ -387,9 +379,10 @@ function GM:PlayerSpawn( ply )
 
 	ply:AllowFlashlight( false )
 
-	if ( ply:Team() != 1 and ply:Team() != 2 and ply:Team() != 3 ) or !GetGlobalBool("GameInProgress") then --or !GetGlobalBool("RoundInProgress") then
+	if ( ply:Team() != 1 and ply:Team() != 2 and ply:Team() != 3 ) or not self.gameInProgress then --!GetGlobalBool("GameInProgress") then --or !GetGlobalBool("RoundInProgress") then
+		print("SPAWN DEBUG", ply:Team(), self.gameInProgress)
 		print( ply, " is not on a valid team, or the game hasn't been started. Disallowing spawn...")
-		--ply:Kill()
+		--ply:SilentKill()
 		ply:Spectate( OBS_MODE_ROAMING )
 		SetupSpectator( ply )
 		return
@@ -420,9 +413,9 @@ function GM:PlayerSpawn( ply )
 
 	ply:SetNWBool("IsSpectating", false )
 
-	ply:SetJumpPower( 170 ) -- CTDM value was 170
+	--[[ply:SetJumpPower( 170 ) -- CTDM value was 170
 	ply:SetWalkSpeed( 140 ) --CTDM value was 180
-	ply:SetRunSpeed( 260 ) --CTDM value was 300
+	ply:SetRunSpeed( 260 ) --CTDM value was 300]]
 
 	ply:SetNoCollideWithTeammates( false )
 end
@@ -444,42 +437,6 @@ function GM:PlayerDeath( vic, inf, att )
 				end
 			end )
 		end )
-	end
-end
-
-function GM:ScalePlayerDamage( ply, hitgroup, dmginfo )
-	if hitgroup == HITGROUP_HEAD then
-		if IsValid( ply ) then
-			dmginfo:ScaleDamage( 1.5 )
-		end
-	elseif hitgroup == HITGROUP_CHEST then
-		if IsValid( ply ) then
-			dmginfo:ScaleDamage( 1 )
-		end
-	elseif hitgroup == HITGROUP_STOMACH then
-		if IsValid( ply ) then
-			dmginfo:ScaleDamage( 1 )
-		end
-	elseif hitgroup == HITGROUP_LEFTARM then
-		if IsValid( ply ) then
-			dmginfo:ScaleDamage( 0.9 )
-		end
-	elseif hitgroup == HITGROUP_RIGHTARM then
-		if IsValid( ply ) then
-			dmginfo:ScaleDamage( 0.9 )
-		end
-	elseif hitgroup == HITGROUP_LEFTLEG then
-		if IsValid( ply ) then
-			dmginfo:ScaleDamage( 0.85 )
-		end
-	elseif hitgroup == HITGROUP_RIGHTLEG then
-		if IsValid( ply ) then
-			dmginfo:ScaleDamage( 0.85 )
-		end
-	else
-		if IsValid( ply ) then
-			dmginfo:ScaleDamage( 1 )
-		end
 	end
 end
 

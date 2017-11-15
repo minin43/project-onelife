@@ -269,35 +269,38 @@ GM.playerModelByRole[ "Solo" ] = {  }
 if SERVER then
 
 hook.Add( "ScalePlayerDamage", "DamageScaling", function( ply, hitgroup, dmginfo )
-	if CheckRole( ply ) != 0 and ply.armorRating and !dmginfo:IsFallDamage() and IsValid( ply ) then
+	if ply.role != 0 and ply.armorRating and !dmginfo:IsFallDamage() and IsValid( ply ) then
 		if hitgroup == HITGROUP_HEAD then
-			dmginfo:ScaleDamage(ply.armorRating.damageScaling.head)
+			dmginfo:ScaleDamage(ply.armorRating.damageScaling[1])
 	    elseif hitgroup == HITGROUP_CHEST or hitgroup == HITGROUP_STOMACH then
-			dmginfo:ScaleDamage(ply.armorRating.damageScaling.torso)
+			dmginfo:ScaleDamage(ply.armorRating.damageScaling[2])
 	    elseif hitgroup == HITGROUP_LEFTARM or hitgroup == HITGROUP_RIGHTARM then
-			dmginfo:ScaleDamage(ply.armorRating.damageScaling.arms)
+			dmginfo:ScaleDamage(ply.armorRating.damageScaling[3])
 	    elseif hitgroup == HITGROUP_LEFTLEG or hitgroup == HITGROUP_RIGHTLEG then
-			dmginfo:ScaleDamage(ply.armorRating.damageScaling.legs)
+			dmginfo:ScaleDamage(ply.armorRating.damageScaling[4])
 	    else
 			dmginfo:ScaleDamage( 1 )
 	    end
 	end
 end )
 
-hook.Add( "PlayerSpawn", "SetRoleModifiers", SetRole )
+hook.Add( "PlayerSpawn", "SetRoleModifiers", function(ply)
+    ply.role = ply.role or 1
+    GAMEMODE:SetRole(ply, ply.role)
+end)
 
 function GM:SetRole(ply, role) --ply is the player ent, role is a num
     timer.Simple( 0, function() --timer.Simple with 0 time runs on next server tick
         if ply:Team() != 1 and ply:Team() != 2 and ply:Team() != 3 then return end
 
-        ply:SetModel( self.playerModelByRole[team.GetName(ply:Team())][math.random(#playerModelByRole[team.GetName(ply:Team())])] )
+        ply:SetModel( self.playerModelByRole[team.GetName(ply:Team())][math.random(#self.playerModelByRole[team.GetName(ply:Team())])] )
 
         ply.armorRating = self.Roles[role].armorRating
 
         if ply.armorRating.movementScaling then
             ply:SetNWString( "ArmorType", tostring(ply.armorRating.armorName) )
-            ply:SetwalkSpeed( ply.armorRating.movementScaling[1] )
-            ply:SetrunSpeed( ply.armorRating.movementScaling[2] )
+            ply:SetWalkSpeed( ply.armorRating.movementScaling[1] )
+            ply:SetRunSpeed( ply.armorRating.movementScaling[2] )
             ply:SetJumpPower( ply.armorRating.movementScaling[3] )
         end
 

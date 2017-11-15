@@ -289,6 +289,7 @@ weaponPanel.attachmentAngleOffset = {
     [""] = Vector(0, 0, 0),
     [""] = Vector(0, 0, 0)
 }
+weaponPanel.sniperTable = {["cw_kk_ins2_mosin"] = true, ["cw_kk_ins2_m40a1"] = true}
 weaponPanel.primaryWeaponInfo = { --Format: {variable name in the weapon's file, Display name, Color to display int value, Int value, Lower int value is better boolean}
     {"Damage", "Damage: ", {255, 255, 255}, 0},
     {"FireDelay", "Fire rate: ", {255, 255, 255}, 0, true},
@@ -296,21 +297,21 @@ weaponPanel.primaryWeaponInfo = { --Format: {variable name in the weapon's file,
     {"AimSpread", "Accuracy: ", {255, 255, 255}, 0, true},
     {"SpeedDec", "Weight: ", {255, 255, 255}, 0, true},
     {"ClipSize", "Clip Size: ", {255, 255, 255}, 0}, --This is under a sub-table, will have to manually check
-    {"base_reload", "Reload Length (seconds): ", {255, 255, 255}, 0, true}, --Also under a sub-table
+    {"base_reload", "Reload Speed: ", {255, 255, 255}, 0, true}, --Also under a sub-table
     {"SpreadPerShot", "Spread Per Shot: ", {255, 255, 255}, 0, true},
     {"MaxSpreadInc", "Maximum Spread: ", {255, 255, 255}, 0, true}
 }
 weaponPanel.primaryWeaponInfoShotgun = {
-    {"Damage", "Damage per pellet: ", {255, 255, 255}, 0},
-    {"Shots", "Pellets per shot: ", {255, 255, 255}, 0},
-    {0, "Max damage per shot: ", {255, 255, 255}, 0},
+    {"Damage", "Pellet Damage: ", {255, 255, 255}, 0},
+    {"Shots", "Pellets: ", {255, 255, 255}, 0},
+    {0, "Max damage: ", {255, 255, 255}, 0},
     {"FireDelay", "Fire rate: ", {255, 255, 255}, 0, true},
     {"Recoil", "Recoil: ", {255, 255, 255}, 0, true},
     {"ClumpSpread", "Pellet Spread: ", {255, 255, 255}, 0, true},
     {"SpeedDec", "Weight: ", {255, 255, 255}, 0, true},
     {"ClipSize", "Clip Size: ", {255, 255, 255}, 0}, --This is under a sub-table, will have to manually check
-    {"base_reload_start", "Reload Time (per shell): ", {255, 255, 255}, 0, true}, --Also under a sub-table
-    {"base_reload_start_empty", "Reload Time (full): ", {255, 255, 255}, 0, true}, --STill under a sub-table
+    {"base_reload_start", "Per-Shell Reload: ", {255, 255, 255}, 0, true}, --Also under a sub-table
+    {"base_reload_start_empty", "Empty Reload: ", {255, 255, 255}, 0, true}, --STill under a sub-table
     {"SpreadPerShot", "Spread Per Shot: ", {255, 255, 255}, 0, true},
     {"MaxSpreadInc", "Maximum Spread: ", {255, 255, 255}, 0, true}
 }
@@ -320,7 +321,7 @@ weaponPanel.secondaryWeaponInfo = {
     {"Recoil", "Recoil: ", {255, 255, 255}, 0, true},
     {"SpeedDec", "Weight: ", {255, 255, 255}, 0, true},
     {"ClipSize", "Clip Size: ", {255, 255, 255}, 0}, --This is under a sub-table, will have to manually check
-    {"base_reload", "Reload Length (seconds): ", {255, 255, 255}, 0, true}
+    {"base_reload", "Reload Speed: ", {255, 255, 255}, 0, true}
 }
 weaponPanel.equipmentWeaponInfo = { --No equipment have attachments that affect important gameplay stats
     cw_kk_ins2_nade_anm14 = {
@@ -460,13 +461,26 @@ function weaponPanel:SetWep(wep)
         else
             self.weaponDisplayInfo = self.primaryWeaponInfo
 
-            for k, v in pairs(self.weaponDisplayInfo) do
-                if v[1] == "ClipSize" then
-                    v[4] = self.masterTable.Primary[v[1]]
-                elseif v[1] == "base_reload" then
-                    v[4] = self.masterTable.ReloadTimes[v[1]][1]
-                else
-                    v[4] = self.masterTable[v[1]]
+            print(self.sniperTable, self.wepClass, self.sniperTable[self.wepClass])
+            if self.sniperTable[self.wepClass] then
+                for k, v in pairs(self.weaponDisplayInfo) do
+                    if v[1] == "ClipSize" then
+                        v[4] = self.masterTable.Primary[v[1]]
+                    elseif v[1] == "base_reload" then
+                        v[4] = self.masterTable.ReloadTimes.reload_start[1] + self.masterTable.ReloadTimes.reload_insert[1] + self.masterTable.ReloadTimes.reload_end[1]
+                    else
+                        v[4] = self.masterTable[v[1]]
+                    end
+                end
+            else
+                for k, v in pairs(self.weaponDisplayInfo) do
+                    if v[1] == "ClipSize" then
+                        v[4] = self.masterTable.Primary[v[1]]
+                    elseif v[1] == "base_reload" then
+                        v[4] = self.masterTable.ReloadTimes[v[1]][1]
+                    else
+                        v[4] = self.masterTable[v[1]]
+                    end
                 end
             end
         end
@@ -565,6 +579,7 @@ function weaponPanel:Finish() --I can't think of a function to otherwise put thi
     end
 
     for k, v in pairs(self.weaponDisplayInfo) do
+        print("\nself.weaponDisplayInfo DEBUG - ", k, v, "\n")
         v[4] = math.Round(v[4], 3)
         self.wepInfoToAdd = {}
 

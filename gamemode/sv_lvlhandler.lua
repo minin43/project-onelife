@@ -62,7 +62,7 @@ function GM.lvl:AddEXP( ply, num )
 	local group = ply:GetUserGroup()
 	local exp = self:GetEXP( ply )
 	local mult = 1
-	for k, v in next, selfVIPGroups do
+	for k, v in next, self.VIPGroups do
 		if v[ 1 ] == group then
 			mult = v[ 2 ]
 		end
@@ -76,7 +76,7 @@ function GM.lvl:CheckLvlUp( ply )
 	local exp = self:GetEXP( ply )
 	local level = self:GetLevel( ply )
 	if exp > self.levels[ level ] then
-		self:SetEXP( ply, ( exp - lvl.levels[ level ] ) )
+		self:SetEXP( ply, ( exp - self.levels[ level ] ) )
 		self:SetLevel( ply, ( level + 1 ) )
 		hook.Run( "LevelUp", ply, level + 1 )
 		if self:GetEXP( ply ) > self.levels[ self:GetLevel( ply ) ] then
@@ -103,28 +103,28 @@ hook.Add( "PlayerInitialSpawn", "lvl.SendInitialLevel", function( ply )
 		ply:SetNWString( "level", GAMEMODE.lvl:GetLevel( ply ) )
 	end )
 end )
-	
+
 hook.Add( "LevelUp", "OnLevelUp", function( ply, newlv )
 	local color_green = Color( 102, 255, 51 )
 	local color_white = Color( 255, 255, 255 )
 
-	if GAMEMODE.lvl:GetLevel( ply ) >= #roles then
+	if GAMEMODE.lvl:GetLevel( ply ) >= #GAMEMODE.Roles then
 		ULib.tsayColor( nil, true, color_green, ply:Nick(), color_white, " leveled up to ", color_green, "Level " .. tostring( newlv ), color_white, "." )
 		for k, v in next, player.GetAll() do
-			--v:ChatPrint( tostring( ply:Nick() ) .. " leveled up to level " .. tostring( newlv ) )
+			v:ChatPrint( tostring( ply:Nick() ) .. " leveled up to level " .. tostring( newlv ) )
 			v:SendLua([[surface.PlaySound( "misc/levelup.wav" )]])
 		end
 	else
-		--ply:ChatPrint( "You leveled up to level " .. tostring( newlv ) )
+		ply:ChatPrint( "You leveled up to level " .. tostring( newlv ) )
 		ULib.tsayColor( ply, true, color_green, "You ", color_white, "leveled up to ", color_green, "Level " .. tostring( newlv ), color_white, "." )
 		ply:SendLua([[surface.PlaySound( "misc/levelup.wav" )]])
 	end
 end )
-	
+
 concommand.Add( "lvl_refresh", function( ply )
-	GM.lvl:SendUpdate( ply )
+	GAMEMODE.lvl:SendUpdate( ply )
 end )
-	
+
 concommand.Add( "lvl_debug_global_reset", function( ply )
 	if ply:IsValid() and not ply:IsSuperAdmin() then 
 		return 

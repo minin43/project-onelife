@@ -128,8 +128,12 @@ net.Receive("VerifyLoadout", function(len, ply)
     if newLoadout == oldLoadout then return end --If the loadout is the exact same, no point in re-applying it
 
     ply.currentLoadout = {}
+    print("\nVERIFICATION of the new loadout being sent:", ply, ply.currentLoadout, newLoadout)
+    PrintTable(newLoadout)
     for k, v in pairs(newLoadout) do
         ply.currentLoadout[k] = v
     end
+    print("Current version of ply.currentLoadout:")
+    PrintTable(ply.currentLoadout)
     GAMEMODE:ApplyLoadout(ply)
 end)

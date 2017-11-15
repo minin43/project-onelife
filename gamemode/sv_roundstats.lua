@@ -10,17 +10,17 @@ end
 
 hook.Add( "PlayerDeath", "GlobalKills", function( vic, wep, att )
 	if vic and att and IsValid( vic ) and IsValid( att ) and vic != NULL and att != NULL and att:IsPlayer() then
-        if not GM.gameData[ vic:Nick() ] then
-            GM.gameData[ vic:Nick() ] = {kills = 0, deaths = 0, headshots = 0}
+        if not GAMEMODE.gameData[ vic:Nick() ] then
+            GAMEMODE.gameData[ vic:Nick() ] = {kills = 0, deaths = 0, headshots = 0}
         end
-        if not GM.gameData[ att:Nick() ] then
-            GM.gameData[ att:Nick() ] = {kills = 0, deaths = 0, headshots = 0}
+        if not GAMEMODE.gameData[ att:Nick() ] then
+            GAMEMODE.gameData[ att:Nick() ] = {kills = 0, deaths = 0, headshots = 0}
         end
 
-        GM.gameData[ att:Nick() ].kills = GM.gameData[ att:Nick() ].kills + 1
-		GM.gameData[ vic:Nick() ].deaths = GM.gameData[ vic:Nick() ].deaths + 1
+        GAMEMODE.gameData[ att:Nick() ].kills = GAMEMODE.gameData[ att:Nick() ].kills + 1
+		GAMEMODE.gameData[ vic:Nick() ].deaths = GAMEMODE.gameData[ vic:Nick() ].deaths + 1
         if vic:LastHitGroup() == "HITGROUP_HEAD" then
-            GM.gameData[ att:Nick() ].headshots = GM.gameData[ att ].headshots + 1
+            GAMEMODE.gameData[ att:Nick() ].headshots = GAMEMODE.gameData[ att ].headshots + 1
         end
 	end
 end )
@@ -29,37 +29,37 @@ util.AddNetworkString( "MVPList" )
 
 hook.Add( "GameEnd", "EndGameMVP", function( winner )
     --On game end, send all players an MVP list
-    GM.mostKills, GM.mostDeaths, GM.mostHeadshots, GM.mostObj = {players = {}, amount = 0}, {players = {}, amount = 0}, {players = {}, amount = 0}, {players = {}, amount = 0}
+    GAMEMODE.mostKills, GAMEMODE.mostDeaths, GAMEMODE.mostHeadshots, GAMEMODE.mostObj = {players = {}, amount = 0}, {players = {}, amount = 0}, {players = {}, amount = 0}, {players = {}, amount = 0}
 
-    for k, v in pairs( GM.gameData ) do
-        if v.kills > GM.mostKills.amount then
-            table.Empty( GM.mostKills )
-            GM.mostKills.players[1] = k
-            GM.mostkills.amount = v.kills
-        elseif v.kills == GM.mostKills.amount then
-            GM.mostkills.players[#GM.mostKills.players + 1] = k
+    for k, v in pairs( GAMEMODE.gameData ) do
+        if v.kills > GAMEMODE.mostKills.amount then
+            table.Empty( GAMEMODE.mostKills.players )
+            GAMEMODE.mostKills.players[1] = k
+            GAMEMODE.mostKills.amount = v.kills
+        elseif v.kills == GAMEMODE.mostKills.amount then
+            GAMEMODE.mostKills.players[#GAMEMODE.mostKills.players + 1] = k
         end
-        if v.deaths > GM.mostDeaths.amount then
-            table.Empty( GM.mostDeaths )
-            GM.mostDeaths.players[1] = k
-            GM.mostDeaths.amount = v.deaths
-        elseif v.deaths == GM.mostDeaths.amount then
-            GM.mostDeaths.players[#GM.mostDeaths.players + 1] = k
+        if v.deaths > GAMEMODE.mostDeaths.amount then
+            table.Empty( GAMEMODE.mostDeaths.players )
+            GAMEMODE.mostDeaths.players[1] = k
+            GAMEMODE.mostDeaths.amount = v.deaths
+        elseif v.deaths == GAMEMODE.mostDeaths.amount then
+            GAMEMODE.mostDeaths.players[#GAMEMODE.mostDeaths.players + 1] = k
         end
-        if v.headshots > GM.mostHeadshots.amount then
-            table.Empty( GM.mostHeadshots )
-            GM.mostHeadshots.players[1] = k
-            GM.mostHeadshots.amount = v.headshots
-        elseif v.headshots == GM.mostHeadshots.amount then
-            GM.mostHeadshots.players[#GM.mostHeadshots.players + 1] = k
+        if v.headshots > GAMEMODE.mostHeadshots.amount then
+            table.Empty( GAMEMODE.mostHeadshots.players )
+            GAMEMODE.mostHeadshots.players[1] = k
+            GAMEMODE.mostHeadshots.amount = v.headshots
+        elseif v.headshots == GAMEMODE.mostHeadshots.amount then
+            GAMEMODE.mostHeadshots.players[#GAMEMODE.mostHeadshots.players + 1] = k
         end
         --How should we calculate objective accolades? Maybe substitute kills for score?
     end
 
     net.Start( "MVPList" )
-        net.WriteTable( GM.mostKills )
-        net.WriteTable( GM.mostDeaths )
-        net.WriteTable( GM.mostHeadshots )
+        net.WriteTable( GAMEMODE.mostKills )
+        net.WriteTable( GAMEMODE.mostDeaths )
+        net.WriteTable( GAMEMODE.mostHeadshots )
         --net.WriteTable( mostObj )
     net.Broadcast()
 end )

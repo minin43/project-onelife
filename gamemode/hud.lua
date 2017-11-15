@@ -140,10 +140,12 @@ net.Receive( "RoundPrepStart", function( len, ply )
 end )
 
 net.Receive( "RoundEnd", function( len, ply )
+	print("RoundEnd RECEIVED")
 	local victor = tonumber( net.ReadString() )
 	local leader = tonumber( net.ReadString() )
 	local result
 	if victor == LocalPlayer():Team() then result = "roundwon" else result = "roundlost" end
+	print(victor, leader, result)
 	timer.Simple( 2, function()
 		surface.PlaySound( "announcer/" .. team.GetName( LocalPlayer():Team() ) .. "_" .. result .. ".wav" )
 	end )

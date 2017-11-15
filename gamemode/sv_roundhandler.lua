@@ -63,13 +63,15 @@ function GM:StartGame( mode )
         print( "Invalid mode type, preventing game start." )
         return
     end
-    if self.GameInProgress then 
+    if self.gameInProgress then 
         print( "There is already a game in progress..." )
         return 
     end
+    print("Starting game with game type: ", mode)
 
     self.gameType = mode
     self.gameInProgress = true
+    self.roundInProgress = false
     self.Round = 1
     self.redTeam.Wins = 0
     self.blueTeam.Wins = 0
@@ -81,7 +83,7 @@ function GM:StartGame( mode )
     net.Broadcast()
 
     --[[SetGlobalString( "GameType", mode )
-    SetGlobalBool( "GameInProgress", true )
+    SetGlobalBool( "gameInProgress", true )
     SetGlobalInt( "Round", 1 )
     SetGlobalInt( "RedTeamWins", 0 )
     SetGlobalInt( "BlueTeamWins", 0 )
@@ -94,33 +96,33 @@ function GM:StartGame( mode )
 end
 
 function GM:StartRound( round )
+    print( "Starting round: ", round)
+    print("\nStartRound DEBUG - ", self.modes, self.gameType) 
+    print(self.modes[self.gameType], self.modes[self.gameType].roundTime)
     SetGlobalInt( "RoundTime", self.modes[self.gameType].roundTime )
     self.Round = round
-    self.RoundPrep( self.Round )
+    self:RoundPrep( self.Round )
 end
-print("table debug:", GAMEMODE, GM)
---PrintTable(GM)
+
 --Round preperation stuff
 function GM:RoundPrep( round )
-    print("RoundPrep DEBUG:", self, GAMEMODE, GM)
-    print( "We are starting round: ", round)
-    if not GAMEMODE:allteamsvalid() then 
+    print( "Preparing round: ", round)
+    if not self:allteamsvalid() then 
         print( "Not all teams are valid, preventing round preperation." )
-        GAMEMODE.gameType = "none"
-        GAMEMODE.GameInProgress = false
-        GAMEMODE.RoundInProgress = false
+        self.gameType = "none"
+        self.gameInProgress = false
+        self.roundInProgress = false
         SetGlobalInt( "RoundTime", 0 ) 
         return 
     end
     game.CleanUpMap()
-    print( "Round preperation starting, cleaning up map..." )
+    print( "All teams are valid, cleaning up map..." )
 
     --[[if not GAMEMODE.Round % 2 == 0 and not GAMEMODE.Round == 1 then
         --ChangeSides() --To-do function, use this to change everyone's spawn/objective?
     end]]
 
     --//Spawns and freezes all players
-    print( "All teams valid...")
     for k, v in pairs( player.GetAll() ) do
         if v:Team() == 1 or v:Team() == 2 or v:Team() == 3 then
             v:Spawn()
@@ -133,13 +135,13 @@ function GM:RoundPrep( round )
                 v.initialJoin = false
             end
             --//Found in sh_loadoutmenu//--
-            GAMEMODE:ApplyLoadout( v )
+            self:ApplyLoadout( v )
             print( "Spawning and locking: ", v )
         end
     end
 
     --//Calls the respective hook and starts the respective net message
-    hook.Call( "RoundPrepStart", GAMEMODE, round )
+    hook.Call( "RoundPrepStart", self, round )
     net.Start( "RoundPrepStart" )
         net.WriteString( tostring( round ) )
     net.Broadcast()
@@ -155,7 +157,7 @@ function GM:RoundPrep( round )
         --//After 30 seconds has passed, begins the round
         if timer.RepsLeft( "Countdown Timer" ) == 0 then
             print( "30 second timer finished, starting round/game.")
-            GAMEMODE:RoundBegin( round )
+            self:RoundBegin( round )
         end
     end )
 end 
@@ -163,7 +165,7 @@ end
 --Game starting, player movement freed
 function GM:RoundBegin( round )
     print( "Starting round...", round )
-    self.RoundInProgress = true
+    self.roundInProgress = true
     --Start the round's countdown timer
     timer.Create( "Time Countdown", 1, 0, function()
         SetGlobalInt( "RoundTime", GetGlobalInt( "RoundTime" ) - 1 )
@@ -180,7 +182,7 @@ function GM:RoundBegin( round )
         end
 
         if GetGlobalInt( "RoundTime" ) < 1 then
-            self.RoundEnd( 0 )
+            self:RoundEnd( 0 )
             SetGlobalInt( "RoundTime", 0 )
             timer.Remove( "Time Countdown" )
         end
@@ -202,76 +204,83 @@ end
 
 --Game finishes, restart round if needed and deliver rewards
 function GM:RoundEnd( roundVictor )
+    print("\nRoundEnd Traceback")
+    debug.Trace()
+    print("End RoundEnd Traceback\n")
+    print("GM:RoundEnd called", roundVictor)
     if timer.Exists( "Time Countdown" ) then
         timer.Remove( "Time Countdown" )
     end
-    
+
     self.winningTeam = roundVictor
     self.winningTeamColor = Color(0, 0, 0)
     self.roundInProgress = false
 
-    if roundvictor == 1 then
+    if roundVictor == 1 then
         self.redTeam.Wins = self.redTeam.Wins + 1
         self.winningTeamName = team.GetName( 1 )
         self.winningTeamColor = Color( 100, 15, 15 )
 
         for k, v in pairs( team.GetPlayers( 1 ) ) do
-            AddRewards( v, SCORECOUNTS.ROUND_WON )
+            self:AddRewards( v, self.SCORECOUNTS.ROUND_WON )
         end
         for k, v in pairs( team.GetPlayers( 2 ) ) do
-            AddRewards( v, SCORECOUNTS.ROUND_LOST )
+            self:AddRewards( v, self.SCORECOUNTS.ROUND_LOST )
         end
-    elseif roundvictor == 2 then
-        self.blueTeamWins = self.blueTeamWins + 1
+    elseif roundVictor == 2 then
+        self.blueTeam.Wins = self.blueTeam.Wins + 1
         self.winningTeamName = team.GetName( 2 )
         self.winningTeamColor = Color( 30, 80, 180 )
 
         for k, v in pairs( team.GetPlayers( 1 ) ) do
-            AddRewards( v, SCORECOUNTS.ROUND_LOST )
+            self:AddRewards( v, self.SCORECOUNTS.ROUND_LOST )
         end
         for k, v in pairs( team.GetPlayers( 2 ) ) do
-            AddRewards( v, SCORECOUNTS.ROUND_WON )
+            self:AddRewards( v, self.SCORECOUNTS.ROUND_WON )
         end
     end
-    ULib.tsayColor( nil, true, winnercolor, winnername, Color( 255, 255, 255 ), " has won round " .. round .. "." )
+    ULib.tsayColor( nil, true, self.winningTeamColor, self.winningTeamName, Color( 255, 255, 255 ), " has won round " .. self.Round .. "." )
 
     if self:IsGameWon() then --Might need to add "winner" parameter
+        debug.Trace()
         print( "Game has been won" )
-        GM.gameType = nil
-        GM.gameInProgress = false
-        GM.roundInProgress = false
+        self.gameType = nil
+        self.gameInProgress = false
+        self.roundInProgress = false
         SetGlobalInt( "RoundTime", 0 )
 
-        hook.Call( "GameEnd", self, roundvictor )
+        hook.Call( "GameEnd", self, roundVictor )
         net.Start( "GameEnd" )
-            net.WriteString( tostring( roundvictor ) )
+            net.WriteString( tostring( roundVictor ) )
         net.Broadcast()
-        ULib.tsayColor( nil, true, winnercolor, winnername, Color( 255, 255, 255 ), " has won the game." )
+        ULib.tsayColor( nil, true, self.winningTeamColor, self.winningTeamName, Color( 255, 255, 255 ), " has won the game." )
 
-        for k, v in pairs( team.GetPlayers( roundvictor ) ) do
-            AddRewards( v, SCORECOUNTS.GAME_WON )
+        for k, v in pairs( team.GetPlayers( roundVictor ) ) do
+            self:AddRewards( v, self.SCORECOUNTS.GAME_WON )
         end
-        if roundvictor == 1 then losingteam = 2 elseif roundvictor == 2 then losingteam = 1 end
+        if roundVictor == 1 then losingteam = 2 elseif roundVictor == 2 then losingteam = 1 end
         for k, v in pairs( team.GetPlayers( losingteam ) ) do
-            AddRewards( v, SCORECOUNTS.GAME_LOST )
+            self:AddRewards( v, self.SCORECOUNTS.GAME_LOST )
         end
     else
         print( "Nobody's won the game yet." )
-        timer.Simple( 15, function()
-            StartRound( self.Round + 1 )
+        timer.Simple( 10, function()
+            self:StartRound( self.Round + 1 )
         end )
         local leadingteam
         if self.redTeam.Wins > self.blueTeam.Wins then leadingteam = 1 elseif self.blueTeam.Wins > self.redTeam.Wins then leadingteam = 2 else leadingteam = 0 end
-        hook.Call( "RoundEnd", self, round, roundvictor, leadingteam )
+        print("RoundEnd DEBUG:", self, self.Round, roundVictor, leadingteam)
+        --hook.Call( "RoundEndHook", self, roundVictor, leadingteam )
         net.Start( "RoundEnd" )
-            net.WriteString( tostring( roundvictor ) )
+            net.WriteString( tostring( roundVictor ) )
             net.WriteString( tostring( leadingteam ) )
         net.Broadcast()
     end
 end 
 
 function GM:IsGameWon()
-    if self.redTeamWins >= GM.modes[self.gameType].Rounds or self.blueTeamWins >= GM.modes[ elf.gameType].Rounds then
+    print("GM:IsGameWon DEBUG: ", self.redTeam.Wins, self.blueTeam.Wins, self.modes[self.gameType].Rounds)
+    if self.redTeam.Wins >= self.modes[self.gameType].Rounds or self.blueTeam.Wins >= self.modes[self.gameType].Rounds then
         return true
     end
     return false

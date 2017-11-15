@@ -31,25 +31,25 @@ function GM:AddMoney( ply, amt )
 		local group = ply:GetNWString( "usergroup" )
 		local mult = 1
 		if amt > 0 then
-			for k, v in next, GM.lvl.VIPGroups do
+			for k, v in next, GAMEMODE.lvl.VIPGroups do
 				if v[ 1 ] == group then
 					mult = v[ 2 ]
 				end
 			end
 		end
-		ply:SetPData( "pol_money", self.GetMoney( ply ) + ( amt * mult) )
-		self.SendUpdate( ply )
+		ply:SetPData( "pol_money", self:GetMoney( ply ) + ( amt * mult) )
+		self:SendUpdate( ply )
 	end
 end
 
 function GM:SetMoney( ply, num )
 	ply:SetPData( "pol_money", num )
-	self.SendUpdate( ply )
+	self:SendUpdate( ply )
 end
 
 function GM:SendUpdate( ply )
 	net.Start( "SendMoneyUpdate" )
-		net.WriteString( self.GetMoney( ply ) )
+		net.WriteString( GAMEMODE:GetMoney( ply ) )
 	net.Send( ply )
 end
 
@@ -85,10 +85,10 @@ net.Receive( "BuyAttachment", function(len, ply)
 	file.Write("onelife/users/" .. id(ply:SteamID()) .. ".txt", newfile)
 
 	price = -price
-	GM:AddMoney(ply, price)
+	GAMEMODE:AddMoney(ply, price)
 
 	timer.Simple( 0.1, function()
-		local cur = GM:GetMoney( ply )
+		local cur = GAMEMODE:GetMoney( ply )
 		net.Start( "BuyAttachmentCallback" )
 			net.WriteString( tostring( cur ) )
 		net.Send( ply )

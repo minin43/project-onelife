@@ -1,5 +1,10 @@
-function GM:ApplyLoadout(ply)
-    if not self.GameInProgress or self.RoundInProgress then return end
+function GM:ApplyLoadout(ply, newLoadout)
+    --//If supplied with a new table of weapons, use the new table, otherwise, fall back onto the old table
+    print("GM:ApplyLoadout DEBUG - ", self.gameInProgress, self.roundInProgress)
+    if not self.gameInProgress or self.roundInProgress then return end
+
+    print("\nVERIFICATION of the new loadout being RECEIVED:", ply, ply.currentLoadout, newLoadout)
+    ply.currentLoadout = ply.currentLoadout or {["primWeapon"] = "", ["secondWeapon"] = "", ["equipWeapon"] = "", ["primWeaponAttachments"] = {}, ["secondWeaponAttachments"] = {}, ["equipWeaponAttachments"] = {}}
 
     --//Reset the loadout
     self.ammoTypesToRemove = {"Incendiary", "C4", "Frag Grenades", "IED", "Smoke Grenades", "Flash Grenades", "PG-7VM Grenade", "AT4 Launcher", "40MM"}
@@ -9,9 +14,9 @@ function GM:ApplyLoadout(ply)
     ply:StripWeapons()
 
 	ply:SetNWString("role", ply.role)
-	ply:Give(ply.primWeapon, false)
-    ply:Give(ply.secondWeapon, false)
-    ply:Give(ply.equipWeapon, false)
+	ply:Give(ply.currentLoadout.primWeapon, false)
+    ply:Give(ply.currentLoadout.secondWeapon, false)
+    ply:Give(ply.currentLoadout.equipWeapon, false)
     self.meleeWeaponsPerTeam = {"cw_kk_ins2_mel_gurkha", "cw_kk_ins2_mel_bayonet"}
     ply:Give(self.meleeWeaponsPerTeam[ply:Team()])
 
@@ -44,19 +49,19 @@ function GM:ApplyLoadout(ply)
     end
 
     timer.Simple(0.3, function()
-        for k, v in pairs(ply.primWeaponAttachments) do
-            ply:GetWeapon(ply.primWeapon):attachSpecificAttachment(v)
+        for k, v in pairs(ply.currentLoadout.primWeaponAttachments) do
+            ply:GetWeapon(ply.currentLoadout.primWeapon):attachSpecificAttachment(v)
             if CustomizableWeaponry.registeredAttachmentsSKey[v].isGrenadeLauncher then
                 ply:GiveAmmo( 2, "40MM", true )
             end
         end
 
-        for k, v in pairs(ply.secondWeaponAttachments) do
-            ply:GetWeapon(ply.secondWeapon):attachSpecificAttachment(v)
+        for k, v in pairs(ply.currentLoadout.secondWeaponAttachments) do
+            ply:GetWeapon(ply.currentLoadout.secondWeapon):attachSpecificAttachment(v)
         end
 
-        for k, v in pairs(ply.equipWeaponAttachments) do
-            ply:GetWeapon(ply.equipWeapon):attachSpecificAttachment(v)
+        for k, v in pairs(ply.currentLoadout.equipWeaponAttachments) do
+            ply:GetWeapon(ply.currentLoadout.equipWeapon):attachSpecificAttachment(v)
         end
     end)
 

@@ -14,8 +14,8 @@ GM.SCORECOUNTS = {
 }
 
 function GM:AddRewards( ply, score )
-    self.lvl.AddEXP( ply, score )
-    self.AddMoney( ply, score )
+    self.lvl:AddEXP( ply, score )
+    self:AddMoney( ply, score )
     ply:AddScore( score )
 end
 
@@ -27,22 +27,22 @@ hook.Add( "PlayerDeath", "AddNotices", function( vic, inf, att )
     end
     
     --//Standard kill
-    GM:AddRewards( att, GM.SCORECOUNTS.KILL_KILL )
+    GAMEMODE:AddRewards( att, GAMEMODE.SCORECOUNTS.KILL_KILL )
     
     --//Headshot bonus
     if vic:LastHitGroup() == HITGROUP_HEAD then
-        GM:AddRewards( att, GM.SCORECOUNTS.KILL_HEADSHOT )
+        GAMEMODE:AddRewards( att, GAMEMODE.SCORECOUNTS.KILL_HEADSHOT )
     end
 
     --//Long shot bonus
     local shotDistance = math.Round(att:GetPos():Distance(vic:GetPos()) / 39) -- Converts to meters
     if shotDistance > 50 then
-        GM:AddRewards( att, GM.SCORECOUNTS.KILL_LONGSHOT )
+        GAMEMODE:AddRewards( att, GAMEMODE.SCORECOUNTS.KILL_LONGSHOT )
     end
 
     --//Low life bonus
     if att:Health() <= 20 then
-        GM:AddRewards( att, GM.SCORECOUNTS.KILL_LOWLIFE )
+        GAMEMODE:AddRewards( att, GAMEMODE.SCORECOUNTS.KILL_LOWLIFE )
     end
 	
 end )

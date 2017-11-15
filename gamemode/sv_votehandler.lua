@@ -4,14 +4,18 @@ util.AddNetworkString( "EndVote" )
 util.AddNetworkString( "EndVoteCallback" )
 util.AddNetworkString( "StartMapVote" )
 
+hook.Add("GameEnd", "Start Voting", function()
+    GAMEMODE:StartVoting()
+end)
+
 function GM:StartVoting()
-    --Called when the game as completeted
+    --Called when the game has completeted
 
     --//Separates the modes that have "Voteable" set to true from those that have it set to false/nil, and sends all clients the list of voteable modes
     self.voteableModes = { }
     for k, v in pairs(self.modes) do
         if v.Voteable then
-            self.voteableModes[#self.voteableModes + 1] = k
+            self.voteableModes[#self.voteableModes + 1] = {k, v.Name, v.Description}
             v.Votes = 0
         end
 
@@ -25,8 +29,8 @@ function GM:StartVoting()
     timer.Simple( 30, function()
         local winningMode, previousVote = {}, 0
         for k, v in pairs(self.voteableModes) do
-            if v.Votes == previousVote then
-                winningMode[#winningMode + 1] = k
+            if GAMEMODE.modes[v[1]].Votes == previousVote then
+                winningMode[#winningMode + 1] = v[1]
             elseif v.Votes > previousVote then
                 table.Clear(winningMode)
                 winningMode[1] = k
@@ -40,7 +44,7 @@ function GM:StartVoting()
         self:SetVoteWinner( "mode", self.wonMode )
         
         net.Start( "EndVote" )
-            net.WriteString( self.wonMode.Name )
+            net.WriteString( self.modes[self.wonMode].Name )
         net.Broadcast()
 
         timer.Simple( 5, function()
@@ -75,7 +79,7 @@ function GM:StartVoting()
     net.Receive( "EndVoteCallback", function( len, ply )
         local playerVote = net.ReadString()
         for k, v in pairs(self.modes) do
-            if playerVote == v.Name then
+            if self.voteableModes[playerVote].Name == v.Name then
                 v.Votes = v.Votes + 1 
             end
         end

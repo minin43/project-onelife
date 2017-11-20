@@ -1,11 +1,10 @@
-"Gamemode"
+"project-onelife"
 {
 	"base"		"base"
 	"title"		"Project OneLife"
 	"maps"		"^gm_"
 	"menusystem"	"1"
-	"workshopid"	""
 	
-	"settings"
+	"settings"	{}
 
 }

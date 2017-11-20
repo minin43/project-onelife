@@ -11,6 +11,7 @@ include("cl_customspawns.lua")
 include("cl_leaderboards.lua")
 include("cl_menu_setup.lua")
 include("cl_menu_NEW.lua")
+include("cl_hud_voting.lua")
 
 include("sh_attachmenthandler.lua")
 include("sh_loadoutmenu.lua")
@@ -38,5 +39,17 @@ hook.Add("Initialize", "FileSystemCheck", function()
 	end
     if not file.Exists("onelife/personalinfo/weaponpresets.txt", "DATA") then
 		file.Write("onelife/personalinfo/weaponpresets.txt", util.TableToJSON({}))
+	end
+end)
+
+--//Do any team-based shit here, this is ran any time the player changes teams
+net.Receive("ValidateTeam", function()
+	local teamNum = net.ReadInt(3)
+	if teamNum == 1 then
+		GAMEMODE.myTeam = GAMEMODE.redTeam
+	elseif teamNum == 2 then
+		GAMEMODE.myTeam = GAMEMODE.blueTeam
+	else
+		GAMEMODE.myTeam = GAMEMODE.soloTeam
 	end
 end)

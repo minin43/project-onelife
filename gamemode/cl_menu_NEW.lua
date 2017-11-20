@@ -141,14 +141,6 @@ end)
 function GM:LoadoutMenu(role, roleNotNeeded, selectedWeapons)
 	if self.Main and self.Main:IsValid() then return end
 
-	if LocalPlayer():Team() == 1 then
-		self.myTeam = self.redTeam
-	elseif LocalPlayer():Team() == 2 then
-		self.myTeam = self.blueTeam
-	else
-		self.myTeam = self.soloTeam
-	end
-
 	if role then
 		self.myRole = role
 	end

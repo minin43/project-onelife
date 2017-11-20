@@ -11,6 +11,7 @@ AddCSLuaFile("cl_customspawns.lua")
 AddCSLuaFile("cl_leaderboards.lua")
 AddCSLuaFile("cl_menu_setup.lua")
 AddCSLuaFile("cl_menu_NEW.lua")
+AddCSLuaFile("cl_hud_voting.lua")
 
 AddCSLuaFile("shared.lua")
 AddCSLuaFile("sh_attachmenthandler.lua")
@@ -186,12 +187,11 @@ function GM:PlayerDeathThink( ply )
 	return false
 end
 
-load = load or {} -- load[
-preload = preload or {} -- preload[
+util.AddNetworkString("ValidateTeam")
 
 --Would have liked this to be a part of the gamemode table, but it freaks out concommand if I do so
 function changeTeam(ply, cmd, args)
-	if GetGlobalBool("RoundInProgress") and ply:Alive() then
+	if GAMEMODE.roundInProgress and ply:Alive() then
 		ply:ChatPrint("Cannot switch teams while a round is in progress and you are alive")
 		return
 	end
@@ -211,7 +211,11 @@ function changeTeam(ply, cmd, args)
 	ply:Spectate( OBS_MODE_NONE )
 	ply:SetTeam( t )
 
-	if !GetGlobalBool("GameInProgress") then
+	net.Start("ValidateTeam") --Gmod doesn't include any client hooks for team change validation
+		net.WriteInt(t, 3)
+	net.Send(ply)
+
+	if not GAMEMODE.roundInProgress then
 		if file.Exists("onelife/nextmode/mode.txt", "DATA") then
 			print("Enough plays have joined, starting mode: ", file.Read("onelife/nextmode/mode.txt", "DATA") )
 			GAMEMODE:StartGame( file.Read("onelife/nextmode/mode.txt", "DATA") )
@@ -220,7 +224,7 @@ function changeTeam(ply, cmd, args)
 			GAMEMODE:StartGame("lts")
 		end
 		return
-	elseif !timer.Exists("Time Countdown") or !GetGlobalBool("RoundInProgress") then
+	elseif not timer.Exists("Time Countdown") or not GAMEMODE.roundInProgress then
 		if ply:Alive() then
 			ply:Kill()
 			ply:Spawn()

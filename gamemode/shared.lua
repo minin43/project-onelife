@@ -25,6 +25,13 @@ GM.soloTeam = {
 	menuTeamColorDarkAccent = {r = 15, g = 20, b = 15},
 	menuTeamColorAccent = {r = 255, g = 255, b = 255}
 }
+GM.availableMaps = {
+	{Name = "gm_devruins", ID = 748863203, Votes = 0},
+	{Name = "de_secretcamp", ID = 296555359, Votes = 0},
+	{Name = "de_keystone_beta", ID = 508986899, Votes = 0},
+	{Name = "de_crash", ID = 671482026, Votes = 0},
+	{Name = "ttt_bf3_scrapmetal", ID = 228105814, Votes = 0}
+}
 
 if SERVER then
 
@@ -57,17 +64,9 @@ if SERVER then
 			net.WriteString( GAMEMODE.blueTeam.Name )
 		net.Send( ply )
 	end )
-
-	GM.availableMaps = {
-		[ "gm_devruins" ] = {ID = 748863203, Votes = 0},
-		[ "de_secretcamp" ] = {ID = 296555359, Votes = 0},
-		[ "de_keystone_beta" ] = {ID = 508986899, Votes = 0},
-		[ "de_crash" ] = {ID = 671482026, Votes = 0},
-		[ "ttt_bf3_scrapmetal" ] = {ID = 228105814, Votes = 0}
-	}
 	
 	for k, v in pairs( GM.availableMaps ) do
-		if game.GetMap() == k then
+		if game.GetMap() == v.Name then
 			resource.AddWorkshop( tostring(v.ID) )
 		end
 	end

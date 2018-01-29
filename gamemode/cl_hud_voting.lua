@@ -54,7 +54,7 @@ net.Receive("StartGMVote", function()
 		end
 		if GAMEMODE.voteMain.selectedOption then
 			surface.SetDrawColor(GAMEMODE.myTeam.menuTeamColorLightAccent.r, GAMEMODE.myTeam.menuTeamColorLightAccent.g, GAMEMODE.myTeam.menuTeamColorLightAccent.b)
-			surface.DrawOutlinedRect(2, GAMEMODE.availableGametypesMarkups[GAMEMODE.voteMain.selectedOption][3], GAMEMODE.voteMain:GetWide() - 1, GAMEMODE.availableGametypesMarkups[GAMEMODE.voteMain.selectedOption][1]:GetHeight() + GAMEMODE.availableGametypesMarkups[GAMEMODE.voteMain.selectedOption][2]:GetHeight() + 5)
+			surface.DrawOutlinedRect(2, GAMEMODE.availableGametypesMarkups[GAMEMODE.voteMain.selectedOption][3], GAMEMODE.voteMain:GetWide() - 2, GAMEMODE.availableGametypesMarkups[GAMEMODE.voteMain.selectedOption][1]:GetHeight() + GAMEMODE.availableGametypesMarkups[GAMEMODE.voteMain.selectedOption][2]:GetHeight() + 5)
 		end
 	end
 	GAMEMODE.keyEnumsTable = {KEY_1, KEY_2, KEY_3, KEY_4, KEY_5, KEY_6, KEY_7, KEY_8, KEY_9}

@@ -129,7 +129,7 @@ vgui.Register("InfoIcon", infoIcon, "DPanel")
 
 --//
 
-surface.CreateFont("TestFont3InfoPanel", {
+surface.CreateFont("MW2FontInfoPanel", {
 	font = "BF4 Numbers",
 	size = 20,
 	weight = 500,
@@ -146,7 +146,7 @@ infoPanel.color = {}
 function infoPanel:SetText(text, titletext)
     self.text = text
     self.titletext = titletext
-    self.parsedtext = markup.Parse("<font=TestFont3InfoPanel>" .. self.text .. "</font>", self:GetWide())
+    self.parsedtext = markup.Parse("<font=MW2FontInfoPanel>" .. self.text .. "</font>", self:GetWide())
 end
 
 function infoPanel:SetFont(font, titlefont)
@@ -595,7 +595,7 @@ function weaponPanel:Finish() --I can't think of a function to otherwise put thi
             richTextPanel:SetPos(self.weaponModelWide + self.infoTextXOffset * 3, richTextPanel:GetTall() * (k - 10))
         end
         function richTextPanel:PerformLayout() --Has to be done through this function, because it doesn't work outside of it
-            self:SetFontInternal( "TestFont3Small" )
+            self:SetFontInternal( "MW2FontSmall" )
         end
         richTextPanel:InsertColorChange(150, 150, 150, 255)
         richTextPanel:AppendText(v[2])
@@ -678,7 +678,7 @@ function weaponPanel:Finish() --I can't think of a function to otherwise put thi
                     noAttachment:SetInfo(but, nil, k, self.wepType)
                     noAttachment:Dock(TOP)
                     noAttachment.Paint = function()
-                        draw.SimpleText("Remove", "TestFont3Small", noAttachment:GetWide() / 2, noAttachment:GetTall() / 2, Color(GAMEMODE.myTeam.menuTeamColorAccent.r, GAMEMODE.myTeam.menuTeamColorAccent.g, GAMEMODE.myTeam.menuTeamColorAccent.b), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
+                        draw.SimpleText("Remove", "MW2FontSmall", noAttachment:GetWide() / 2, noAttachment:GetTall() / 2, Color(GAMEMODE.myTeam.menuTeamColorAccent.r, GAMEMODE.myTeam.menuTeamColorAccent.g, GAMEMODE.myTeam.menuTeamColorAccent.b), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
                         return true
                     end
                     --noAttachment.DoClick = function() end

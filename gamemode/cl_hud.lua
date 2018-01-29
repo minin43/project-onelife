@@ -38,6 +38,30 @@ surface.CreateFont( "NameBG", { font = "Exo 2", size = 24, blursize = 2 } )
 surface.CreateFont( "Level", { font = "Exo 2", size = 18 } )
 surface.CreateFont( "LevelBG", { font = "Exo 2", size = 18, blursize = 2 } )
 
+surface.CreateFont( "Exo 2 Small", {
+	font = "Exo 2",
+	size = 15,
+	weight = 500
+} )
+
+surface.CreateFont( "Exo 2 Regular", {
+	font = "Exo 2",
+	size = 20,
+	weight = 500
+} )
+
+surface.CreateFont( "Exo 2 Huge", {
+	font = "Exo 2",
+	size = 1000,
+	weight = 1100
+} )
+
+surface.CreateFont( "Exo 2 Large", {
+	font = "Exo 2",
+	size = 30,
+	weight = 500
+} )
+
 -- http://lua-users.org/wiki/FormattingNumbers
 
 --//Hide the standard HL2 HUD elements

@@ -117,7 +117,7 @@ print( "sh_loadoutmenu initialization..." )
 }]]
 
 GM.weaponTypes = {"Assault Rifles", "Sub-Machine Guns", "Shotguns", "Heavy Machine Guns", "D.M.R.s", "Snipers", "Frag Grenades",
-					"Flash Grenades", "Smoke Grenades", "Fire Grenades", "Remote Explosives", "Explosive Launchers", "none"}
+					"Flash Grenades", "Smoke Grenades", "Fire Grenades", "Remote Explosives", "Explosive Launchers", "Pistols", "none"}
 GM.menuWeaponInfo = {
 	primaries = {
 		--Red Primaries
@@ -187,7 +187,7 @@ GM.menuWeaponInfo = {
 		["cw_kk_ins2_rpg"] = 			{"RPG-7", GM.weaponTypes[12], 1},
 		["cw_kk_ins2_at4"] = 			{"AT-4", GM.weaponTypes[12], 2},
 		--"cw_kk_ins2_gp25" = 			{"GP-25 Grenade Launcher", GM.weaponTypes[12], 0},
-		["cw_kk_ins2_p2a1"] = 			{"P2A1 Flare Gun", GM.weaponTypes[13], 0} --This is the flare gun, for night maps, I guess
+		["cw_kk_ins2_p2a1"] = 			{"P2A1 Flare Gun", GM.weaponTypes[14], 0} --This is the flare gun, for night maps, I guess
 	}
 }
 

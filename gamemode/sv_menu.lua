@@ -10,6 +10,12 @@ util.AddNetworkString("RequestAvailableAttachmentsCallbackprimaries")
 util.AddNetworkString("RequestAvailableAttachmentsCallbacksecondaries")
 util.AddNetworkString("RequestAvailableAttachmentsCallbackequipment")
 util.AddNetworkString("VerifyLoadout")
+util.AddNetworkString("RequestPurchasedWeapons")
+util.AddNetworkString("RequestPurchasedWeaponsCallback")
+util.AddNetworkString("")
+util.AddNetworkString("")
+util.AddNetworkString("")
+util.AddNetworkString("")
 util.AddNetworkString("")
 util.AddNetworkString("")
 util.AddNetworkString("")
@@ -81,7 +87,7 @@ net.Receive("RequestEntData", function(len, ply)
 end)
 
 net.Receive("RequestAvailableWeapons", function(len, ply)
-    local plyRole = net.ReadInt(4)
+    local plyRole = net.ReadInt(5)
     local availableWeaponsTable = {}
 
     --Add default weapons
@@ -89,10 +95,24 @@ net.Receive("RequestAvailableWeapons", function(len, ply)
         availableWeaponsTable[k] = {}
         for k2, v2 in pairs(v) do
             if v2[3] == ply:Team() or v2[3] == 0 then
-                if table.KeyFromValue(GAMEMODE.weaponTypes, v2[2]) > 12 or GAMEMODE.Roles[plyRole].roleDescriptionExpanded[table.KeyFromValue(GAMEMODE.weaponTypes, v2[2])][2] == "Full" then
+                if table.KeyFromValue(GAMEMODE.weaponTypes, v2[2]) > 12 or (table.KeyFromValue(GAMEMODE.weaponTypes, v2[2]) < 12 and GAMEMODE.Roles[plyRole].roleDescriptionExpanded[table.KeyFromValue(GAMEMODE.weaponTypes, v2[2])][2] == "Full") then
                     availableWeaponsTable[k][#availableWeaponsTable[k] + 1] = {class = k2, type = v2[2]}
                 end
             end
+        end
+    end
+
+    --Add specific weapons here, structured in such a way that team 3 produces both sets
+    if plyRole == 7 then
+        if ply:Team() != 1 then
+            availableWeaponsTable.primaries[#availableWeaponsTable.primaries + 1] = {class = "cw_kk_ins2_m4a1", type = GAMEMODE.menuWeaponInfo.primaries["cw_kk_ins2_m4a1"][2]}
+            availableWeaponsTable.primaries[#availableWeaponsTable.primaries + 1] = {class = "cw_kk_ins2_ump45", type = GAMEMODE.menuWeaponInfo.primaries["cw_kk_ins2_ump45"][2]}
+            availableWeaponsTable.primaries[#availableWeaponsTable.primaries + 1] = {class = "cw_kk_ins2_m590", type = GAMEMODE.menuWeaponInfo.primaries["cw_kk_ins2_m590"][2]}
+        end
+        if ply:Team() != 2 then
+            availableWeaponsTable.primaries[#availableWeaponsTable.primaries + 1] = {class = "cw_kk_ins2_ak74", type = GAMEMODE.menuWeaponInfo.primaries["cw_kk_ins2_ak74"][2]}
+            availableWeaponsTable.primaries[#availableWeaponsTable.primaries + 1] = {class = "cw_kk_ins2_mp40", type = GAMEMODE.menuWeaponInfo.primaries["cw_kk_ins2_mp40"][2]}
+            availableWeaponsTable.primaries[#availableWeaponsTable.primaries + 1] = {class = "cw_kk_ins2_toz", type = GAMEMODE.menuWeaponInfo.primaries["cw_kk_ins2_toz"][2]}
         end
     end
 
@@ -112,13 +132,20 @@ end)
 net.Receive("RequestAvailableAttachments", function(len, ply)
     local wep = net.ReadString()
     local wepType = net.ReadString()
-    local tab = util.JSONToTable(file.Read( "onelife/users/" .. id( ply:SteamID() ) .. ".txt", "DATA"))
+    local tab = util.JSONToTable(file.Read( "onelife/users/attachmentunlocks_" .. id( ply:SteamID() ) .. ".txt", "DATA"))
 
     tab[2][wep] = tab[2][wep] or {}
     local toSend = tab[2][wep]
 
     net.Start("RequestAvailableAttachmentsCallback" .. wepType)
         net.WriteTable(tab[2][wep])
+    net.Send(ply)
+end)
+
+net.Receive("RequestPurchasedWeapons", function(len, ply)
+    local tab = util.JSONToTable(file.Read( "onelife/users/weaponunlocks_" .. id( ply:SteamID() ) .. ".txt", "DATA"))
+    net.Start("RequestPurchasedWeaponsCallback")
+        net.WriteTable(tab[2])
     net.Send(ply)
 end)
 

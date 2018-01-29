@@ -1,16 +1,15 @@
 print("init initialization...")
 AddCSLuaFile("cl_init.lua") -- Test comment
-AddCSLuaFile("hud.lua")
+AddCSLuaFile("cl_hud.lua")
 AddCSLuaFile("cl_scoreboard.lua")
 AddCSLuaFile("cl_lvl.lua")
-AddCSLuaFile("cl_menu.lua")
 AddCSLuaFile("cl_money.lua")
 AddCSLuaFile("cl_flags.lua")
 --AddCSLuaFile("cl_feed.lua")
 AddCSLuaFile("cl_customspawns.lua")
 AddCSLuaFile("cl_leaderboards.lua")
 AddCSLuaFile("cl_menu_setup.lua")
-AddCSLuaFile("cl_menu_NEW.lua")
+AddCSLuaFile("cl_menu.lua")
 AddCSLuaFile("cl_hud_voting.lua")
 
 AddCSLuaFile("shared.lua")
@@ -123,12 +122,20 @@ end
 
 function GM:PlayerInitialSpawn( ply )
 	print( ply, " has spawned into the server!")
-	if not file.Exists("onelife/users/" .. id( ply:SteamID() ) .. ".txt", "DATA") then
-		file.Write("onelife/users/" .. id( ply:SteamID() ) .. ".txt", util.TableToJSON( { ply:Name(), {} } ) )
+	if not file.Exists("onelife/users/attachmentunlocks_" .. id( ply:SteamID() ) .. ".txt", "DATA") then --Creates the attachment unlocked file if it doesn't already exist
+		file.Write("onelife/users/attachmentunlocks_" .. id( ply:SteamID() ) .. ".txt", util.TableToJSON( { ply:Name(), {} } ) )
 	else
-		local contents = util.JSONToTable( file.Read("onelife/users/" .. id( ply:SteamID() ) .. ".txt") )
+		local contents = util.JSONToTable( file.Read("onelife/users/attachmentunlocks_" .. id( ply:SteamID() ) .. ".txt") ) --Updates the file with their most recent player's name
 		if ply:Name() ~= contents[ 1 ] then
-			file.Write("onelife/users/" .. id( ply:SteamID() ) .. ".txt", util.TableToJSON( { ply:Name(), contents[ 2 ] } ) )
+			file.Write("onelife/users/attachmentunlocks_" .. id( ply:SteamID() ) .. ".txt", util.TableToJSON( { ply:Name(), contents[ 2 ] } ) )
+		end
+	end
+	if not file.Exists("onelife/users/weaponunlocks_" .. id( ply:SteamID() ) .. ".txt", "DATA") then --Creates the weapon unlocked files if it doesn't already exist
+		file.Write("onelife/users/weaponunlocks_" .. id( ply:SteamID() ) .. ".txt", util.TableToJSON( { ply:Name(), {} } ) )
+	else
+		local contents = util.JSONToTable( file.Read("onelife/users/weaponunlocks_" .. id( ply:SteamID() ) .. ".txt") ) --Updates the file with their most recent player's name
+		if ply:Name() ~= contents[ 1 ] then
+			file.Write("onelife/users/weaponunlocks_" .. id( ply:SteamID() ) .. ".txt", util.TableToJSON( { ply:Name(), contents[ 2 ] } ) )
 		end
 	end
 

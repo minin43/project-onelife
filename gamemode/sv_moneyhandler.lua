@@ -73,7 +73,7 @@ net.Receive( "BuyAttachment", function(len, ply)
 	local attachmentType = net.ReadString() --NEED TO ADD
 	local price = tonumber(net.ReadString())
 
-	local original = util.JSONToTable(file.Read( "onelife/users/" .. id( ply:SteamID() ) .. ".txt", "DATA"))
+	local original = util.JSONToTable(file.Read( "onelife/users/attachmentunlocks_" .. id( ply:SteamID() ) .. ".txt", "DATA"))
 	if original[2][parentWep] and original[2][parentWep][attachmentType] then
 		table.insert( original[2][parentWep][attachmentType], attachment)
 	else

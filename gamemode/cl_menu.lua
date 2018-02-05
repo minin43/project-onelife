@@ -12,6 +12,8 @@
 - Basic Gmod menu "back" - buttonclickrelease.wav
 - Basic Gmod menu "hover" - buttonrollover.wav
 ]]
+
+--//Someone's gonna have to back and get a SHIT LOAD of fonts! -Blazing Saddles
 surface.CreateFont("MW2Font", {
 	font = "BankGothic",
 	size = 18,
@@ -42,6 +44,7 @@ surface.CreateFont("MW2FontLarge", {
 })
 
 -- http://lua-users.org/wiki/FormattingNumbers
+--//Used to format SteamIDs
 local function comma_value( amount )
 	local formatted = amount
 	while true do  
@@ -53,7 +56,8 @@ local function comma_value( amount )
 	return formatted
 end
 
-hook.Add("InitPostEntity", "PrecacheWeaponModelsToPreventInitialMenuOpeningLag", function() --DISABLED until I stop getting those client errors
+--//Hook identifier self-explanatory
+hook.Add("InitPostEntity", "PrecacheWeaponModelsToPreventInitialMenuOpeningLag", function()
 	for k, v in pairs(weapons.GetList()) do
 		if v.WorldModel then
 			util.PrecacheModel( v.WorldModel )
@@ -80,7 +84,7 @@ hook.Add("PostGamemodeLoaded", "AddIcons", function()
 	GAMEMODE.weaponToIcon[GAMEMODE.Roles[1].roleDescriptionExpanded[12][1]] = Material("menu/weapon_icons/launcher_icon.png", "smooth")
 	GAMEMODE.weaponToIcon[GAMEMODE.weaponTypes[13]]							= Material("menu/weapon_icons/pistol_icon.png", "smooth")
 	
-	--Doesn't need to be here but for kept here anyway
+	--Doesn't need to be here but kept here anyway
 	GAMEMODE.armorToIcon = {
 		healthScaling = Material("menu/armor_icons/health_icon.png", "smooth"),
 		movementScaling = {
@@ -97,7 +101,7 @@ hook.Add("PostGamemodeLoaded", "AddIcons", function()
 	}
 end)
 
---//The loadout menu that you get when you press C
+--//The loadout menu that opens when you press C, set weapons from here
 function GM:LoadoutMenu(role, roleNotNeeded, selectedWeapons)
 	if self.Main and self.Main:IsValid() then return end
 
@@ -827,6 +831,7 @@ function GM:RoleSelection(role, skipAnimation)
 	end
 end
 
+--The menu that appears when you click on the shopping cart
 function GM:ShopMenu()
 	print("ShopMenu function debug", LocalPlayer():Team())
 	if LocalPlayer():Team() != 1 and LocalPlayer():Team() != 2 and LocalPlayer():Team() != 3 then return end
@@ -853,6 +858,7 @@ function GM:ShopMenu()
 		self.availableWeaponTypes[#self.availableWeaponTypes + 1] = v
 	end
 
+	--//The width and height of the two panels (weapons and attachments), the rest of the menu scales with these numbers
 	self.shopMainWide = 350
 	self.shopMainTall = 550
 
@@ -916,7 +922,8 @@ function GM:ShopMenu()
 						weaponShopWeaponPanel:SetPos(0, counter * self.weaponShopWeaponPanelTall)
 						weaponShopWeaponPanel:SetText("")
 						weaponShopWeaponPanel.DoClick = function()
-							--
+							surface.PlaySound("buttons/lightswitch2.wav")
+							self:RefreshShopWeapon() --Missing wep
 						end
 						weaponShopWeaponPanel.OnCursorEntered = function()
 							weaponShopWeaponPanel.hover = true
@@ -943,7 +950,8 @@ function GM:ShopMenu()
 						weaponShopWeaponPanel:SetPos(0, counter * self.weaponShopWeaponPanelTall)
 						weaponShopWeaponPanel:SetText("")
 						weaponShopWeaponPanel.DoClick = function()
-							--
+							surface.PlaySound("buttons/lightswitch2.wav")
+							self:RefreshShopWeapon() --Missing wep
 						end
 						weaponShopWeaponPanel.OnCursorEntered = function()
 							weaponShopWeaponPanel.hover = true
@@ -971,7 +979,20 @@ function GM:ShopMenu()
 	end)
 
 	function self:RefreshShopWeapon(wep)
+		if weaponShopSelectedWeaponPanel then weaponShopSelectedWeaponPanel:Remove() weaponShopSelectedWeaponPanel = nil end
+		local weaponShopSelectedWeaponPanel = vgui.Create("DPanel", self.shopMainWeapon)
+		weaponShopSelectedWeaponPanel:SetPos(0, self.shopMainWeapon:GetTall() / 2 + 1)
+		weaponShopSelectedWeaponPanel:SetSize(self.shopMainWeapon:GetWide(), self.shopMainWeapon:GetTall() / 2)
+		weaponShopSelectedWeaponPanel.Paint = function()
 
+		end
+
+		local weaponShopSelectedWeaponPanelModel = vgui.Create("DModelPanel", weaponShopSelectedWeaponPanel)
+		weaponShopSelectedWeaponPanelModel:SetSize(weaponShopSelectedWeaponPanelModel:GetWide(), weaponShopSelectedWeaponPanelModel:GetTall() / 2)
+		weaponShopSelectedWeaponPanelModel:SetPos(0, 0)
+		weaponShopSelectedWeaponPanelModel:SetModel(wep:GetModel())
+
+		--//Let's do some bars for damage, accuracy, recoil, ammo, and maybe some more like DPS
 	end
 
 	--[[self.shopMainWeaponTypeButtons = {}

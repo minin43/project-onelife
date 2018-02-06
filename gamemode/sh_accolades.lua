@@ -11,6 +11,7 @@ Compared-stats accolades:
     The Malefactor - Most team-kills
     Pyromaniac - Most explosive kills
     Mr. Tryhard - Highest Score
+    Accident Prone - More suicides then normal deaths
 Solo accolades
     Camper - Majority kills while prone
     Stayin' Alive - Stay alive in a majority of the played rounds in a given match

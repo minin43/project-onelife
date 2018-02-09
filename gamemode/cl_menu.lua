@@ -979,6 +979,8 @@ function GM:ShopMenu()
 	end)
 
 	function self:RefreshShopWeapon(wep) --wep should be the weapon's class name
+		local wepTable = weapons.GetStored(wep)
+
 		if weaponShopSelectedWeaponPanel then weaponShopSelectedWeaponPanel:Remove() weaponShopSelectedWeaponPanel = nil end
 		local weaponShopSelectedWeaponPanel = vgui.Create("DPanel", self.shopMainWeapon)
 		weaponShopSelectedWeaponPanel:SetPos(0, self.shopMainWeapon:GetTall() / 2 + 1)
@@ -991,7 +993,7 @@ function GM:ShopMenu()
 		local weaponShopSelectedWeaponPanelModel = vgui.Create("DModelPanel", weaponShopSelectedWeaponPanel)
 		weaponShopSelectedWeaponPanelModel:SetSize(weaponShopSelectedWeaponPanelModel:GetWide(), weaponShopSelectedWeaponPanelModel:GetTall() / 2)
 		weaponShopSelectedWeaponPanelModel:SetPos(0, 0)
-		weaponShopSelectedWeaponPanelModel:SetModel(wep:GetModel())
+		weaponShopSelectedWeaponPanelModel:SetModel(wepTable.WorldModel)
 
 		--//Let's do some bars for damage, accuracy, recoil, ammo, and maybe some more like DPS
 		local barTypes = {
@@ -1000,7 +1002,6 @@ function GM:ShopMenu()
 			{["BarType"] = "Recoil", ["Variables"] = {"Recoil"}, ["Maximum"] = "5", ["Minimum"] = "0.5"},
 			{["BarType"] = "Fire Rate", ["Variables"] = {"FireDelay", 1}, ["Maximum"] = "20", ["Minimum"] = "1"}
 		}
-		local wepTable = weapons.GetStored(wep)
 
 		for k, v in pairs(barTypes) do
 			v.WepValue = 1
@@ -1008,11 +1009,14 @@ function GM:ShopMenu()
 				if wepTable[v2] then
 					v.WepValue = v.WepValue * wepTable[v2]
 				else
-					print("DEBUG - Weapon Shop Selected Weapon Bar Stat Variable - v2 isn't a part of the wep table!", v)
-					v.WepValue = v2 / v.WepValue
+					print("DEBUG - Weapon Shop Selected Weapon Bar Stat Variable - v2 isn't a part of the wep table!", k)
+					if not v2 == "ClumpSpread" then
+						v.WepValue = v2 / v.WepValue
+					end
 				end
 			end
-			v.WepValue = math.Clamp(v.WepValue, v.Minimum, v.Maximum)
+
+			v.WepValue = math.Clamp(v.WepValue, tonumber(v.Minimum), tonumber(v.Maximum))
 
 			local selectedWeaponInfoPanel = vgui.Create("DPanel", weaponShopSelectedWeaponPanel)
 			selectedWeaponInfoPanel:SetSize(weaponShopSelectedWeaponPanel:GetWide(), weaponShopSelectedWeaponPanel:GetTall() / #barTypes)
@@ -1023,7 +1027,7 @@ function GM:ShopMenu()
 				surface.SetDrawColor(self.myTeam.menuTeamColorLightAccent.r, self.myTeam.menuTeamColorLightAccent.g, self.myTeam.menuTeamColorLightAccent.b)
 				surface.DrawOutlinedRect(13, 13 + 18, weaponShopSelectedWeaponPanel:GetWide() - (13 * 2), weaponShopSelectedWeaponPanel:GetTall() - ((13 + 18) * 2))
 				surface.SetDrawColor(self.myTeam.menuTeamColorAccent.r, self.myTeam.menuTeamColorAccent.g, self.myTeam.menuTeamColorAccent.b)
-				surface.DrawRect(15, 15 + 18, ((weaponShopSelectedWeaponPanel:GetWide() - (15 * 2)) * ((v.Maximum - v.Minimum) / (v.WepValue - v.Minimum)), weaponShopSelectedWeaponPanel:GetTall() - ((15 + 18) * 2))
+				surface.DrawRect(15, 15 + 18, ((weaponShopSelectedWeaponPanel:GetWide() - (15 * 2)) * ((v.Maximum - v.Minimum) / (v.WepValue - v.Minimum))), weaponShopSelectedWeaponPanel:GetTall() - ((15 + 18) * 2))
 			end
 		end
 	end

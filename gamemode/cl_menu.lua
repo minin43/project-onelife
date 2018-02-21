@@ -862,6 +862,7 @@ function GM:ShopMenu()
 	self.shopMainWide = 350
 	self.shopMainTall = 550
 
+	--//Left-side "Weapons" panel
 	self.shopMainWeapon = vgui.Create("DFrame")
 	self.shopMainWeapon:SetSize(self.shopMainWide, self.shopMainTall)
 	self.shopMainWeapon:SetTitle("")
@@ -889,16 +890,22 @@ function GM:ShopMenu()
 	end
 	self.shopMainWeaponX, self.shopMainWeaponY = self.shopMainWeapon:GetPos()
 
+	--//The scroll list that displays all available-to-purchase weapons
 	self.shopMainWeaponList = vgui.Create("DScrollPanel", self.shopMainWeapon)
 	self.shopMainWeaponList:SetSize(self.shopMainWeapon:GetWide() - 6, self.shopMainWeapon:GetTall() / 2)
 	self.shopMainWeaponList:SetPos(3, 50 + 3)
 	self.shopMainWeaponList.Paint = function()
-		surface.SetDrawColor(self.myTeam.menuTeamColorLightAccent.r, self.myTeam.menuTeamColorLightAccent.g, self.myTeam.menuTeamColorLightAccent.b)
+		surface.SetDrawColor(self.myTeam.menuTeamColor.r, self.myTeam.menuTeamColor.g, self.myTeam.menuTeamColor.b)
 		surface.DrawOutlinedRect(0, 0, self.shopMainWeaponList:GetSize())
 	end
 
 	self.purchasedWeapons = {}
 	self.weaponShopWeaponPanelTall = 35
+	--[[
+		Client needs to receive from the server what weapons are already unlocked, and the client lists out what weapons aren't there
+		Sending table of already-puchased weapons because 90% of the time that table will be smaller than a "can be unlocked" table and therefore faster
+		The below function receives a table, sorts through all weapons, and excludes any there were in the provided table
+	]]
 	net.Receive("RequestPurchasedWeaponsCallback", function() --May need to be called down below
 		self.purchasedWeapons = net.ReadTable()
 		local counter = 0
@@ -978,27 +985,48 @@ function GM:ShopMenu()
 		end
 	end)
 
+	--[[
+		When a player clicks on any of the buttons inside the list we've created, we need to draw weapon info for them
+		This function will be called many times over and should include functionality to remove the previous weapon's information
+			when a new weapon is selected
+	]]
 	function self:RefreshShopWeapon(wep) --wep should be the weapon's class name
 		local wepTable = weapons.GetStored(wep)
 
-		if weaponShopSelectedWeaponPanel then weaponShopSelectedWeaponPanel:Remove() weaponShopSelectedWeaponPanel = nil end
-		local weaponShopSelectedWeaponPanel = vgui.Create("DPanel", self.shopMainWeapon)
-		weaponShopSelectedWeaponPanel:SetPos(0, self.shopMainWeapon:GetTall() / 2 + 1)
-		weaponShopSelectedWeaponPanel:SetSize(self.shopMainWeapon:GetWide(), self.shopMainWeapon:GetTall() / 2)
-		weaponShopSelectedWeaponPanel.Paint = function()
+		if self.weaponShopSelectedWeaponPanel then self.weaponShopSelectedWeaponPanel:Remove() self.weaponShopSelectedWeaponPanel = nil end
+		self.weaponShopSelectedWeaponPanel = vgui.Create("DPanel", self.shopMainWeapon)
+		self.weaponShopSelectedWeaponPanel:SetPos(3, self.shopMainWeapon:GetTall() / 2 + 50 + 5) --Have to add 50 to all these y values because of the title bar
+		self.weaponShopSelectedWeaponPanel:SetSize(self.shopMainWeapon:GetWide() - 6, self.shopMainWeapon:GetTall() / 2 - 50 - 8)
+		self.weaponShopSelectedWeaponPanel.Paint = function()
+			draw.SimpleText(wepTable.PrintName, "MW2FontLarge", self.weaponShopSelectedWeaponPanel:GetWide() / 2, 12, Color(255, 255, 255), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
+
 			surface.SetDrawColor(self.myTeam.menuTeamColorLightAccent.r, self.myTeam.menuTeamColorLightAccent.g, self.myTeam.menuTeamColorLightAccent.b)
-			surface.DrawOutlinedRect(0, 0, weaponShopSelectedWeaponPanel:GetWide(), weaponShopSelectedWeaponPanel:GetTall())
+			surface.DrawLine(8, 24, self.weaponShopSelectedWeaponPanel:GetWide() - 8, 24)
+			surface.SetDrawColor(self.myTeam.menuTeamColor.r, self.myTeam.menuTeamColor.g, self.myTeam.menuTeamColor.b)
+			surface.DrawOutlinedRect(0, 0, self.weaponShopSelectedWeaponPanel:GetWide(), self.weaponShopSelectedWeaponPanel:GetTall())
 		end
 
-		local weaponShopSelectedWeaponPanelModel = vgui.Create("DModelPanel", weaponShopSelectedWeaponPanel)
-		weaponShopSelectedWeaponPanelModel:SetSize(weaponShopSelectedWeaponPanelModel:GetWide(), weaponShopSelectedWeaponPanelModel:GetTall() / 2)
-		weaponShopSelectedWeaponPanelModel:SetPos(0, 0)
+		local weaponShopSelectedWeaponPanelModel = vgui.Create("DModelPanel", self.weaponShopSelectedWeaponPanel)
+		weaponShopSelectedWeaponPanelModel:SetSize(self.weaponShopSelectedWeaponPanel:GetWide() - 16, self.weaponShopSelectedWeaponPanel:GetTall() / 3 + 10)
+		weaponShopSelectedWeaponPanelModel:SetPos(8, 28)
 		weaponShopSelectedWeaponPanelModel:SetModel(wepTable.WorldModel)
+		weaponShopSelectedWeaponPanelModel:SetCamPos(Vector(0, 35, 0)) --Courtesy of Spy
+    	weaponShopSelectedWeaponPanelModel:SetLookAt(Vector(0, 0, 0)) --Courtesy of Spy
+    	weaponShopSelectedWeaponPanelModel:SetFOV(90) --Courtesy of Spy
+    	--weaponShopSelectedWeaponPanelModel:GetEntity():SetAngles
+    	weaponShopSelectedWeaponPanelModel:GetEntity():SetPos(Vector(-6, 13.5, -1))
+    	weaponShopSelectedWeaponPanelModel:SetAmbientLight(Color(255, 255, 255))
+		weaponShopSelectedWeaponPanelModel.LayoutEntity = function() return true end
+		--[[weaponShopSelectedWeaponPanelModel.Paint = function()
+			surface.SetDrawColor(self.myTeam.menuTeamColorAccent.r, self.myTeam.menuTeamColorAccent.g, self.myTeam.menuTeamColorAccent.b)
+			surface.DrawOutlinedRect(0, 0, weaponShopSelectedWeaponPanelModel:GetWide(), weaponShopSelectedWeaponPanelModel:GetTall())
+		end]]
 
 		--//Let's do some bars for damage, accuracy, recoil, ammo, and maybe some more like DPS
 		local barTypes = {
-			{["BarType"] = "Damage", ["Variables"] = {"Damage", "Shots"}, ["Maximum"] = "120", ["Minimum"] = "20"},
-			{["BarType"] = "Accuracy", ["Variables"] = {"AimSpread", "ClumpSpread", "SpreadPerShot"}, ["Maximum"] = "50", ["Minimum"] = "0.1"},
+			{["BarType"] = "Damage", ["Variables"] = {"Damage", "Shots"}, ["Maximum"] = "120", ["Minimum"] = "0"},
+			--{["BarType"] = "Accuracy", ["Variables"] = {"AimSpread", "ClumpSpread", "SpreadPerShot"}, ["Maximum"] = "50", ["Minimum"] = "0.1"}, --I can't think of a good way to calculate
+			{["BarType"] = "Accuracy", ["Variables"] = {"AimSpread", 0.01}, ["Maximum"] = "5", ["Minimum"] = "0.1"},
 			{["BarType"] = "Recoil", ["Variables"] = {"Recoil"}, ["Maximum"] = "5", ["Minimum"] = "0.5"},
 			{["BarType"] = "Fire Rate", ["Variables"] = {"FireDelay", 1}, ["Maximum"] = "20", ["Minimum"] = "1"}
 		}
@@ -1006,28 +1034,36 @@ function GM:ShopMenu()
 		for k, v in pairs(barTypes) do
 			v.WepValue = 1
 			for k2, v2 in pairs(v.Variables) do
-				if wepTable[v2] then
+				print("		Variables we're multiplying together for bar type \"" .. v.BarType .. "\": ", v2)
+				print("		Value for it: ", wepTable[v2])
+				if wepTable[v2] then --if the string in the Variables table above exists in the weapon table
 					v.WepValue = v.WepValue * wepTable[v2]
+					print("	v.WepValue = v.WepValue * wepTable[v2] - ", v.WepValue, wepTable[v2])
 				else
-					print("DEBUG - Weapon Shop Selected Weapon Bar Stat Variable - v2 isn't a part of the wep table!", k)
-					if not v2 == "ClumpSpread" then
+					print("DEBUG - Weapon Shop Selected Weapon Bar Stat Variable - v2 isn't a part of the wep table! - ", k)
+					if isnumber(v2) then
 						v.WepValue = v2 / v.WepValue
+						print("	v.WepValue = v2 / v.WepValue - ", v.WepValue, v2)
 					end
 				end
 			end
 
 			v.WepValue = math.Clamp(v.WepValue, tonumber(v.Minimum), tonumber(v.Maximum))
 
-			local selectedWeaponInfoPanel = vgui.Create("DPanel", weaponShopSelectedWeaponPanel)
-			selectedWeaponInfoPanel:SetSize(weaponShopSelectedWeaponPanel:GetWide(), weaponShopSelectedWeaponPanel:GetTall() / #barTypes)
-			selectedWeaponInfoPanel:SetPos()
+			print("DEBUG - k, v, v.BarType, v.Variables, v.Maximum, v.Minimum, v.WepValue", k, v, v.BarType, v.Variables, v.Maximum, v.Minimum, v.WepValue)
+
+			local selectedWeaponInfoPanel = vgui.Create("DPanel", self.weaponShopSelectedWeaponPanel)
+			selectedWeaponInfoPanel:SetSize(self.weaponShopSelectedWeaponPanel:GetWide() - 16, (self.weaponShopSelectedWeaponPanel:GetTall() / 2) / #barTypes)
+			selectedWeaponInfoPanel:SetPos(8, weaponShopSelectedWeaponPanelModel:GetTall() + 4 + 24 + 1 + (selectedWeaponInfoPanel:GetTall() * (k - 1)))
 			selectedWeaponInfoPanel.Paint = function()
-				draw.SimpleText(wepTable.PrintName, "MW2Font", 13 / 2, 13 / 2, Color(255, 255, 255), TEXT_ALIGN_LEFT, TEXT_ALIGN_TOP)
+				draw.SimpleText(v.BarType, "MW2FontSmall", 13 / 2, 13 / 2, Color(255, 255, 255), TEXT_ALIGN_LEFT, TEXT_ALIGN_TOP)
 				
+				surface.SetDrawColor(self.myTeam.menuTeamColor.r, self.myTeam.menuTeamColor.g, self.myTeam.menuTeamColor.b)
+				surface.DrawOutlinedRect(selectedWeaponInfoPanel:GetWide() / 3, 4, selectedWeaponInfoPanel:GetWide() * (2 / 3), selectedWeaponInfoPanel:GetTall() - 12)
 				surface.SetDrawColor(self.myTeam.menuTeamColorLightAccent.r, self.myTeam.menuTeamColorLightAccent.g, self.myTeam.menuTeamColorLightAccent.b)
-				surface.DrawOutlinedRect(13, 13 + 18, weaponShopSelectedWeaponPanel:GetWide() - (13 * 2), weaponShopSelectedWeaponPanel:GetTall() - ((13 + 18) * 2))
-				surface.SetDrawColor(self.myTeam.menuTeamColorAccent.r, self.myTeam.menuTeamColorAccent.g, self.myTeam.menuTeamColorAccent.b)
-				surface.DrawRect(15, 15 + 18, ((weaponShopSelectedWeaponPanel:GetWide() - (15 * 2)) * ((v.Maximum - v.Minimum) / (v.WepValue - v.Minimum))), weaponShopSelectedWeaponPanel:GetTall() - ((15 + 18) * 2))
+				surface.DrawRect(selectedWeaponInfoPanel:GetWide() / 3 + 1, 4 + 1, ((v.WepValue - v.Minimum) / (v.Maximum - v.Minimum)) * (selectedWeaponInfoPanel:GetWide() * (2 / 3) - 2), selectedWeaponInfoPanel:GetTall() - 12 - 2)
+				--surface.SetDrawColor(self.myTeam.menuTeamColorAccent.r, self.myTeam.menuTeamColorAccent.g, self.myTeam.menuTeamColorAccent.b)
+				--surface.DrawRect(15, 15 + 18, ((self.weaponShopSelectedWeaponPanel:GetWide() - (15 * 2)) * ((v.Maximum - v.Minimum) / (v.WepValue - v.Minimum))), self.weaponShopSelectedWeaponPanel:GetTall() - ((15 + 18) * 2))
 			end
 		end
 	end

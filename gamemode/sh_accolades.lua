@@ -3,23 +3,30 @@ GM.Accolades = {
 }
 
 --[[
-Compared-stats accolades:
+Comparitive accolades:
     Grim Reaper - Most kills
     Headhunter - Most headshots
     Necrotic - Most deaths
     The Benefactor - Most damage done (against enemies)
     The Malefactor - Most team-kills
-    Pyromaniac - Most explosive kills
+    Pyromaniac - Most fire/explosive damage
     Mr. Tryhard - Highest Score
-    Accident Prone - More suicides then normal deaths
-Solo accolades
-    Camper - Majority kills while prone
-    Stayin' Alive - Stay alive in a majority of the played rounds in a given match
-    High Score - Get a new personal high score
-Combat Achievements
-    Team Wipe - Achieve kill on entire enemy team in one round (only applicable with 4+ enemies)
-    5 kill streak - Kill 5 enemies without dying
-    10 kill streak - Kill 10 enemies without dying
+    FaZe Candidate - Highest K/D ratio
+    Haunted - Most afterlife kills (kills while dead)
+
+Combat Achievements:
+    Team Wipe - Kill the entire enemy team in one round (only applicable with 4+ enemies)
+    5 kill streak - Kill 5 enemies without dying (does not count round end)
+    10 kill streak - Kill 10 enemies without dying (does not count round end)
     Danger Close - Kill 3+ enemies with 1 explosion
     Collateral - Kill 2+ enemies with 1 bullet
+    Accident Prone - More suicides then normal deaths
+
+The idea here:
+    Because I'm entirely original, I thought it would be cool to create an end-game VIP screen, afterwhich the game distributes accolades to all of the players
+    based on their performance, similar to games like Dirty Bomb, CoD, or Warface.
+    The different accolade types you can receive:
+        - Comparitive: how you played compared to everyone else who played (only 1 person a game receives these)
+        - Combat: combat achievements earned for doing something noteworthy in that particular game (multiple people can receive these a game)
+    The VIP screen is based purely on score.
 ]]

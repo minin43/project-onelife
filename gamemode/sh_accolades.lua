@@ -20,7 +20,10 @@ Combat Achievements:
     10 kill streak - Kill 10 enemies without dying (does not count round end)
     Danger Close - Kill 3+ enemies with 1 explosion
     Collateral - Kill 2+ enemies with 1 bullet
-    Accident Prone - More suicides then normal deaths
+    End-game (self-comparitive):
+        Accident Prone - More suicides than deaths to enemies
+        Optimist - More kills than deaths
+        Girl Gamer - More assists than kills
 
 The idea here:
     Because I'm entirely original, I thought it would be cool to create an end-game VIP screen, afterwhich the game distributes accolades to all of the players

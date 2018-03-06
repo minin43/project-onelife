@@ -13,36 +13,6 @@
 - Basic Gmod menu "hover" - buttonrollover.wav
 ]]
 
---//Someone's gonna have to back and get a SHIT LOAD of fonts! -Blazing Saddles
-surface.CreateFont("MW2Font", {
-	font = "BankGothic",
-	size = 18,
-	weight = 500,
-	antialias = true
-})
-
-surface.CreateFont("MW2FontSmall", {
-	font = "BankGothic",
-	size = 12,
-	weight = 500,
-	antialias = true
-})
-
-surface.CreateFont("MW2FontUnderlined", {
-	font = "BankGothic",
-	size = 18,
-	weight = 500,
-	antialias = true,
-	underline = true
-})
-
-surface.CreateFont("MW2FontLarge", {
-	font = "BankGothic",
-	size = 30,
-	weight = 500,
-	antialias = true
-})
-
 -- http://lua-users.org/wiki/FormattingNumbers
 --//Used to format SteamIDs
 local function comma_value( amount )

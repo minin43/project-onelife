@@ -1,7 +1,3 @@
-surface.CreateFont("VoteDefault", {font = "BankGothic", size = 18})
-surface.CreateFont("VoteDescription", {font = "BankGothic", size = 12})
-surface.CreateFont("VoteTitle", {font = "BankGothic", size = 24})
-
 --//Voting shit
 net.Receive("StartGMVote", function()
 	--//Format: number order = {1 = Game type name, 2 = Game type description}

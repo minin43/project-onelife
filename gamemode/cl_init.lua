@@ -1,5 +1,6 @@
 print("cl_init initialization...")
 include("shared.lua")
+include("cl_fonts.lua")
 include("cl_hud.lua")
 include("cl_scoreboard.lua")
 include("cl_lvl.lua")

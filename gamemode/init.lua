@@ -1,5 +1,6 @@
 print("init initialization...")
 AddCSLuaFile("cl_init.lua") -- Test comment
+AddCSLuaFile("cl_fonts.lua")
 AddCSLuaFile("cl_hud.lua")
 AddCSLuaFile("cl_scoreboard.lua")
 AddCSLuaFile("cl_lvl.lua")

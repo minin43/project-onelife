@@ -7,7 +7,7 @@ GM.lvl = {}
 GM.lvl.levels = {}
 GM.lvl.exp = 500
 
-GM.lvl.VIPGroups = { --This is a earned-point multiplier, adjust accordingly
+GM.lvl.VIPGroups = { --This is a point-earning multiplier, adjust accordingly
 	{ "vip", 1.10 },
 	{ "vip+", 1.20 }
 	--anything else?

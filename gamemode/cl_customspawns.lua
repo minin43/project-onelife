@@ -1,3 +1,6 @@
+--DISCLAIMER: This is not my own original code, I have merely adopted it for use in my gamemode
+--The only edits made have been done in the server version of the file
+
 print( "cl_customspawns initialization..." )
 local lp = LocalPlayer
 local curS = {}

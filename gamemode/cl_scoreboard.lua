@@ -1,27 +1,4 @@
 print( "cl_scoreboard initialization..." )
-surface.CreateFont( "Exo 2 Regular", {
-	font = "Exo 2",
-	size = 40,
-	weight = 400
-} )
-
-surface.CreateFont( "Exo 2 Small", {
-	font = "Exo 2",
-	size = 30,
-	weight = 400
-} )
-
-surface.CreateFont( "Exo 2 Content", {
-	font = "Exo 2",
-	size = 18,
-	antialias = true
-} )
-
-surface.CreateFont( "Exo 2 Content Blur", {
-	font = "Exo 2",
-	size = 18,
-	blursize = 1
-} )
 
 local gradient = surface.GetTextureID( "gui/gradient" )
 local voice = Material( "icon16/sound.png" )

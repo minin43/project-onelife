@@ -58,6 +58,9 @@ util.AddNetworkString( "LowTime" )
 util.AddNetworkString( "CreateCountdown" )
 util.AddNetworkString( "Countdown" )
 
+--//The amount of time, in seconds, before a round starts
+GM.PreRoundTimer = 20
+
 function GM:StartGame( mode )
     if !self.modes[mode] then
         print( "Invalid mode type, preventing game start." )
@@ -149,7 +152,7 @@ function GM:RoundPrep( round )
     --//Starts the countdown
     net.Start( "CreateCountdown" )
     net.Broadcast()
-    timer.Create( "Countdown Timer", 1, 30, function()
+    timer.Create( "Countdown Timer", 1, self.PreRoundTimer, function()
         net.Start( "Countdown" )
             net.WriteString( tostring( timer.RepsLeft( "Countdown Timer" ) ) )
         net.Broadcast()

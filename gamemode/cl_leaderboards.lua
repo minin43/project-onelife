@@ -1,19 +1,3 @@
-surface.CreateFont( "asdf", {
-	font = "Arial",
-	size = 17,
-	weight = 500,
-	blursize = 0,
-	scanlines = 0,
-	antialias = true
-} )
-surface.CreateFont( "asdf2", {
-	font = "Arial",
-	size = 15,
-	weight = 400,
-	blursize = 0,
-	scanlines = 0,
-	antialias = true
-} )
 function OpenLeaderboards()
 	main = vgui.Create( "DFrame" )
 	main:SetSize( 700, 500 )

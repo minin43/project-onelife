@@ -1,3 +1,6 @@
+--DISCLAIMER: This is not my own original code, I have merely adopted it for use in my gamemode
+--Added functionality to include direction in player spawning
+
 print( "sv_customspawns initialization..." )
 if not file.Exists( "onelife/spawns", "DATA" ) then
 	file.CreateDir( "onelife/spawns" )

@@ -1,17 +1,4 @@
-print( "cl_menu initialization..." )
---[[
-    surface.CreateFont( "", {
-	font = "",
-	size = 0,
-	weight = 400
-    italic = true
-} )
-https://wiki.garrysmod.com/page/surface/CreateFont
-
-local bought = Material( "tdm/ic_done_white_24dp.png", "noclamp smooth" )
-https://wiki.garrysmod.com/page/Global/Material
-
-]]
+--//This file is NOT LOADED//--
 
 surface.CreateFont( "Exo 2 Small", {
 	font = "Exo 2",

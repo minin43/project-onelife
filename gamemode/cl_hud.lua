@@ -9,7 +9,7 @@ local gradient = surface.GetTextureID( "gui/gradient" )
 local damage = Material( "tdm/damage.png" )
 local pointer = surface.GetTextureID( "gui/point.png" )
 
-surface.CreateFont( "test", { font = "BF4 Numbers", size = 70, weight = 1, antialias = true } )
+--[[surface.CreateFont( "test", { font = "BF4 Numbers", size = 70, weight = 1, antialias = true } )
 surface.CreateFont( "ammo1", { font = "BF4 Numbers", size = 80, weight = 1, antialias = true } )
 surface.CreateFont( "ammo2", { font = "BF4 Numbers", size = 40, weight = 1, antialias = true } )
 surface.CreateFont( "time", { font = "BF4 Numbers", size = 30, weight = 1, antialias = true } )
@@ -36,31 +36,7 @@ surface.CreateFont( "TicketsBG", { font = "Exo 2", size = 45, blursize = 6 } )
 surface.CreateFont( "Name", { font = "Exo 2", size = 24 } )
 surface.CreateFont( "NameBG", { font = "Exo 2", size = 24, blursize = 2 } )
 surface.CreateFont( "Level", { font = "Exo 2", size = 18 } )
-surface.CreateFont( "LevelBG", { font = "Exo 2", size = 18, blursize = 2 } )
-
-surface.CreateFont( "Exo 2 Small", {
-	font = "Exo 2",
-	size = 15,
-	weight = 500
-} )
-
-surface.CreateFont( "Exo 2 Regular", {
-	font = "Exo 2",
-	size = 20,
-	weight = 500
-} )
-
-surface.CreateFont( "Exo 2 Huge", {
-	font = "Exo 2",
-	size = 1000,
-	weight = 1100
-} )
-
-surface.CreateFont( "Exo 2 Large", {
-	font = "Exo 2",
-	size = 30,
-	weight = 500
-} )
+surface.CreateFont( "LevelBG", { font = "Exo 2", size = 18, blursize = 2 } )]]
 
 -- http://lua-users.org/wiki/FormattingNumbers
 
@@ -86,7 +62,7 @@ end
 hook.Add( "HUDShouldDraw", "hidehud", hidehud )
 
 net.Receive( "CreateCountdown", function( len, ply )
-	local countdowntimeleft = 30
+	local countdowntimeleft = 30 --Just a default time if we don't receive net message Countdown
 	net.Receive( "Countdown", function( len, ply )
 		countdowntimeleft = tonumber( net.ReadString() )
 	end )
